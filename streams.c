@@ -14,14 +14,18 @@ struct Stream {
 typedef char * stream_element_t;
 typedef struct Stream stream_t;
 
+typedef stream_element_t(* mapper_t)(stream_element_t);
+typedef bool(* predicate_t)(void *);
+typedef stream_element_t(* reducer_t)(stream_element_t, stream_element_t);
+
 stream_t * make_stream(void *, int, size_t);
-stream_t * map(stream_t *, stream_element_t (* mapper)(stream_element_t));
-stream_t * filter(stream_t *, bool (* predicate)(void *));
-stream_element_t reduce(stream_t *, stream_element_t, stream_element_t (* reducer)(stream_element_t, stream_element_t));
+stream_t * map(stream_t *, mapper_t);
+stream_t * filter(stream_t *, predicate_t);
+stream_element_t reduce(stream_t *, stream_element_t, reducer_t);
 
 static int count_nmatches(char *elements, int n_elements, size_t size, bool (*predicate)(void *));
 
-stream_t * map(stream_t * stream, stream_element_t (* mapper)(stream_element_t)) {
+stream_t * map(stream_t * stream, mapper_t mapper) {
     int n_elements = stream->n_elements;
     size_t size = stream->size;
     char * stream_elements_mapped = malloc(size * n_elements);
@@ -43,7 +47,7 @@ stream_t * map(stream_t * stream, stream_element_t (* mapper)(stream_element_t))
     return stream_result;
 }
 
-stream_t * filter(stream_t * stream, bool (* predicate)(void *)) {
+stream_t * filter(stream_t * stream, predicate_t predicate) {
     int n_elements = stream->n_elements;
     size_t size = stream->size;
     int n_matches = count_nmatches(stream->stream_elements, n_elements, size, predicate);
@@ -64,7 +68,7 @@ stream_t * filter(stream_t * stream, bool (* predicate)(void *)) {
     return make_stream(stream_elements_filtered, n_matches, size);
 }
 
-static int count_nmatches(char * elements, int n_elements, size_t size, bool (* predicate)(void *)) {
+static int count_nmatches(char * elements, int n_elements, size_t size, predicate_t predicate) {
     int count = 0;
 
     for(int i = 0; i < n_elements; i++){
@@ -76,7 +80,7 @@ static int count_nmatches(char * elements, int n_elements, size_t size, bool (* 
     return count;
 }
 
-stream_element_t reduce(stream_t * stream, stream_element_t initial, stream_element_t (* reducer)(stream_element_t, stream_element_t)){
+stream_element_t reduce(stream_t * stream, stream_element_t initial, reducer_t reducer){
     int n_elements = stream->n_elements;
     size_t size = stream->size;
     stream_element_t actumulator = initial;

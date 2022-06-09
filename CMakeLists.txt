@@ -3,4 +3,4 @@ project(programac C)
 
 set(CMAKE_C_STANDARD 99)
 
-add_executable(programac streams.c)
+add_executable(programac streams.c.c)

@@ -101,7 +101,7 @@
 		{
 			"backtrace" : 1,
 			"compileGroupIndex" : 0,
-			"path" : "streams.c",
+			"path" : "random.c",
 			"sourceGroupIndex" : 0
 		}
 	],
