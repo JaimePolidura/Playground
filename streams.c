@@ -14,16 +14,29 @@ struct Stream {
 typedef char * stream_element_t;
 typedef struct Stream stream_t;
 
-typedef stream_element_t(* mapper_t)(stream_element_t);
-typedef bool(* predicate_t)(void *);
-typedef stream_element_t(* reducer_t)(stream_element_t, stream_element_t);
+typedef stream_element_t (* mapper_t)(stream_element_t);
+typedef bool (* predicate_t)(void *);
+typedef stream_element_t (* reducer_t)(stream_element_t, stream_element_t);
+typedef void (* consumer_t)(stream_element_t);
 
 stream_t * make_stream(void *, int, size_t);
 stream_t * map(stream_t *, mapper_t);
 stream_t * filter(stream_t *, predicate_t);
+stream_t * foreach(stream_t *, consumer_t);
 stream_element_t reduce(stream_t *, stream_element_t, reducer_t);
 
 static int count_nmatches(char *elements, int n_elements, size_t size, bool (*predicate)(void *));
+
+stream_t * foreach(stream_t * stream, consumer_t consumer){
+    int n_elements = stream->n_elements;
+    size_t size = stream->size;
+
+    for(int i = 0; i < n_elements; i++){
+        stream_element_t * elementToMap = (stream_element_t *) (stream->stream_elements + (i * size));
+
+        consumer(* elementToMap);
+    }
+}
 
 stream_t * map(stream_t * stream, mapper_t mapper) {
     int n_elements = stream->n_elements;

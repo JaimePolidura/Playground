@@ -49,8 +49,8 @@ cmake_ninja_workdir = C$:/programacion/C-Playground/cmake-build-debug/
 
 build cmake_object_order_depends_target_programac: phony || CMakeFiles/programac.dir
 
-build CMakeFiles/programac.dir/random.c.obj: C_COMPILER__programac_Debug C$:/programacion/C-Playground/random.c || cmake_object_order_depends_target_programac
-  DEP_FILE = CMakeFiles\programac.dir\random.c.obj.d
+build CMakeFiles/programac.dir/streams.c.obj: C_COMPILER__programac_Debug C$:/programacion/C-Playground/streams.c || cmake_object_order_depends_target_programac
+  DEP_FILE = CMakeFiles\programac.dir\streams.c.obj.d
   FLAGS = -g -std=gnu99
   OBJECT_DIR = CMakeFiles\programac.dir
   OBJECT_FILE_DIR = CMakeFiles\programac.dir
@@ -63,7 +63,7 @@ build CMakeFiles/programac.dir/random.c.obj: C_COMPILER__programac_Debug C$:/pro
 #############################################
 # Link the executable programac.exe
 
-build programac.exe: C_EXECUTABLE_LINKER__programac_Debug CMakeFiles/programac.dir/random.c.obj
+build programac.exe: C_EXECUTABLE_LINKER__programac_Debug CMakeFiles/programac.dir/streams.c.obj
   FLAGS = -g
   LINK_LIBRARIES = -lkernel32 -luser32 -lgdi32 -lwinspool -lshell32 -lole32 -loleaut32 -luuid -lcomdlg32 -ladvapi32
   OBJECT_DIR = CMakeFiles\programac.dir

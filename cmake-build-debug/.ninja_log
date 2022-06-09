@@ -1,6 +1,5 @@
 # ninja log v5
-130	309	6764114499608244	programac.exe	e94d0e6faa55d46
-2	129	6764114497855892	CMakeFiles/programac.dir/streams.c.obj	37c2ea2fd294395d
-1	328	6764172432197763	build.ninja	99843e5cca759649
-0	129	6764172995612194	CMakeFiles/programac.dir/random.c.obj	856bfd282b2ba604
 131	301	6764172997296155	programac.exe	67f71f998d18a237
+2	129	6764114497855892	CMakeFiles/programac.dir/streams.c.obj	37c2ea2fd294395d
+1	328	6764930548815111	build.ninja	99843e5cca759649
+0	129	6764172995612194	CMakeFiles/programac.dir/random.c.obj	856bfd282b2ba604
