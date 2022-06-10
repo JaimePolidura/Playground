@@ -20,14 +20,14 @@ typedef stream_element_t (* reducer_t)(stream_element_t, stream_element_t);
 typedef void (* consumer_t)(stream_element_t);
 
 stream_t * make_stream(void *, int, size_t);
-stream_t * map(stream_t *, mapper_t);
-stream_t * filter(stream_t *, predicate_t);
-stream_t * foreach(stream_t *, consumer_t);
-stream_element_t reduce(stream_t *, stream_element_t, reducer_t);
+stream_t * map(const stream_t *, mapper_t);
+stream_t * filter(const stream_t *, predicate_t);
+void foreach(const stream_t *, consumer_t);
+stream_element_t reduce(const stream_t *, stream_element_t, reducer_t);
 
 static int count_nmatches(char *elements, int n_elements, size_t size, bool (*predicate)(void *));
 
-stream_t * foreach(stream_t * stream, consumer_t consumer){
+void foreach(const stream_t * stream, consumer_t consumer){
     int n_elements = stream->n_elements;
     size_t size = stream->size;
 
@@ -36,11 +36,9 @@ stream_t * foreach(stream_t * stream, consumer_t consumer){
 
         consumer(* elementToMap);
     }
-
-    return stream;
 }
 
-stream_t * map(stream_t * stream, mapper_t mapper) {
+stream_t * map(const stream_t * stream, mapper_t mapper) {
     int n_elements = stream->n_elements;
     size_t size = stream->size;
     char * stream_elements_mapped = malloc(size * n_elements);
@@ -62,7 +60,7 @@ stream_t * map(stream_t * stream, mapper_t mapper) {
     return stream_result;
 }
 
-stream_t * filter(stream_t * stream, predicate_t predicate) {
+stream_t * filter(const stream_t * stream, predicate_t predicate) {
     int n_elements = stream->n_elements;
     size_t size = stream->size;
     int n_matches = count_nmatches(stream->stream_elements, n_elements, size, predicate);
@@ -95,7 +93,7 @@ static int count_nmatches(char * elements, int n_elements, size_t size, predicat
     return count;
 }
 
-stream_element_t reduce(stream_t * stream, stream_element_t initial, reducer_t reducer){
+stream_element_t reduce(const stream_t * stream, stream_element_t initial, reducer_t reducer){
     int n_elements = stream->n_elements;
     size_t size = stream->size;
     stream_element_t actumulator = initial;
