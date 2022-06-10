@@ -36,6 +36,8 @@ stream_t * foreach(stream_t * stream, consumer_t consumer){
 
         consumer(* elementToMap);
     }
+
+    return stream;
 }
 
 stream_t * map(stream_t * stream, mapper_t mapper) {
