@@ -1,0 +1,8 @@
+# ninja log v5
+4	531	6765980861111207	CMakeFiles/programacpp.dir/main.cpp.obj	988ffd23ad36bb32
+847	1149	6766003109646393	programacpp.exe	ae6224e23acc6c37
+5	825	6765980408441956	CMakeFiles/programacpp.dir/bank/accounts/account.cpp.obj	4e0fdc5715f2d83d
+1	414	6766554783993421	build.ninja	9c7e73dd43fafc50
+16	271	6765980402901965	CMakeFiles/programacpp.dir/bank/bank.cpp.obj	7eea5c54b252f8f3
+23	791	6765980408071982	CMakeFiles/programacpp.dir/bank/accounts/accountrep.cpp.obj	3c061d94fcd89824
+4	846	6766003106656417	CMakeFiles/programacpp.dir/bank/list/linkedlist.cpp.obj	6ceecd9f94256f0b
