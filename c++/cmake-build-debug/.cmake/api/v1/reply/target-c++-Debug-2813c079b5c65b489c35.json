@@ -2,10 +2,10 @@
 	"artifacts" : 
 	[
 		{
-			"path" : "programacpp.exe"
+			"path" : "c++.exe"
 		},
 		{
-			"path" : "programacpp.pdb"
+			"path" : "c++.pdb"
 		}
 	],
 	"backtrace" : 1,
@@ -60,7 +60,7 @@
 			]
 		}
 	],
-	"id" : "programacpp::@6890427a1f51a3e7e1df",
+	"id" : "c++::@6890427a1f51a3e7e1df",
 	"link" : 
 	{
 		"commandFragments" : 
@@ -80,8 +80,8 @@
 		],
 		"language" : "CXX"
 	},
-	"name" : "programacpp",
-	"nameOnDisk" : "programacpp.exe",
+	"name" : "c++",
+	"nameOnDisk" : "c++.exe",
 	"paths" : 
 	{
 		"build" : ".",
@@ -155,12 +155,12 @@
 		{
 			"backtrace" : 1,
 			"compileGroupIndex" : 0,
-			"path" : "bank/list/linkedlist.cpp",
+			"path" : "list/linkedlist.cpp",
 			"sourceGroupIndex" : 0
 		},
 		{
 			"backtrace" : 1,
-			"path" : "bank/list/linkedlist.h",
+			"path" : "list/linkedlist.h",
 			"sourceGroupIndex" : 1
 		}
 	],

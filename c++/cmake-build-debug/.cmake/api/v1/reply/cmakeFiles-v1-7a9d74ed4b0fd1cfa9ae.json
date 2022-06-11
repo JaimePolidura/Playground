@@ -149,8 +149,8 @@
 	"kind" : "cmakeFiles",
 	"paths" : 
 	{
-		"build" : "C:/programacion/programacpp/cmake-build-debug",
-		"source" : "C:/programacion/programacpp"
+		"build" : "C:/programacion/OtherLanguagesPlayground/c++/cmake-build-debug",
+		"source" : "C:/programacion/OtherLanguagesPlayground/c++"
 	},
 	"version" : 
 	{

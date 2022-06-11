@@ -36,7 +36,8 @@ class Linkedlist {
         }else{
             Node * newNode = new Node(nullptr, this->last, value);
             this->last->next = newNode;
-            this->size = ++this->size;
+            this->last = newNode;
+            this->size = this->size + 1;
         }
 
         return this;
@@ -97,14 +98,14 @@ class Linkedlist {
                 return actualNode->value;
         }
 
-        return nullptr;
+        return "";
     }
 
     public: String get(int requiredIndex){
-        if(requiredIndex < 0 || requiredIndex + 1 >= size)
-            return nullptr;
-
         auto actualIndex = -1;
+
+        if(requiredIndex < 0 || requiredIndex + 1 >= size)
+            return "";
 
         for(Node * actualNode = this->first; actualNode != nullptr; actualNode = actualNode->next){
             actualIndex++;
@@ -112,7 +113,7 @@ class Linkedlist {
                 return actualNode->value;
         }
 
-        return nullptr;
+        return "";
     }
 
     public: int indexOf(String value){
@@ -120,7 +121,7 @@ class Linkedlist {
 
         for(Node * actualNode = this->first; actualNode != nullptr; actualNode = actualNode->next){
             actualIndex++;
-            if(actualNode->value.compare(value))
+            if(actualNode->value.compare(value) == 0)
                 break;
         }
 
@@ -128,7 +129,7 @@ class Linkedlist {
     }
 
     private: Node * getNode(int requiredIndex){
-        auto actualIndex = 0;
+        auto actualIndex = -1;
 
         for(Node * actualNode = this->first; actualNode != nullptr; actualNode = actualNode->next){
             actualIndex++;
@@ -143,13 +144,11 @@ class Linkedlist {
 int main(){
     Linkedlist * list = new Linkedlist();
 
-    list->add("jaime")
-            ->add("pedro")
-            ->add("paula")
-            ->add("javier");
-
-    auto text = list->get(2);
+    list->add("jaime");
+    list->add("pedro");
+    list->add("paula");
+    list->add("javier");
 
 
-    printf("%s", text.c_str());
+    std::cout << result << std::endl;
 }

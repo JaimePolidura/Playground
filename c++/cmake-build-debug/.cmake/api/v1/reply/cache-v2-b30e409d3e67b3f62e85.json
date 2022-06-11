@@ -55,7 +55,7 @@
 				}
 			],
 			"type" : "INTERNAL",
-			"value" : "c:/programacion/programacpp/cmake-build-debug"
+			"value" : "c:/programacion/OtherLanguagesPlayground/c++/cmake-build-debug"
 		},
 		{
 			"name" : "CMAKE_CACHE_MAJOR_VERSION",
@@ -623,7 +623,7 @@
 				}
 			],
 			"type" : "INTERNAL",
-			"value" : "C:/programacion/programacpp"
+			"value" : "C:/programacion/OtherLanguagesPlayground/c++"
 		},
 		{
 			"name" : "CMAKE_INSTALL_PREFIX",
@@ -1239,7 +1239,7 @@
 				}
 			],
 			"type" : "STATIC",
-			"value" : "C:/programacion/programacpp/cmake-build-debug"
+			"value" : "C:/programacion/OtherLanguagesPlayground/c++/cmake-build-debug"
 		},
 		{
 			"name" : "programacpp_IS_TOP_LEVEL",
@@ -1263,7 +1263,7 @@
 				}
 			],
 			"type" : "STATIC",
-			"value" : "C:/programacion/programacpp"
+			"value" : "C:/programacion/OtherLanguagesPlayground/c++"
 		}
 	],
 	"kind" : "cache",

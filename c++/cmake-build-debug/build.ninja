@@ -39,70 +39,70 @@ include CMakeFiles/rules.ninja
 #############################################
 # Logical path to working directory; prefix for absolute paths.
 
-cmake_ninja_workdir = C$:/programacion/programacpp/cmake-build-debug/
+cmake_ninja_workdir = C$:/programacion/OtherLanguagesPlayground/c++/cmake-build-debug/
 # =============================================================================
-# Object build statements for EXECUTABLE target programacpp
+# Object build statements for EXECUTABLE target c++
 
 
 #############################################
-# Order-only phony target for programacpp
+# Order-only phony target for c++
 
-build cmake_object_order_depends_target_programacpp: phony || CMakeFiles/programacpp.dir
+build cmake_object_order_depends_target_c++: phony || CMakeFiles/c++.dir
 
-build CMakeFiles/programacpp.dir/main.cpp.obj: CXX_COMPILER__programacpp_Debug C$:/programacion/programacpp/main.cpp || cmake_object_order_depends_target_programacpp
-  DEP_FILE = CMakeFiles\programacpp.dir\main.cpp.obj.d
+build CMakeFiles/c++.dir/main.cpp.obj: CXX_COMPILER__c.2b.2b_Debug C$:/programacion/OtherLanguagesPlayground/c++/main.cpp || cmake_object_order_depends_target_c++
+  DEP_FILE = CMakeFiles\c++.dir\main.cpp.obj.d
   FLAGS = -g
-  OBJECT_DIR = CMakeFiles\programacpp.dir
-  OBJECT_FILE_DIR = CMakeFiles\programacpp.dir
+  OBJECT_DIR = CMakeFiles\c++.dir
+  OBJECT_FILE_DIR = CMakeFiles\c++.dir
 
-build CMakeFiles/programacpp.dir/bank/bank.cpp.obj: CXX_COMPILER__programacpp_Debug C$:/programacion/programacpp/bank/bank.cpp || cmake_object_order_depends_target_programacpp
-  DEP_FILE = CMakeFiles\programacpp.dir\bank\bank.cpp.obj.d
+build CMakeFiles/c++.dir/bank/bank.cpp.obj: CXX_COMPILER__c.2b.2b_Debug C$:/programacion/OtherLanguagesPlayground/c++/bank/bank.cpp || cmake_object_order_depends_target_c++
+  DEP_FILE = CMakeFiles\c++.dir\bank\bank.cpp.obj.d
   FLAGS = -g
-  OBJECT_DIR = CMakeFiles\programacpp.dir
-  OBJECT_FILE_DIR = CMakeFiles\programacpp.dir\bank
+  OBJECT_DIR = CMakeFiles\c++.dir
+  OBJECT_FILE_DIR = CMakeFiles\c++.dir\bank
 
-build CMakeFiles/programacpp.dir/bank/accounts/account.cpp.obj: CXX_COMPILER__programacpp_Debug C$:/programacion/programacpp/bank/accounts/account.cpp || cmake_object_order_depends_target_programacpp
-  DEP_FILE = CMakeFiles\programacpp.dir\bank\accounts\account.cpp.obj.d
+build CMakeFiles/c++.dir/bank/accounts/account.cpp.obj: CXX_COMPILER__c.2b.2b_Debug C$:/programacion/OtherLanguagesPlayground/c++/bank/accounts/account.cpp || cmake_object_order_depends_target_c++
+  DEP_FILE = CMakeFiles\c++.dir\bank\accounts\account.cpp.obj.d
   FLAGS = -g
-  OBJECT_DIR = CMakeFiles\programacpp.dir
-  OBJECT_FILE_DIR = CMakeFiles\programacpp.dir\bank\accounts
+  OBJECT_DIR = CMakeFiles\c++.dir
+  OBJECT_FILE_DIR = CMakeFiles\c++.dir\bank\accounts
 
-build CMakeFiles/programacpp.dir/bank/accounts/accountrep.cpp.obj: CXX_COMPILER__programacpp_Debug C$:/programacion/programacpp/bank/accounts/accountrep.cpp || cmake_object_order_depends_target_programacpp
-  DEP_FILE = CMakeFiles\programacpp.dir\bank\accounts\accountrep.cpp.obj.d
+build CMakeFiles/c++.dir/bank/accounts/accountrep.cpp.obj: CXX_COMPILER__c.2b.2b_Debug C$:/programacion/OtherLanguagesPlayground/c++/bank/accounts/accountrep.cpp || cmake_object_order_depends_target_c++
+  DEP_FILE = CMakeFiles\c++.dir\bank\accounts\accountrep.cpp.obj.d
   FLAGS = -g
-  OBJECT_DIR = CMakeFiles\programacpp.dir
-  OBJECT_FILE_DIR = CMakeFiles\programacpp.dir\bank\accounts
+  OBJECT_DIR = CMakeFiles\c++.dir
+  OBJECT_FILE_DIR = CMakeFiles\c++.dir\bank\accounts
 
-build CMakeFiles/programacpp.dir/bank/list/linkedlist.cpp.obj: CXX_COMPILER__programacpp_Debug C$:/programacion/programacpp/bank/list/linkedlist.cpp || cmake_object_order_depends_target_programacpp
-  DEP_FILE = CMakeFiles\programacpp.dir\bank\list\linkedlist.cpp.obj.d
+build CMakeFiles/c++.dir/list/linkedlist.cpp.obj: CXX_COMPILER__c.2b.2b_Debug C$:/programacion/OtherLanguagesPlayground/c++/list/linkedlist.cpp || cmake_object_order_depends_target_c++
+  DEP_FILE = CMakeFiles\c++.dir\list\linkedlist.cpp.obj.d
   FLAGS = -g
-  OBJECT_DIR = CMakeFiles\programacpp.dir
-  OBJECT_FILE_DIR = CMakeFiles\programacpp.dir\bank\list
+  OBJECT_DIR = CMakeFiles\c++.dir
+  OBJECT_FILE_DIR = CMakeFiles\c++.dir\list
 
 
 # =============================================================================
-# Link build statements for EXECUTABLE target programacpp
+# Link build statements for EXECUTABLE target c++
 
 
 #############################################
-# Link the executable programacpp.exe
+# Link the executable c++.exe
 
-build programacpp.exe: CXX_EXECUTABLE_LINKER__programacpp_Debug CMakeFiles/programacpp.dir/main.cpp.obj CMakeFiles/programacpp.dir/bank/bank.cpp.obj CMakeFiles/programacpp.dir/bank/accounts/account.cpp.obj CMakeFiles/programacpp.dir/bank/accounts/accountrep.cpp.obj CMakeFiles/programacpp.dir/bank/list/linkedlist.cpp.obj
+build c++.exe: CXX_EXECUTABLE_LINKER__c.2b.2b_Debug CMakeFiles/c++.dir/main.cpp.obj CMakeFiles/c++.dir/bank/bank.cpp.obj CMakeFiles/c++.dir/bank/accounts/account.cpp.obj CMakeFiles/c++.dir/bank/accounts/accountrep.cpp.obj CMakeFiles/c++.dir/list/linkedlist.cpp.obj
   FLAGS = -g
   LINK_LIBRARIES = -lkernel32 -luser32 -lgdi32 -lwinspool -lshell32 -lole32 -loleaut32 -luuid -lcomdlg32 -ladvapi32
-  OBJECT_DIR = CMakeFiles\programacpp.dir
+  OBJECT_DIR = CMakeFiles\c++.dir
   POST_BUILD = cd .
   PRE_LINK = cd .
-  TARGET_FILE = programacpp.exe
-  TARGET_IMPLIB = libprogramacpp.dll.a
-  TARGET_PDB = programacpp.exe.dbg
+  TARGET_FILE = c++.exe
+  TARGET_IMPLIB = libc++.dll.a
+  TARGET_PDB = c++.exe.dbg
 
 
 #############################################
 # Utility command for edit_cache
 
 build CMakeFiles/edit_cache.util: CUSTOM_COMMAND
-  COMMAND = cmd.exe /C "cd /D C:\programacion\programacpp\cmake-build-debug && "C:\Program Files\JetBrains\CLion 2022.1.1\bin\cmake\win\bin\cmake.exe" -E echo "No interactive CMake dialog available.""
+  COMMAND = cmd.exe /C "cd /D C:\programacion\OtherLanguagesPlayground\c++\cmake-build-debug && "C:\Program Files\JetBrains\CLion 2022.1.1\bin\cmake\win\bin\cmake.exe" -E echo "No interactive CMake dialog available.""
   DESC = No interactive CMake dialog available...
   restat = 1
 
@@ -113,7 +113,7 @@ build edit_cache: phony CMakeFiles/edit_cache.util
 # Utility command for rebuild_cache
 
 build CMakeFiles/rebuild_cache.util: CUSTOM_COMMAND
-  COMMAND = cmd.exe /C "cd /D C:\programacion\programacpp\cmake-build-debug && "C:\Program Files\JetBrains\CLion 2022.1.1\bin\cmake\win\bin\cmake.exe" --regenerate-during-build -SC:\programacion\programacpp -BC:\programacion\programacpp\cmake-build-debug"
+  COMMAND = cmd.exe /C "cd /D C:\programacion\OtherLanguagesPlayground\c++\cmake-build-debug && "C:\Program Files\JetBrains\CLion 2022.1.1\bin\cmake\win\bin\cmake.exe" --regenerate-during-build -SC:\programacion\OtherLanguagesPlayground\c++ -BC:\programacion\OtherLanguagesPlayground\c++\cmake-build-debug"
   DESC = Running CMake to regenerate build system...
   pool = console
   restat = 1
@@ -123,7 +123,7 @@ build rebuild_cache: phony CMakeFiles/rebuild_cache.util
 # =============================================================================
 # Target aliases.
 
-build programacpp: phony programacpp.exe
+build c++: phony c++.exe
 
 # =============================================================================
 # Folder targets.
@@ -131,9 +131,9 @@ build programacpp: phony programacpp.exe
 # =============================================================================
 
 #############################################
-# Folder: C:/programacion/programacpp/cmake-build-debug
+# Folder: C:/programacion/OtherLanguagesPlayground/c++/cmake-build-debug
 
-build all: phony programacpp.exe
+build all: phony c++.exe
 
 # =============================================================================
 # Built-in targets
