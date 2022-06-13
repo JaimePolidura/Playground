@@ -3,13 +3,22 @@
 #include <vector>
 
 class InMemoryAccountRepository: AccountRepository {
-    private: Linkedlist<Account> accounts;
+private:
+    Linkedlist<Account> accounts;
 
-    public: void save(const Account * account) override{
+public:
+    void save(const Account * account) override{
+        int indexUserId = this->indexOfUserId(account->getAccountId());
+        bool userAlreadyContained = indexUserId != -1;
+
+        if(userAlreadyContained)
+            this->accounts.remove(indexUserId);
+
         this->accounts.add(* account);
     }
 
-    public: Account * findById(const String& accountId) override {
+
+    Account * findById(const String& accountId) override {
         for(int i = 0; i < this->accounts.getSize(); i++){
             Account account = this->accounts.get(i);
 
@@ -19,4 +28,16 @@ class InMemoryAccountRepository: AccountRepository {
 
         throw std::out_of_range("Account ID not found in array");
     };
+
+private:
+    int indexOfUserId(const String& userId){
+        for(int i = 0; i < this->accounts.getSize(); i++){
+            Account account = this->accounts.get(i);
+
+            if(account.getAccountId().compare(userId) == 0)
+                return i;
+        }
+
+        return -1;
+    }
 };

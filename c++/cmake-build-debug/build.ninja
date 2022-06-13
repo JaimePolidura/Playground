@@ -79,6 +79,30 @@ build CMakeFiles/c++.dir/bank/accounts/infrastructure/inmemaccountrepository.cpp
   OBJECT_DIR = CMakeFiles\c++.dir
   OBJECT_FILE_DIR = CMakeFiles\c++.dir\bank\accounts\infrastructure
 
+build CMakeFiles/c++.dir/bank/identifiers/domain/indentifiergenerator.cpp.obj: CXX_COMPILER__c.2b.2b_Debug C$:/programacion/OtherLanguagesPlayground/c++/bank/identifiers/domain/indentifiergenerator.cpp || cmake_object_order_depends_target_c++
+  DEP_FILE = CMakeFiles\c++.dir\bank\identifiers\domain\indentifiergenerator.cpp.obj.d
+  FLAGS = -g
+  OBJECT_DIR = CMakeFiles\c++.dir
+  OBJECT_FILE_DIR = CMakeFiles\c++.dir\bank\identifiers\domain
+
+build CMakeFiles/c++.dir/bank/loggers/domain/logger.cpp.obj: CXX_COMPILER__c.2b.2b_Debug C$:/programacion/OtherLanguagesPlayground/c++/bank/loggers/domain/logger.cpp || cmake_object_order_depends_target_c++
+  DEP_FILE = CMakeFiles\c++.dir\bank\loggers\domain\logger.cpp.obj.d
+  FLAGS = -g
+  OBJECT_DIR = CMakeFiles\c++.dir
+  OBJECT_FILE_DIR = CMakeFiles\c++.dir\bank\loggers\domain
+
+build CMakeFiles/c++.dir/bank/loggers/domain/loglevel.cpp.obj: CXX_COMPILER__c.2b.2b_Debug C$:/programacion/OtherLanguagesPlayground/c++/bank/loggers/domain/loglevel.cpp || cmake_object_order_depends_target_c++
+  DEP_FILE = CMakeFiles\c++.dir\bank\loggers\domain\loglevel.cpp.obj.d
+  FLAGS = -g
+  OBJECT_DIR = CMakeFiles\c++.dir
+  OBJECT_FILE_DIR = CMakeFiles\c++.dir\bank\loggers\domain
+
+build CMakeFiles/c++.dir/bank/loggers/infrastructure/inconsoleloggerinfo.cpp.obj: CXX_COMPILER__c.2b.2b_Debug C$:/programacion/OtherLanguagesPlayground/c++/bank/loggers/infrastructure/inconsoleloggerinfo.cpp || cmake_object_order_depends_target_c++
+  DEP_FILE = CMakeFiles\c++.dir\bank\loggers\infrastructure\inconsoleloggerinfo.cpp.obj.d
+  FLAGS = -g
+  OBJECT_DIR = CMakeFiles\c++.dir
+  OBJECT_FILE_DIR = CMakeFiles\c++.dir\bank\loggers\infrastructure
+
 
 # =============================================================================
 # Link build statements for EXECUTABLE target c++
@@ -87,7 +111,7 @@ build CMakeFiles/c++.dir/bank/accounts/infrastructure/inmemaccountrepository.cpp
 #############################################
 # Link the executable c++.exe
 
-build c++.exe: CXX_EXECUTABLE_LINKER__c.2b.2b_Debug CMakeFiles/c++.dir/main.cpp.obj CMakeFiles/c++.dir/bank/bank.cpp.obj CMakeFiles/c++.dir/bank/accounts/domain/account.cpp.obj CMakeFiles/c++.dir/bank/accounts/domain/accountrespostiory.cpp.obj CMakeFiles/c++.dir/bank/accounts/infrastructure/inmemaccountrepository.cpp.obj
+build c++.exe: CXX_EXECUTABLE_LINKER__c.2b.2b_Debug CMakeFiles/c++.dir/main.cpp.obj CMakeFiles/c++.dir/bank/bank.cpp.obj CMakeFiles/c++.dir/bank/accounts/domain/account.cpp.obj CMakeFiles/c++.dir/bank/accounts/domain/accountrespostiory.cpp.obj CMakeFiles/c++.dir/bank/accounts/infrastructure/inmemaccountrepository.cpp.obj CMakeFiles/c++.dir/bank/identifiers/domain/indentifiergenerator.cpp.obj CMakeFiles/c++.dir/bank/loggers/domain/logger.cpp.obj CMakeFiles/c++.dir/bank/loggers/domain/loglevel.cpp.obj CMakeFiles/c++.dir/bank/loggers/infrastructure/inconsoleloggerinfo.cpp.obj
   FLAGS = -g
   LINK_LIBRARIES = -lkernel32 -luser32 -lgdi32 -lwinspool -lshell32 -lole32 -loleaut32 -luuid -lcomdlg32 -ladvapi32
   OBJECT_DIR = CMakeFiles\c++.dir

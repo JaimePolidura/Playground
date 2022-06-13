@@ -84,7 +84,7 @@ class Linkedlist {
             backNodeToNodeToRemove->next = nextNodeToNodeToRemove;
         }
 
-        delete nodeToDelete;
+        free(nodeToDelete);
         this->size = this->size - 1;
 
         return true;

@@ -1,6 +1,6 @@
 # ninja log v5
 847	1149	6766003109646393	programacpp.exe	ae6224e23acc6c37
-1	414	6768368374272087	build.ninja	9c7e73dd43fafc50
+1	414	6768473857745132	build.ninja	9c7e73dd43fafc50
 1	733	6766563790952882	CMakeFiles/c++.dir/main.cpp.obj	1aef4d72533a5556
 697	910	6766574978560406	c++.exe	a1a8cc5dec0b3aa6
 19	202	6766563785702888	CMakeFiles/c++.dir/bank/bank.cpp.obj	c1f8060ade2f3cd
@@ -8,3 +8,12 @@
 6	759	6767606026163546	CMakeFiles/c++.dir/bank/accounts/account.cpp.obj	290112dc66cfbc8c
 29	758	6767606026153474	CMakeFiles/c++.dir/list/linkedlist.cpp.obj	9bba64a2306580e4
 4	498	6767611600846212	CMakeFiles/c++.dir/bank/accounts/accountrespostiory.cpp.obj	6e7f5b31dc2b333
+21	900	6768480170384557	CMakeFiles/c++.dir/bank/identifiers/domain/indentifiergenerator.cpp.obj	c337d116b500fd4
+13	906	6768480170384557	CMakeFiles/c++.dir/bank/accounts/domain/accountrespostiory.cpp.obj	20076685c0ad7660
+17	912	6768480170344543	CMakeFiles/c++.dir/bank/accounts/infrastructure/inmemaccountrepository.cpp.obj	a113d76617de5caf
+4	913	6768480170304595	CMakeFiles/c++.dir/bank/bank.cpp.obj	c1f8060ade2f3cd
+25	914	6768480170394541	CMakeFiles/c++.dir/bank/loggers/domain/logger.cpp.obj	455842395cd3fe7c
+9	915	6768480170414560	CMakeFiles/c++.dir/bank/accounts/domain/account.cpp.obj	2c314ab19452d152
+907	967	6768480171124521	CMakeFiles/c++.dir/bank/loggers/domain/loglevel.cpp.obj	88e9efae27791670
+901	1348	6768480174945055	CMakeFiles/c++.dir/bank/loggers/infrastructure/inconsoleloggerinfo.cpp.obj	ab607e1591f27ec5
+1348	1639	6768480177815431	c++.exe	a4cccc5054a906b9
