@@ -1,0 +1,14 @@
+//
+// Created by polid on 13/06/2022.
+//
+
+#ifndef PROGRAMACPP_INMEMACCOUNTREPOSITORY_H
+#define PROGRAMACPP_INMEMACCOUNTREPOSITORY_H
+
+
+class InMemoryAccountRepository {
+
+};
+
+
+#endif //PROGRAMACPP_INMEMACCOUNTREPOSITORY_H
