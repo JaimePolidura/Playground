@@ -13,10 +13,6 @@ class Node {
     public: Node(Node * next, Node * back, T value):
             next {next}, back {back}, value {value}
     {}
-
-    ~Node(){
-        delete value;
-    }
 };
 
 template<typename T>
@@ -26,7 +22,7 @@ class Linkedlist {
     private: int size;
 
     public: Linkedlist():
-            first {nullptr}, last {nullptr}, size{0}
+        first {nullptr}, last {nullptr}, size{0}
     {}
 
     ~Linkedlist(){
@@ -115,13 +111,13 @@ class Linkedlist {
                 return actualNode->value;
         }
 
-        return nullptr;
+        throw std::logic_error("index not found");
     }
 
     public: T get(int requiredIndex){
         auto actualIndex = -1;
 
-        if(requiredIndex < 0 || requiredIndex + 1 >= size)
+        if(requiredIndex < 0 || requiredIndex + 1 > size)
             throw std::out_of_range("Item in list out of bounds");
 
         for(Node<T> * actualNode = this->first; actualNode != nullptr; actualNode = actualNode->next){
@@ -129,6 +125,8 @@ class Linkedlist {
             if(actualIndex == requiredIndex)
                 return actualNode->value;
         }
+
+        throw std::logic_error("index not found");
     }
 
     public: int indexOf(T * value){
@@ -152,6 +150,6 @@ class Linkedlist {
                 return actualNode;
         }
 
-        return nullptr;
+        throw std::logic_error("index not found");
     }
 };

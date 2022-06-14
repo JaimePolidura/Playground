@@ -635,7 +635,7 @@
 				}
 			],
 			"type" : "PATH",
-			"value" : "C:/Program Files (x86)/programacpp"
+			"value" : "C:/Program Files (x86)/c__"
 		},
 		{
 			"name" : "CMAKE_LINKER",
@@ -851,7 +851,7 @@
 				}
 			],
 			"type" : "STATIC",
-			"value" : "programacpp"
+			"value" : "c__"
 		},
 		{
 			"name" : "CMAKE_RANLIB",
@@ -1230,7 +1230,7 @@
 			"value" : "FALSE"
 		},
 		{
-			"name" : "programacpp_BINARY_DIR",
+			"name" : "c___BINARY_DIR",
 			"properties" : 
 			[
 				{
@@ -1242,7 +1242,7 @@
 			"value" : "C:/programacion/OtherLanguagesPlayground/c++/cmake-build-debug"
 		},
 		{
-			"name" : "programacpp_IS_TOP_LEVEL",
+			"name" : "c___IS_TOP_LEVEL",
 			"properties" : 
 			[
 				{
@@ -1254,7 +1254,7 @@
 			"value" : "ON"
 		},
 		{
-			"name" : "programacpp_SOURCE_DIR",
+			"name" : "c___SOURCE_DIR",
 			"properties" : 
 			[
 				{

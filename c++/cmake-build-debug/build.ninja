@@ -11,7 +11,7 @@
 # =============================================================================
 
 # =============================================================================
-# Project: programacpp
+# Project: c__
 # Configurations: Debug
 # =============================================================================
 
@@ -41,85 +41,37 @@ include CMakeFiles/rules.ninja
 
 cmake_ninja_workdir = C$:/programacion/OtherLanguagesPlayground/c++/cmake-build-debug/
 # =============================================================================
-# Object build statements for EXECUTABLE target c++
+# Object build statements for EXECUTABLE target c__
 
 
 #############################################
-# Order-only phony target for c++
+# Order-only phony target for c__
 
-build cmake_object_order_depends_target_c++: phony || CMakeFiles/c++.dir
+build cmake_object_order_depends_target_c__: phony || CMakeFiles/c__.dir
 
-build CMakeFiles/c++.dir/main.cpp.obj: CXX_COMPILER__c.2b.2b_Debug C$:/programacion/OtherLanguagesPlayground/c++/main.cpp || cmake_object_order_depends_target_c++
-  DEP_FILE = CMakeFiles\c++.dir\main.cpp.obj.d
-  FLAGS = -g
-  OBJECT_DIR = CMakeFiles\c++.dir
-  OBJECT_FILE_DIR = CMakeFiles\c++.dir
-
-build CMakeFiles/c++.dir/bank/bank.cpp.obj: CXX_COMPILER__c.2b.2b_Debug C$:/programacion/OtherLanguagesPlayground/c++/bank/bank.cpp || cmake_object_order_depends_target_c++
-  DEP_FILE = CMakeFiles\c++.dir\bank\bank.cpp.obj.d
-  FLAGS = -g
-  OBJECT_DIR = CMakeFiles\c++.dir
-  OBJECT_FILE_DIR = CMakeFiles\c++.dir\bank
-
-build CMakeFiles/c++.dir/bank/accounts/domain/account.cpp.obj: CXX_COMPILER__c.2b.2b_Debug C$:/programacion/OtherLanguagesPlayground/c++/bank/accounts/domain/account.cpp || cmake_object_order_depends_target_c++
-  DEP_FILE = CMakeFiles\c++.dir\bank\accounts\domain\account.cpp.obj.d
-  FLAGS = -g
-  OBJECT_DIR = CMakeFiles\c++.dir
-  OBJECT_FILE_DIR = CMakeFiles\c++.dir\bank\accounts\domain
-
-build CMakeFiles/c++.dir/bank/accounts/domain/accountrespostiory.cpp.obj: CXX_COMPILER__c.2b.2b_Debug C$:/programacion/OtherLanguagesPlayground/c++/bank/accounts/domain/accountrespostiory.cpp || cmake_object_order_depends_target_c++
-  DEP_FILE = CMakeFiles\c++.dir\bank\accounts\domain\accountrespostiory.cpp.obj.d
-  FLAGS = -g
-  OBJECT_DIR = CMakeFiles\c++.dir
-  OBJECT_FILE_DIR = CMakeFiles\c++.dir\bank\accounts\domain
-
-build CMakeFiles/c++.dir/bank/accounts/infrastructure/inmemaccountrepository.cpp.obj: CXX_COMPILER__c.2b.2b_Debug C$:/programacion/OtherLanguagesPlayground/c++/bank/accounts/infrastructure/inmemaccountrepository.cpp || cmake_object_order_depends_target_c++
-  DEP_FILE = CMakeFiles\c++.dir\bank\accounts\infrastructure\inmemaccountrepository.cpp.obj.d
-  FLAGS = -g
-  OBJECT_DIR = CMakeFiles\c++.dir
-  OBJECT_FILE_DIR = CMakeFiles\c++.dir\bank\accounts\infrastructure
-
-build CMakeFiles/c++.dir/bank/identifiers/domain/indentifiergenerator.cpp.obj: CXX_COMPILER__c.2b.2b_Debug C$:/programacion/OtherLanguagesPlayground/c++/bank/identifiers/domain/indentifiergenerator.cpp || cmake_object_order_depends_target_c++
-  DEP_FILE = CMakeFiles\c++.dir\bank\identifiers\domain\indentifiergenerator.cpp.obj.d
-  FLAGS = -g
-  OBJECT_DIR = CMakeFiles\c++.dir
-  OBJECT_FILE_DIR = CMakeFiles\c++.dir\bank\identifiers\domain
-
-build CMakeFiles/c++.dir/bank/loggers/domain/logger.cpp.obj: CXX_COMPILER__c.2b.2b_Debug C$:/programacion/OtherLanguagesPlayground/c++/bank/loggers/domain/logger.cpp || cmake_object_order_depends_target_c++
-  DEP_FILE = CMakeFiles\c++.dir\bank\loggers\domain\logger.cpp.obj.d
-  FLAGS = -g
-  OBJECT_DIR = CMakeFiles\c++.dir
-  OBJECT_FILE_DIR = CMakeFiles\c++.dir\bank\loggers\domain
-
-build CMakeFiles/c++.dir/bank/loggers/domain/loglevel.cpp.obj: CXX_COMPILER__c.2b.2b_Debug C$:/programacion/OtherLanguagesPlayground/c++/bank/loggers/domain/loglevel.cpp || cmake_object_order_depends_target_c++
-  DEP_FILE = CMakeFiles\c++.dir\bank\loggers\domain\loglevel.cpp.obj.d
-  FLAGS = -g
-  OBJECT_DIR = CMakeFiles\c++.dir
-  OBJECT_FILE_DIR = CMakeFiles\c++.dir\bank\loggers\domain
-
-build CMakeFiles/c++.dir/bank/loggers/infrastructure/inconsoleloggerinfo.cpp.obj: CXX_COMPILER__c.2b.2b_Debug C$:/programacion/OtherLanguagesPlayground/c++/bank/loggers/infrastructure/inconsoleloggerinfo.cpp || cmake_object_order_depends_target_c++
-  DEP_FILE = CMakeFiles\c++.dir\bank\loggers\infrastructure\inconsoleloggerinfo.cpp.obj.d
-  FLAGS = -g
-  OBJECT_DIR = CMakeFiles\c++.dir
-  OBJECT_FILE_DIR = CMakeFiles\c++.dir\bank\loggers\infrastructure
+build CMakeFiles/c__.dir/pruebas.cpp.obj: CXX_COMPILER__c___Debug C$:/programacion/OtherLanguagesPlayground/c++/pruebas.cpp || cmake_object_order_depends_target_c__
+  DEP_FILE = CMakeFiles\c__.dir\pruebas.cpp.obj.d
+  FLAGS = -g -std=gnu++23
+  OBJECT_DIR = CMakeFiles\c__.dir
+  OBJECT_FILE_DIR = CMakeFiles\c__.dir
 
 
 # =============================================================================
-# Link build statements for EXECUTABLE target c++
+# Link build statements for EXECUTABLE target c__
 
 
 #############################################
-# Link the executable c++.exe
+# Link the executable c__.exe
 
-build c++.exe: CXX_EXECUTABLE_LINKER__c.2b.2b_Debug CMakeFiles/c++.dir/main.cpp.obj CMakeFiles/c++.dir/bank/bank.cpp.obj CMakeFiles/c++.dir/bank/accounts/domain/account.cpp.obj CMakeFiles/c++.dir/bank/accounts/domain/accountrespostiory.cpp.obj CMakeFiles/c++.dir/bank/accounts/infrastructure/inmemaccountrepository.cpp.obj CMakeFiles/c++.dir/bank/identifiers/domain/indentifiergenerator.cpp.obj CMakeFiles/c++.dir/bank/loggers/domain/logger.cpp.obj CMakeFiles/c++.dir/bank/loggers/domain/loglevel.cpp.obj CMakeFiles/c++.dir/bank/loggers/infrastructure/inconsoleloggerinfo.cpp.obj
+build c__.exe: CXX_EXECUTABLE_LINKER__c___Debug CMakeFiles/c__.dir/pruebas.cpp.obj
   FLAGS = -g
   LINK_LIBRARIES = -lkernel32 -luser32 -lgdi32 -lwinspool -lshell32 -lole32 -loleaut32 -luuid -lcomdlg32 -ladvapi32
-  OBJECT_DIR = CMakeFiles\c++.dir
+  OBJECT_DIR = CMakeFiles\c__.dir
   POST_BUILD = cd .
   PRE_LINK = cd .
-  TARGET_FILE = c++.exe
-  TARGET_IMPLIB = libc++.dll.a
-  TARGET_PDB = c++.exe.dbg
+  TARGET_FILE = c__.exe
+  TARGET_IMPLIB = libc__.dll.a
+  TARGET_PDB = c__.exe.dbg
 
 
 #############################################
@@ -147,7 +99,7 @@ build rebuild_cache: phony CMakeFiles/rebuild_cache.util
 # =============================================================================
 # Target aliases.
 
-build c++: phony c++.exe
+build c__: phony c__.exe
 
 # =============================================================================
 # Folder targets.
@@ -157,7 +109,7 @@ build c++: phony c++.exe
 #############################################
 # Folder: C:/programacion/OtherLanguagesPlayground/c++/cmake-build-debug
 
-build all: phony c++.exe
+build all: phony c__.exe
 
 # =============================================================================
 # Built-in targets
