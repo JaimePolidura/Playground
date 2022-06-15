@@ -49,6 +49,7 @@ Point& make_point () {
     return * point;
 };
 
+
 void show_point_ref(Point& point){
     printf("[Point] show_point_ref Direcccion ref: %i\n", &point);
     printf("[Color] show_point_ref Direcccion ref: %i\n", point.color);
@@ -69,7 +70,14 @@ int main(){
     show_point_ref(ref);
 
     printf("------ LIST --------\n");
-    list->add(ref);
+    Point * point = new Point();
+    point->x = 4;
+    point->y = 4;
+    point->z = 4;
+
+    list->add(point);
+    Point * fromList = list->get(0); //Works already tested
+
 
     return 0;
 }

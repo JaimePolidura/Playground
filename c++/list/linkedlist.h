@@ -8,9 +8,9 @@ template<typename T>
 class Node {
     public: Node * next;
     public: Node * back;
-    public: T value;
+    public: T * value;
 
-    public: Node(Node * next, Node * back, T value):
+    public: Node(Node * next, Node * back, T * value):
             next {next}, back {back}, value {value}
     {}
 };
@@ -41,13 +41,13 @@ public:
         return getNode(index)->value;
     }
 
-    Linkedlist * add(const T value);
+    Linkedlist * add(T * value);
     bool remove(int index);
     bool isEmpty();
     int getSize();
     void clear();
-    T findBy(bool (* predicate)(T value));
-    T get(int requiredIndex);
+    T * findBy(bool (* predicate)(T * value));
+    T * get(int requiredIndex);
     int indexOf(T * value);
 
     private: Node<T> * getNode(int requiredIndex){
@@ -64,15 +64,15 @@ public:
 };
 
 template<typename T>
-Linkedlist<T> * Linkedlist<T>::add(const T value){
+Linkedlist<T> * Linkedlist<T>::add(T * value){
     if(this->size == 0){
-        Node<T> * newNode = new Node<T>(nullptr, nullptr, value);
+        auto * newNode = new Node<T>(nullptr, nullptr, value);
         this->first = newNode;
         this->last = newNode;
         this->size = 1;
 
     }else{
-        Node<T> * newNode = new Node<T>(nullptr, this->last, value);
+        auto * newNode = new Node<T>(nullptr, this->last, value);
         this->last->next = newNode;
         this->last = newNode;
         this->size = this->size + 1;
@@ -135,7 +135,7 @@ void Linkedlist<T>::clear(){
 }
 
 template<typename T>
-T Linkedlist<T>::findBy(bool (* predicate)(T value)){
+T * Linkedlist<T>::findBy(bool (* predicate)(T * value)){
     for(Node<T> * actualNode = this->first; actualNode != nullptr; actualNode = actualNode->next){
         if(predicate(actualNode->value))
             return actualNode->value;
@@ -145,7 +145,7 @@ T Linkedlist<T>::findBy(bool (* predicate)(T value)){
 }
 
 template<typename T>
-T Linkedlist<T>::get(int requiredIndex){
+T * Linkedlist<T>::get(int requiredIndex){
     auto actualIndex = -1;
 
     if(requiredIndex < 0 || requiredIndex + 1 > size)
