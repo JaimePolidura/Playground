@@ -75,8 +75,9 @@ int main(){
     point->y = 4;
     point->z = 4;
 
-    list->add(point);
-    Point * fromList = list->get(0); //Works already tested
+    list->add(* point);
+    Point& fromList = list->get(0); //Works already tested
+    printf("joder %i %i %i", fromList.x, fromList.y, fromList.z);
 
 
     return 0;
