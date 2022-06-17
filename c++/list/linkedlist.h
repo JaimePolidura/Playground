@@ -1,8 +1,7 @@
 #pragma once
 
-#include <iostream>
-
-using String = std::string;
+#include "iterator/iterator.hpp"
+#include "iterator/iterable.hpp"
 
 template<typename T>
 class Node {
@@ -16,7 +15,26 @@ class Node {
 };
 
 template<typename T>
-class Linkedlist {
+class LinkedListIterator : public Iterator<T> {
+private:
+    Node<T> * node;
+
+public:
+    explicit LinkedListIterator(Node<T> * node) : node{node} {}
+
+    T& next() override {
+        T& value = this->node->value;
+        this->node = this->node->next;
+        return value;
+    }
+
+    bool hasNext() override {
+        return this->node == nullptr;
+    }
+};
+
+template<typename T>
+class Linkedlist : public Iterable<T>{
 private:
     Node<T> * first;
     Node<T> * last;
@@ -41,6 +59,7 @@ public:
         return getNode(index)->value;
     }
 
+    Iterator<T> * iterator() override;
     Linkedlist * add(T& value);
     bool remove(int index);
     bool isEmpty();
@@ -62,6 +81,11 @@ public:
         throw std::logic_error("index not found");
     }
 };
+
+template<typename T>
+Iterator<T> * Linkedlist<T>::iterator(){
+    return new LinkedListIterator<T>(this->first);
+}
 
 template<typename T>
 Linkedlist<T> * Linkedlist<T>::add(T& value){
