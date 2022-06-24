@@ -18,9 +18,10 @@ template<typename T>
 class LinkedListIterator : public Iterator<T> {
 private:
     Node<T> * node;
+    int nodeCount;
 
 public:
-    explicit LinkedListIterator(Node<T> * node) : node{node} {}
+    explicit LinkedListIterator(Node<T> * node) : node{node}, nodeCount{-1} {}
 
     T& next() override {
         T& value = this->node->value;
@@ -29,7 +30,26 @@ public:
     }
 
     bool hasNext() override {
-        return this->node == nullptr;
+        return this->node != nullptr;
+    }
+
+    int size() override {
+        if(this->nodeCount == -1){
+            this->nodeCount = this->countSize();
+        }
+        return this->nodeCount;
+    }
+
+private:
+    int countSize(){
+        Node<T> * actual = this->node;
+        int count = 0;
+        while (actual != nullptr){
+            count++;
+            actual = actual->next;
+        }
+
+        return count;
     }
 };
 
@@ -173,7 +193,7 @@ T& Linkedlist<T>::get(int requiredIndex){
     auto actualIndex = -1;
 
     if(requiredIndex < 0 || requiredIndex + 1 > size)
-        throw std::out_of_range("Item in list out of bounds");
+        throw std::out_of_range("Item in list out streamOf bounds");
 
     for(Node<T> * actualNode = this->first; actualNode != nullptr; actualNode = actualNode->next){
         actualIndex++;

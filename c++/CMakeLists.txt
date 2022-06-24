@@ -3,4 +3,4 @@ project(c__)
 
 set(CMAKE_CXX_STANDARD 23)
 
-add_executable(c__ pruebas.cpp list/iterator/iterator.hpp list/iterator/iterable.hpp)
+add_executable(c__ pruebas.cpp list/iterator/iterator.hpp list/iterator/iterable.hpp list/streams/stream.hpp)

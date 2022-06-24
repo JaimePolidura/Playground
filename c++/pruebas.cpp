@@ -1,5 +1,6 @@
 #include <iostream>
 #include "./list/linkedlist.h"
+#include "./list/streams/stream.hpp"
 
 struct Color {
     Color(){
@@ -42,8 +43,8 @@ public:
 };
 
 Point& make_point () {
-    Point * point = new Point();
-    Color * color = new Color();
+    auto * point = new Point();
+    auto * color = new Color();
     point->color = color;
 
     return * point;
@@ -70,7 +71,7 @@ int main(){
     show_point_ref(ref);
 
     printf("------ LIST --------\n");
-    Point * point = new Point();
+    auto * point = new Point();
     point->x = 4;
     point->y = 4;
     point->z = 4;
@@ -78,7 +79,18 @@ int main(){
     list->add(* point);
     Point& fromList = list->get(0); //Works already tested
     printf("joder %i %i %i", fromList.x, fromList.y, fromList.z);
+    
+    auto linkedlist2 = new Linkedlist<Point>();
+    auto * point2 = new Point();
+    point2->x = 0;
+    auto * point3 = new Point();
+    point3->x = -1;
 
+    linkedlist2->add(* point2);
+    linkedlist2->add(* point3);
+
+    Iterator<Point> * iterator = list->iterator();
+    Stream<Point> stream = streamOf(iterator);
 
     return 0;
 }
