@@ -77,7 +77,7 @@ int main(){
     point->z = 4;
 
     list->add(* point);
-    Point& fromList = list->get(0); //Works already tested
+    const Point& fromList = list->get(0); //Works already tested
     printf("joder %i %i %i", fromList.x, fromList.y, fromList.z);
     
     auto linkedlist2 = new Linkedlist<Point>();
@@ -89,8 +89,7 @@ int main(){
     linkedlist2->add(* point2);
     linkedlist2->add(* point3);
 
-    Iterator<Point> * iterator = list->iterator();
-    Stream<Point> stream = streamOf(iterator);
+    printf("---------------------------- LAMBDAS");
 
     return 0;
 }

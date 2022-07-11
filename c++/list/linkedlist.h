@@ -7,9 +7,9 @@ template<typename T>
 class Node {
     public: Node * next;
     public: Node * back;
-    public: T& value;
+    public: const T& value;
 
-    public: Node(Node * next, Node * back, T& value):
+    public: Node(Node * next, Node * back, const T& value):
             next {next}, back {back}, value {value}
     {}
 };
@@ -18,13 +18,13 @@ template<typename T>
 class LinkedListIterator : public Iterator<T> {
 private:
     Node<T> * node;
-    int nodeCount;
+    size_t nodeCount;
 
 public:
-    explicit LinkedListIterator(Node<T> * node) : node{node}, nodeCount{-1} {}
+    LinkedListIterator(Node<T> * node, size_t size) : node{node}, nodeCount{size} {}
 
-    T& next() override {
-        T& value = this->node->value;
+    const T& next() override {
+        const T& value = this->node->value;
         this->node = this->node->next;
         return value;
     }
@@ -33,23 +33,8 @@ public:
         return this->node != nullptr;
     }
 
-    int size() override {
-        if(this->nodeCount == -1){
-            this->nodeCount = this->countSize();
-        }
+    size_t size() override {
         return this->nodeCount;
-    }
-
-private:
-    int countSize(){
-        Node<T> * actual = this->node;
-        int count = 0;
-        while (actual != nullptr){
-            count++;
-            actual = actual->next;
-        }
-
-        return count;
     }
 };
 
@@ -80,13 +65,13 @@ public:
     }
 
     Iterator<T> * iterator() override;
-    Linkedlist * add(T& value);
+    Linkedlist * add(const T& value);
     bool remove(int index);
     bool isEmpty();
     int getSize();
     void clear();
-    T& findBy(bool (* predicate)(T& value));
-    T& get(int requiredIndex);
+    const T& findBy(bool (* predicate)(T& value));
+    const T& get(int requiredIndex);
     int indexOf(T& value);
 
     private: Node<T> * getNode(int requiredIndex){
@@ -104,11 +89,11 @@ public:
 
 template<typename T>
 Iterator<T> * Linkedlist<T>::iterator(){
-    return new LinkedListIterator<T>(this->first);
+    return new LinkedListIterator<T>(this->first, this->size);
 }
 
 template<typename T>
-Linkedlist<T> * Linkedlist<T>::add(T& value){
+Linkedlist<T> * Linkedlist<T>::add(const T& value){
     if(this->size == 0){
         auto * newNode = new Node<T>(nullptr, nullptr, value);
         this->first = newNode;
@@ -179,7 +164,7 @@ void Linkedlist<T>::clear(){
 }
 
 template<typename T>
-T& Linkedlist<T>::findBy(bool (* predicate)(T& value)){
+const T& Linkedlist<T>::findBy(bool (* predicate)(T& value)){
     for(Node<T> * actualNode = this->first; actualNode != nullptr; actualNode = actualNode->next){
         if(predicate(actualNode->value))
             return actualNode->value;
@@ -189,7 +174,7 @@ T& Linkedlist<T>::findBy(bool (* predicate)(T& value)){
 }
 
 template<typename T>
-T& Linkedlist<T>::get(int requiredIndex){
+const T& Linkedlist<T>::get(int requiredIndex){
     auto actualIndex = -1;
 
     if(requiredIndex < 0 || requiredIndex + 1 > size)
