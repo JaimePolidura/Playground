@@ -62,19 +62,20 @@ void show_point(Point point){
 }
 
 int main(){
-    auto * list = new Linkedlist<Point>();
-
     Point& ref = make_point(); //From heap
     printf("[Point] Direcccion: %i\n", &ref);
     printf("[Color] Direcccion: %i\n", ref.color);
     show_point(ref);
     show_point_ref(ref);
+    delete &ref;
 
     printf("------ LIST --------\n");
     auto * point = new Point();
     point->x = 4;
     point->y = 4;
     point->z = 4;
+
+    auto * list = new Linkedlist<Point>();
 
     list->add(* point);
     const Point& fromList = list->get(0); //Works already tested

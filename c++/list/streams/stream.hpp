@@ -38,23 +38,25 @@ public:
             * (result + i) = mappedValue;
         }
 
+        delete[] this->pointer;
+
         return Stream<O>{result, this->size};
+    }
+    
+    T& get(int position) {
+        if(position < 0 || position > this->size - 1)
+            throw std::out_of_range("Out of range error");
+
+        return this->pointer[position];
+    }
+
+    int count() {
+       return this->size;
     }
 
     Stream<T> forEach(void (* consumer)(T& element)) {
         for(int i = 0; i < this->size; i++)
            consumer(this->pointer[i]);
-    }
-
-private:
-    void deleteRange(int from, int to) {
-        printf("%i %i\n", from, to - 1);
-
-        for(int i = from; i < to - 1; i++) {
-            T * pointerToDelete = this->pointer + i;
-
-            delete pointerToDelete;
-        }
     }
 };
 

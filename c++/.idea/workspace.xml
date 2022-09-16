@@ -15,23 +15,18 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="923387d8-8ac7-4a38-8162-2a5b64fcc7d2" name="Changes" comment="">
-      <change afterPath="$PROJECT_DIR$/.idea/inspectionProfiles/Project_Default.xml" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/pruebas2.cpp" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/cmake-build-debug/CMakeFiles/c__.dir/containers.cpp.obj" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/containers.cpp" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/CMakeLists.txt" beforeDir="false" afterPath="$PROJECT_DIR$/CMakeLists.txt" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/cmake-build-debug/.cmake/api/v1/reply/cmakeFiles-v1-6df0bf84f71878e1acb5.json" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/cmake-build-debug/.cmake/api/v1/reply/codemodel-v2-3ca5dcc40e5a13b40bb1.json" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/cmake-build-debug/.cmake/api/v1/reply/index-2022-06-19T20-33-45-0852.json" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/cmake-build-debug/.cmake/api/v1/reply/target-c__-Debug-74da25f4fbd673f1816f.json" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/cmake-build-debug/.cmake/api/v1/reply/codemodel-v2-f58806a08c1e37282043.json" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/cmake-build-debug/.cmake/api/v1/reply/index-2022-06-28T21-10-27-0386.json" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/cmake-build-debug/.cmake/api/v1/reply/target-c__-Debug-5b9e5959bc9c724ea2ed.json" beforeDir="false" />
       <change beforePath="$PROJECT_DIR$/cmake-build-debug/.ninja_deps" beforeDir="false" afterPath="$PROJECT_DIR$/cmake-build-debug/.ninja_deps" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/cmake-build-debug/.ninja_log" beforeDir="false" afterPath="$PROJECT_DIR$/cmake-build-debug/.ninja_log" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/cmake-build-debug/CMakeFiles/c__.dir/pruebas.cpp.obj" beforeDir="false" afterPath="$PROJECT_DIR$/cmake-build-debug/CMakeFiles/c__.dir/pruebas.cpp.obj" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/cmake-build-debug/CMakeFiles/clion-log.txt" beforeDir="false" afterPath="$PROJECT_DIR$/cmake-build-debug/CMakeFiles/clion-log.txt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/cmake-build-debug/CMakeFiles/c__.dir/pruebas2.cpp.obj" beforeDir="false" afterPath="$PROJECT_DIR$/cmake-build-debug/CMakeFiles/c__.dir/pruebas2.cpp.obj" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/cmake-build-debug/Testing/Temporary/LastTest.log" beforeDir="false" afterPath="$PROJECT_DIR$/cmake-build-debug/Testing/Temporary/LastTest.log" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/cmake-build-debug/build.ninja" beforeDir="false" afterPath="$PROJECT_DIR$/cmake-build-debug/build.ninja" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/cmake-build-debug/c__.exe" beforeDir="false" afterPath="$PROJECT_DIR$/cmake-build-debug/c__.exe" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/list/iterator/iterator.hpp" beforeDir="false" afterPath="$PROJECT_DIR$/list/iterator/iterator.hpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/list/linkedlist.h" beforeDir="false" afterPath="$PROJECT_DIR$/list/linkedlist.h" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/list/streams/stream.hpp" beforeDir="false" afterPath="$PROJECT_DIR$/list/streams/stream.hpp" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/pruebas.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/pruebas.cpp" afterDir="false" />
     </list>
@@ -66,6 +61,8 @@
   <component name="PropertiesComponent">{
   &quot;keyToString&quot;: {
     &quot;ASKED_ADD_EXTERNAL_FILES&quot;: &quot;true&quot;,
+    &quot;RunOnceActivity.OpenProjectViewOnStart&quot;: &quot;true&quot;,
+    &quot;RunOnceActivity.ShowReadmeOnStart&quot;: &quot;true&quot;,
     &quot;RunOnceActivity.cidr.known.project.marker&quot;: &quot;true&quot;,
     &quot;SHARE_PROJECT_CONFIGURATION_FILES&quot;: &quot;true&quot;,
     &quot;WebServerToolWindowFactoryState&quot;: &quot;false&quot;,
@@ -133,7 +130,17 @@
       <workItem from="1656536250317" duration="735000" />
       <workItem from="1657052345811" duration="2206000" />
       <workItem from="1657140503408" duration="25000" />
-      <workItem from="1657576436313" duration="4000" />
+      <workItem from="1657576436313" duration="373000" />
+      <workItem from="1657577184440" duration="198000" />
+      <workItem from="1657577411497" duration="776000" />
+      <workItem from="1657578222137" duration="1691000" />
+      <workItem from="1657598080277" duration="42000" />
+      <workItem from="1658607516025" duration="32000" />
+      <workItem from="1660119294427" duration="32000" />
+      <workItem from="1660412421643" duration="34000" />
+      <workItem from="1661784072776" duration="85000" />
+      <workItem from="1661784174962" duration="2977000" />
+      <workItem from="1663347579017" duration="23000" />
     </task>
     <servers />
   </component>
