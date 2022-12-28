@@ -2,6 +2,7 @@
 
 #include "iterator/iterator.hpp"
 #include "iterator/iterable.hpp"
+#include <future>
 
 template<typename T>
 class Node {
@@ -52,7 +53,7 @@ public:
 
     ~Linkedlist(){
         Node<T> * actual = this->first;
-
+        
         while (actual != nullptr){
             Node<T> * nextToActual = actual->next;
             delete actual;
