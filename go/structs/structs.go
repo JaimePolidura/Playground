@@ -1,1 +1,5 @@
-package structs
+package main
+
+func main()  {
+
+}

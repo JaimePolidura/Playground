@@ -1,1 +1,1 @@
-module go
+module "go"
