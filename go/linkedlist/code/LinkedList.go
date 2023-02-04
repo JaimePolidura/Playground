@@ -107,6 +107,25 @@ func(linkedlist * LinkedList[T]) getLastNode() * linkedListNode[T] {
 	return node
 }
 
+func(linkedlist * LinkedList[T]) Iterate() Iterator[T] {
+	return &LinkedListIterator[T]{linkedlist.first}
+}
+
+type LinkedListIterator[T comparable] struct {
+	actualNode * linkedListNode[T]
+}
+
+func(iterator * LinkedListIterator[T]) HastNext() bool {
+	return iterator.actualNode != nil
+}
+
+func(iterator * LinkedListIterator[T]) Next() T {
+	data := iterator.actualNode.data
+	iterator.actualNode = iterator.actualNode.next
+
+	return data
+}
+
 type linkedListNode[T comparable] struct {
 	next * linkedListNode[T]
 	back * linkedListNode[T]
