@@ -3,7 +3,7 @@ package main
 import (
 	"encoding/gob"
 	"fmt"
-	"go/server/useless"
+	"go/introduction/server/useless"
 	"net"
 )
 
