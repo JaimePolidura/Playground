@@ -39,7 +39,7 @@ func minMaxOf(args ...int) (int, int)  {
 	return minMax(array)
 }
 
-func minMax(arr []int) (int, int) {
+func minMax(arr []int) (min int, max int){
 	actualMax := arr[0]
 	actualMin := arr[0]
 

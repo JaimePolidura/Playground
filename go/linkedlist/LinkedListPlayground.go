@@ -12,9 +12,9 @@ func main()  {
 	list.Add(2)
 	list.Add(3)
 
-	iterator := list.Iterate()
-
-	for iterator.HastNext() {
-		fmt.Println("Value ", iterator.Next())
-	}
+	list.Stream().Filter(func(it int) bool {
+		return it % 2 == 0
+	}).Foreach(func(it int) {
+		fmt.Println(it)
+	})
 }

@@ -17,6 +17,15 @@ func(linkedlist * LinkedList[T]) Contains (value T) bool {
 	return linkedlist.getNodeByData(value) != nil
 }
 
+func (linkedlist * LinkedList[T]) Stream() * Stream[T]{
+	return &Stream[T]{iterator: linkedlist.Iterate()}
+}
+
+func (linkedlist * LinkedList[T]) Clear() {
+	linkedlist.first = nil
+	linkedlist.size = 0
+}
+
 func(linkedlist * LinkedList[T]) Get (targetIndex uint32) (T, error) {
 	var defaultIfNotFound T
 	var actualIndex uint32 = 0
