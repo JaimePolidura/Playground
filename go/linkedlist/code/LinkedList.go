@@ -1,5 +1,9 @@
 package code
 
+import (
+	"errors"
+)
+
 type LinkedList[T comparable] struct {
 	first * linkedListNode[T]
 	size uint32
@@ -13,24 +17,24 @@ func(linkedlist * LinkedList[T]) Contains (value T) bool {
 	return linkedlist.getNodeByData(value) != nil
 }
 
-func(linkedlist * LinkedList[T]) Get (targetIndex uint32) (T, bool) { //data, error
+func(linkedlist * LinkedList[T]) Get (targetIndex uint32) (T, error) {
 	var defaultIfNotFound T
 	var actualIndex uint32 = 0
 	node := linkedlist.first
 
 	for node != nil {
 		if actualIndex == targetIndex {
-			return node.data, false
+			return node.data, errors.New("not found")
 		}
 		if actualIndex > targetIndex {
-			return defaultIfNotFound, true
+			return defaultIfNotFound, errors.New("not found")
 		}
 
 		node = node.next
 		actualIndex++
 	}
 
-	return defaultIfNotFound, true
+	return defaultIfNotFound, nil
 }
 
 func(linkedlist * LinkedList[T]) Remove (value T) bool {
