@@ -30,6 +30,8 @@ func main()  {
 					fmt.Println(msg1)
 				case msg2 := <- c2:
 					fmt.Println(msg2)
+				case <-time.After(time.Second * 2):
+					fmt.Println("timeout c1")
 			}
 		}
 	}()
