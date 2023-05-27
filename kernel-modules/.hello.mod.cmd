@@ -1,0 +1,1 @@
+cmd_/home/jaime/OtherLanguagesPlayground/kernel-modules/hello.mod := printf '%s\n'   hello.o | awk '!x[$$0]++ { print("/home/jaime/OtherLanguagesPlayground/kernel-modules/"$$0) }' > /home/jaime/OtherLanguagesPlayground/kernel-modules/hello.mod
