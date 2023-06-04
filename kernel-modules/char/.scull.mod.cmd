@@ -1,0 +1,1 @@
+cmd_/home/jaime/OtherLanguagesPlayground/kernel-modules/char/scull.mod := printf '%s\n'   scull.o | awk '!x[$$0]++ { print("/home/jaime/OtherLanguagesPlayground/kernel-modules/char/"$$0) }' > /home/jaime/OtherLanguagesPlayground/kernel-modules/char/scull.mod

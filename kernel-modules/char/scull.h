@@ -8,20 +8,12 @@
 #include <linux/cdev.h>
 #include <linux/kernel.h>
 #include <asm/uaccess.h>
-
-struct scull_qset {
-	void **data;
-	struct scull_qset *next;
-};
-
-struct scull_dev {
-    struct scull_qset *data; /* Pointer to first quantum set */
-    int quantum; /* Tamaño máximo de los buffers en **data */
-    int qset; /* Tamaño máximo de punteros a buffers en **data */
-    unsigned long size; /* Suma total de todos los bytes guardados void**data */
-    unsigned int access_key; /* used by sculluid and scullpriv */
-    struct semaphore sem; /* mutual exclusion semaphore */
-    struct cdev cdev; /* Char device structure */
+   
+struct scull_data {
+    char * content;
+    int max_size;
+    int last_written_index;
+    struct cdev cdev;
 };
 
 int release_scull(struct inode *inode, struct file *file);
