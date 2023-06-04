@@ -1,0 +1,16 @@
+#!/bin/sh
+# $Id: scull_load,v 1.4 2004/11/03 06:19:49 rubini Exp $
+module="scull"
+device="scull"
+mode="664"
+
+make clean 
+make
+rmmod scull
+insmod ./scull.ko
+
+major=$(awk "\$2==\"$module\" {print \$1}" /proc/devices)
+
+rm -f /dev/scull0
+
+sudo mknod /dev/scull c ${major} 0
