@@ -11,6 +11,8 @@ insmod ./scull.ko
 
 major=$(awk "\$2==\"$module\" {print \$1}" /proc/devices)
 
+echo $major
+
 rm -f /dev/scull0
 
 sudo mknod /dev/scull c ${major} 0

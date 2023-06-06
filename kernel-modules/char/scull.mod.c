@@ -31,13 +31,18 @@ static const struct modversion_info ____versions[]
 __used __section("__versions") = {
 	{ 0xbdfb6dbb, "__fentry__" },
 	{ 0x5b8239ca, "__x86_return_thunk" },
+	{ 0x57bc19d2, "down_write" },
 	{ 0x88db9f48, "__check_object_size" },
 	{ 0x13c49cc2, "_copy_from_user" },
-	{ 0x6b10bee1, "_copy_to_user" },
-	{ 0xe3ec2f2b, "alloc_chrdev_region" },
+	{ 0xce807a25, "up_write" },
 	{ 0x92997ed8, "_printk" },
+	{ 0x668b19a1, "down_read" },
+	{ 0x6b10bee1, "_copy_to_user" },
+	{ 0x53b954a2, "up_read" },
+	{ 0xe3ec2f2b, "alloc_chrdev_region" },
 	{ 0x5f540977, "kmalloc_caches" },
 	{ 0xfa55b3ee, "kmem_cache_alloc_trace" },
+	{ 0x7b4da6ff, "__init_rwsem" },
 	{ 0xfd205a2d, "cdev_init" },
 	{ 0xb8b9f817, "kmalloc_order_trace" },
 	{ 0x3fd2f8f8, "cdev_add" },
@@ -51,4 +56,4 @@ __used __section("__versions") = {
 MODULE_INFO(depends, "");
 
 
-MODULE_INFO(srcversion, "B433EE4591F2CE2B1644054");
+MODULE_INFO(srcversion, "2D9CC3E489ADD95B2125926");

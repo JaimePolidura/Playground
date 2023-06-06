@@ -1,6 +1,7 @@
 #ifndef _SCULL_H_
 #define _SCULL_H_
 
+#include <linux/rwsem.h>
 #include <linux/module.h>
 #include <linux/sched.h>
 #include <linux/types.h>
@@ -14,6 +15,7 @@ struct scull_data {
     int max_size;
     int last_written_index;
     struct cdev cdev;
+    struct rw_semaphore sem;
 };
 
 int release_scull(struct inode *inode, struct file *file);

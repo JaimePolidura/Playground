@@ -30,12 +30,20 @@ ssize_t write_scull(struct file * file, const char __user * buffer, size_t count
     if(*f_pos + count >= scull_data->max_size){
         count = scull_data->max_size - *f_pos - 1;   
     }     
-    
+   
+    down_write(&scull_data->sem);
+ 
     if(copy_from_user(scull_data->content + *f_pos, buffer, count)){
+        up_write(&scull_data->sem);    
         return -EFAULT;    
     }    
 
+    printk(KERN_ALERT "Written %i bytes to file on posicion %lld\n", count, *f_pos);
+
     scull_data->last_written_index += count;
+    
+    up_write(&scull_data->sem);
+
     *f_pos += count;
 
     return count;
@@ -50,11 +58,18 @@ ssize_t read_scull(struct file *file, char __user *buffer, size_t count, loff_t 
     if(*f_pos + count >= scull_data->max_size) {
         count = scull_data->max_size - *f_pos - 1;
     }
+    
+    down_read(&scull_data->sem);
 
     if(copy_to_user(buffer, scull_data->content + *f_pos, count)){
-    	return -EFAULT;
+    	up_read(&scull_data->sem);
+        return -EFAULT;
     }
 	
+    up_read(&scull_data->sem);
+
+    printk(KERN_ALERT "Read %i bytes on position %lld\n", count, *f_pos);
+
     *f_pos += count;
 
     return count;
@@ -89,9 +104,13 @@ static int __init scull_init(void) {
     _scull_data = kmalloc(sizeof(struct scull_data), GFP_KERNEL);
     memset(_scull_data, 0, sizeof(struct scull_data));
 
+    struct rw_semaphore * sem;
+    init_rwsem(sem);
+
     cdev_init(&_scull_data->cdev, &my_fops);
     _scull_data->cdev.owner = THIS_MODULE;
     _scull_data->max_size = MAX_CONTENT_SIZE;    
+    _scull_data->sem = *sem;
     initializeScullDataContentPtr(_scull_data);
 
     result = cdev_add(&_scull_data->cdev, dev, 1);
@@ -107,6 +126,7 @@ static int __init scull_init(void) {
 
 static void __exit scull_exit(void) {
     unregister_chrdev_region(MKDEV(_SCULL_MAJOR, _SCULL_MINOR), 1);
+    
     cdev_del(&_scull_data->cdev);
     kfree(_scull_data->content);
     kfree(_scull_data);
