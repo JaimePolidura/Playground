@@ -6,8 +6,6 @@
 
 static void initializeScullDataContentPtr(struct scull_data * scull_data);
 
-#define MAX_CONTENT_SIZE 4096
-
 struct scull_data * _scull_data;
 
 int _SCULL_MAJOR;
@@ -19,7 +17,44 @@ struct file_operations my_fops = {
     .release = release_scull,
     .read = read_scull,
     .write = write_scull,
+    .unlocked_ioctl = ioctl_scull,
 };
+
+long ioctl_scull(struct file *file, unsigned int cmd, unsigned long arg) {
+    if(!capable(CAP_SYS_ADMIN))
+        return -EPERM;
+
+    struct scull_data * scull_data = file->private_data;
+
+    switch(cmd){
+        case SCULL_IOCTL_GROW:
+            unsigned short newSize = (unsigned short) arg;            
+            if(newSize <= 0 || newSize <= scull_data->max_size) 
+                return -EINVAL;
+
+            char * newPtr = kmalloc(sizeof(char) * newSize, GFP_KERNEL);
+            if(newPtr == NULL)
+                return -ENOMEM;
+
+            memset(scull_data->content, 0, scull_data->max_size);
+
+            up_write(&scull_data->sem);
+	            
+            memcpy(newPtr, scull_data->content, scull_data->max_size);            
+            kfree(scull_data->content);
+            scull_data->content = newPtr;
+            scull_data->max_size = newSize;        
+
+            down_write(&scull_data->sem);
+
+            break;
+
+        default:
+            return -EPERM;
+    }
+
+    return 0;    
+}
 
 ssize_t write_scull(struct file * file, const char __user * buffer, size_t count, loff_t *f_pos) {
     struct scull_data * scull_data = file->private_data;
@@ -76,8 +111,8 @@ ssize_t read_scull(struct file *file, char __user *buffer, size_t count, loff_t 
 }
 
 static void initializeScullDataContentPtr(struct scull_data * scull_data) {
-    scull_data->content = kmalloc(sizeof(struct scull_data) * MAX_CONTENT_SIZE, GFP_KERNEL);
-    memset(scull_data->content, 0, MAX_CONTENT_SIZE);
+    scull_data->content = kmalloc(sizeof(char) * SCULL_INITIAL_MAX_CONTENT_SIZE, GFP_KERNEL);
+    memset(scull_data->content, 0, SCULL_INITIAL_MAX_CONTENT_SIZE);
 }
 
 int release_scull(struct inode *inode, struct file *file) {
@@ -109,7 +144,7 @@ static int __init scull_init(void) {
 
     cdev_init(&_scull_data->cdev, &my_fops);
     _scull_data->cdev.owner = THIS_MODULE;
-    _scull_data->max_size = MAX_CONTENT_SIZE;    
+    _scull_data->max_size = SCULL_INITIAL_MAX_CONTENT_SIZE;    
     _scull_data->sem = *sem;
     initializeScullDataContentPtr(_scull_data);
 
