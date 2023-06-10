@@ -58,7 +58,7 @@ ssize_t fifo_read(struct file * file, char __user * buffer, size_t count, loff_t
     }
     if(*f_pos + count >= fifo_device->max_size){
         count = fifo_device->max_size - *f_pos;   
-    }  
+    }
 
     if(mutex_lock_interruptible(&fifo_device->lock)){
         return -ERESTARTSYS;
@@ -66,6 +66,9 @@ ssize_t fifo_read(struct file * file, char __user * buffer, size_t count, loff_t
 
     while(fifo_device->some_data_present == 0){
         mutex_unlock(&fifo_device->lock);
+        if(file->f_flags & O_NONBLOCK){
+            return -EGAIN;
+        }
         if(wait_event_interruptible(fifo_device->read_queue, fifo_device->some_data_present == 0)){
             return -ERESTARTSYS;
         }
