@@ -1,0 +1,1 @@
+cmd_/home/jaime/OtherLanguagesPlayground/kernel-modules/char/fifo/Module.symvers := sed 's/ko$$/o/' /home/jaime/OtherLanguagesPlayground/kernel-modules/char/fifo/modules.order | scripts/mod/modpost -m -a  -o /home/jaime/OtherLanguagesPlayground/kernel-modules/char/fifo/Module.symvers -e -i Module.symvers   -T -
