@@ -9,10 +9,18 @@ struct file_operations FIFO_OPS = {
     .open = fifo_open,
     .read = fifo_read,
     .write = fifo_write,
+    .fasync = fifo_fasync,
+    .release = fifo_release,
 };
 
 int fifo_open(struct inode * inode, struct file * file) {
     file->private_data = container_of(inode->i_cdev, struct fifo_device, cdev);
+
+    return 0;
+}
+
+int fifo_release(struct inode * inode, struct file * file) {
+    fifo_fasync(-1, file, 0);
 
     return 0;
 }
@@ -44,6 +52,10 @@ ssize_t fifo_write(struct file * file, const char __user * buffer, size_t count,
     
     *f_pos += count;
 
+    if(fifo_device->async_queue){
+        kill_fasync(&fifo_device->async_queue, SIGIO, POLL_IN);
+    }
+
     return count;
 }
 
@@ -67,7 +79,7 @@ ssize_t fifo_read(struct file * file, char __user * buffer, size_t count, loff_t
     while(fifo_device->some_data_present == 0){
         mutex_unlock(&fifo_device->lock);
         if(file->f_flags & O_NONBLOCK){
-            return -EGAIN;
+            return -EAGAIN;
         }
         if(wait_event_interruptible(fifo_device->read_queue, fifo_device->some_data_present == 0)){
             return -ERESTARTSYS;
@@ -90,6 +102,12 @@ ssize_t fifo_read(struct file * file, char __user * buffer, size_t count, loff_t
     *f_pos += count;
 
     return count;
+}
+
+int fifo_fasync(int fd, struct file * file, int mode) {
+    struct fifo_device * fifo_device = file->private_data;
+
+    return fasync_helper(fd, file, mode, &fifo_device->async_queue);
 }
 
 static int __init fifo_init(void) {

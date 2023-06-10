@@ -1,0 +1,1 @@
+cmd_/home/jaime/OtherLanguagesPlayground/kernel-modules/char/fifo/myfifo.ko := ld -r -m elf_x86_64 -z noexecstack --build-id=sha1  -T scripts/module.lds -o /home/jaime/OtherLanguagesPlayground/kernel-modules/char/fifo/myfifo.ko /home/jaime/OtherLanguagesPlayground/kernel-modules/char/fifo/myfifo.o /home/jaime/OtherLanguagesPlayground/kernel-modules/char/fifo/myfifo.mod.o;  true
