@@ -19,7 +19,7 @@ int fifo_open(struct inode * inode, struct file * file) {
 
 ssize_t fifo_write(struct file * file, const char __user * buffer, size_t count, loff_t *f_pos) {
     struct fifo_device * fifo_device = file->private_data;
-	
+
     if(*f_pos > fifo_device->max_size){
         return -ENOMEM;
     }
@@ -50,16 +50,15 @@ ssize_t fifo_write(struct file * file, const char __user * buffer, size_t count,
 ssize_t fifo_read(struct file * file, char __user * buffer, size_t count, loff_t *f_pos) {
     struct fifo_device * fifo_device = file->private_data;
 
-    printk(KERN_ALERT "New read at position %i with count %i\n", *f_pos, count);
-
+    if(*f_pos >= fifo_device->max_size){
+        return 0;
+    }    
     if(*f_pos > fifo_device->max_size){
         return -ENOMEM;
     }
     if(*f_pos + count >= fifo_device->max_size){
         count = fifo_device->max_size - *f_pos;   
     }  
-
-    printk(KERN_ALERT "New read at position %i with count %i\n", *f_pos, count);
 
     if(mutex_lock_interruptible(&fifo_device->lock)){
         return -ERESTARTSYS;
