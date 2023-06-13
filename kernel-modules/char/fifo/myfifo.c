@@ -104,6 +104,22 @@ ssize_t fifo_read(struct file * file, char __user * buffer, size_t count, loff_t
     return count;
 }
 
+unsigned int fifo_poll(struct file * file, poll_table * wait) {
+    struct fifo_device * fifo_device = file->private_data;
+    unsigned int mask = 0;
+    
+    mutex_lock(&file->lock);
+    if(fifo_device->some_data_present == 1){
+        mask |= POLLIN | POLLRDBAND;
+    }
+    if(fifo_device->some_data_present == 1){
+        mask |= POLLOUT | POLLWRNORM;
+    }
+    mutex_unlock(&file->lock);
+
+    return mask;
+}
+
 int fifo_fasync(int fd, struct file * file, int mode) {
     struct fifo_device * fifo_device = file->private_data;
 

@@ -13,6 +13,7 @@
 #include <linux/ioctl.h>
 #include <linux/capability.h>
 #include <linux/fs.h>
+#include <linux/poll.h>
 
 #define FIFO_INITIAL_SIZE 1024
 
@@ -33,5 +34,6 @@ int fifo_release(struct inode * inode, struct file * file);
 int fifo_open(struct inode * inode, struct file * file);
 ssize_t fifo_write(struct file * file, const char __user * buffer, size_t count, loff_t *f_pos);
 ssize_t fifo_read(struct file * file, char __user * buffer, size_t count, loff_t *f_pos);
+unsigned int fifo_poll(struct file * file, poll_table * wait);
 
 #endif

@@ -1,8 +1,14 @@
 #include <linux/module.h>
 #include <linux/sched.h>
+#include <asm/msr.h>
+#include <linux/timex.h>
 
 static int __init hello_init(void){
-        printk(KERN_ALERT "Hello world, The current process is %i\n", current->pid);
+        unsigned long long tsc;
+        tsc = rdtsc();
+        
+        printk(KERN_ALERT "Hello world, The current process is %i and %i CPU cycles\n", current->pid, tsc);
+
 	return 0;
 }
 
