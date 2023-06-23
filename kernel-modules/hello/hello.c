@@ -2,12 +2,13 @@
 #include <linux/sched.h>
 #include <asm/msr.h>
 #include <linux/timex.h>
+#include <asm/page.h>
 
 static int __init hello_init(void){
         unsigned long long tsc;
         tsc = rdtsc();
         
-        printk(KERN_ALERT "Hello world, The current process is %i and %i CPU cycles\n", current->pid, tsc);
+        printk(KERN_ALERT "Hello world, The current process is %i and %i CPU cycles. The current page size %i\n", current->pid, tsc, PAGE_SIZE);
 
 	return 0;
 }
