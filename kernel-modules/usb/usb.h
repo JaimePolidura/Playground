@@ -37,6 +37,8 @@ ssize_t usb_file_read(struct file * file, char __user * buffer, size_t count, lo
 ssize_t usb_file_write(struct file * file, const char __user * buffer, size_t count, loff_t *f_pos);
 int usb_file_release(struct inode * inode, struct file * file);
 
+static void usb_file_written_callback(struct urb * urb);
+
 inline bool is_endpoint_in(struct usb_endpoint_descriptor * endpoint, struct my_usb_driver * driver);
 inline bool is_endpoint_out(struct usb_endpoint_descriptor * endpoint, struct my_usb_driver * driver);
 
