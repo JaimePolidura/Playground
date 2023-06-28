@@ -6,6 +6,7 @@ static unsigned long my_io_buffer = 0;
 static int my_io_irq = 5;
 
 DECLARE_WAIT_QUEUE_HEAD(my_io_queue);
+DECLARE_TASKLET(my_io_tasklet, my_io_tasklet_handler);
 
 struct file_operations my_io_fops = {
 	.owner = THIS_MODULE,
@@ -14,13 +15,24 @@ struct file_operations my_io_fops = {
     .open = io_open,
 };
 
-irqreturn_t my_io_interrupt(int irq, void * dev_id) {    
-    outb(inb(my_io_base) & 0x7F, my_io_base); //Clearn device's pending interrupt bit
+irqreturn_t my_io_interrupt(int irq, void * dev_id) {
+    int value = inb(my_io_base);
+
+    if(!(value & 0x80)) {
+        return -IRQ_NONE;
+    }
+
+    outb(value & 0x7F, my_io_base); //Clearn device's pending interrupt bit
     
     printk(KERN_ALERT "Interrupt served!");
     wake_up_interruptible(&my_io_queue);
+    tasklet_schedule(&my_io_tasklet);
 
     return IRQ_HANDLED;
+}
+
+void my_io_tasklet_handler(struct tasklet_struct * unused) {
+    printk(KERN_ALERT "Tasklet served");
 }
 
 int io_open(struct inode * inode, struct file * file) {
@@ -56,7 +68,7 @@ ssize_t io_write(struct file * file, const char __user * buffer, size_t count, l
 
 ssize_t io_read(struct file * file, char __user * buffer, size_t count, loff_t * f_pos) {
     struct my_io_device * my_io_device = file->private_data;
-    
+
     while(my_io_device->can_read == 0){
         if(wait_event_interruptible(my_io_queue, my_io_device->can_read == 0)){
             return -ERESTARTSYS;

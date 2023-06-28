@@ -18,6 +18,7 @@ struct my_io_device {
 };
 
 irqreturn_t my_io_interrupt(int irq, void * dev_id);
+void my_io_tasklet_handler (struct tasklet_struct * unused);
 
 ssize_t io_read(struct file * file, char __user * buffer, size_t count, loff_t * f_pos);
 ssize_t io_write(struct file * file, const char __user * buffer, size_t count, loff_t * f_pos);
