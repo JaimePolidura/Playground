@@ -15,6 +15,7 @@
 #include <linux/fs.h>
 #include <linux/poll.h>
 #include <linux/usb.h>
+#include <linux/kobject.h>
 
 #define USB_PRODUCT_ID 0xfff0
 #define USB_VENDOR_ID 0xfff0
@@ -27,6 +28,8 @@ struct my_usb_driver {
 
     __u8 out_endpointAdr;
     __u8 in_endpointAdr;
+
+    struct kobject kobj;
 };
 
 int usb_probe(struct usb_interface * interface, const struct usb_device_id * id);

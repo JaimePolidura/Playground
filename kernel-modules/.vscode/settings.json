@@ -4,6 +4,7 @@
         "fs.h": "c",
         "module.h": "c",
         "types.h": "c",
-        "capability.h": "c"
+        "capability.h": "c",
+        "kernel.h": "c"
     }
 }

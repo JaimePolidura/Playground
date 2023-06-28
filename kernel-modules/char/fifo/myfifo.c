@@ -45,7 +45,7 @@ ssize_t fifo_write(struct file * file, const char __user * buffer, size_t count,
     }    
 
     fifo_device->some_data_present = 1;
-
+    
     mutex_unlock(&fifo_device->lock);
 
     wake_up_interruptible(&fifo_device->read_queue);
@@ -88,7 +88,7 @@ ssize_t fifo_read(struct file * file, char __user * buffer, size_t count, loff_t
             return -ERESTARTSYS;
         }
     }
-
+    
     if(copy_to_user(buffer, fifo_device->content + *f_pos, count)) {
         mutex_unlock(&fifo_device->lock);
         return -ERESTARTSYS;

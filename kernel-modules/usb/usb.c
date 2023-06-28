@@ -95,7 +95,7 @@ int usb_probe(struct usb_interface * interface, const struct usb_device_id * id)
     
     for(int i = 0; i < interface_desc->desc.bNumEndpoints; i++){
         struct usb_endpoint_descriptor * endpoint = &interface_desc->endpoint[i].desc;
-        
+
         if(is_endpoint_in(endpoint, my_driver)) {
 			my_driver->buffer_size = endpoint->wMaxPacketSize;
 			my_driver->in_endpointAdr = endpoint->bEndpointAddress;
