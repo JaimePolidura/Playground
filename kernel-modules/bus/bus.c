@@ -86,7 +86,6 @@ module_exit(bus_exit);
 
 EXPORT_SYMBOL(register_my_bus_driver);
 EXPORT_SYMBOL(unregister_my_bus_driver);
-
 EXPORT_SYMBOL(register_my_bus_device);
 EXPORT_SYMBOL(unregister_my_bus_device);
 
