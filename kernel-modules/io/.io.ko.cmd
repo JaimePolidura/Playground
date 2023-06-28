@@ -1,1 +1,0 @@
-cmd_/home/jaime/OtherLanguagesPlayground/kernel-modules/io/io.ko := ld -r -m elf_x86_64 -z noexecstack --build-id=sha1  -T scripts/module.lds -o /home/jaime/OtherLanguagesPlayground/kernel-modules/io/io.ko /home/jaime/OtherLanguagesPlayground/kernel-modules/io/io.o /home/jaime/OtherLanguagesPlayground/kernel-modules/io/io.mod.o;  true
