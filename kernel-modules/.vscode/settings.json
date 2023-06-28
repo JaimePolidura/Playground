@@ -5,6 +5,8 @@
         "module.h": "c",
         "types.h": "c",
         "capability.h": "c",
-        "kernel.h": "c"
+        "kernel.h": "c",
+        "chrono": "c",
+        "algorithm": "c"
     }
 }

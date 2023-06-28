@@ -13,7 +13,7 @@ static struct pci_driver pci_driver = {
 	.remove = pci_remove,
 };
 
-static int probe(struct pci_dev * device, const struct pci_device_id *id) {
+static int pci_probe(struct pci_dev * device, const struct pci_device_id *id) {
     if(pci_enable_device(dev)) {
 		return -ENODEV;
 	}
@@ -21,7 +21,7 @@ static int probe(struct pci_dev * device, const struct pci_device_id *id) {
     return 0;
 }
 
-static void remove(struct pci_dev *dev) {
+static void pci_remove(struct pci_dev *dev) {
     //Nada necesario
 }
 
