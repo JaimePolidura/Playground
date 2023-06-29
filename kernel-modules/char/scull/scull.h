@@ -16,7 +16,7 @@
 #define SCULL_IOCTL_GROW _IOW(SCULL_IOCTL_MAGIC, 0, unsigned short)
 #define SCULL_INITIAL_MAX_CONTENT_SIZE 4096
 
-struct scull_data {
+struct scull {
     char * content;
     int max_size;
     int last_written_index;
@@ -24,12 +24,10 @@ struct scull_data {
     struct rw_semaphore sem;
 };
 
-int release_scull(struct inode *inode, struct file *file);
-int open_scull(struct inode * inode, struct file * file);
-ssize_t write_scull(struct file * file, const char __user * buffer, size_t count, loff_t *f_pos);
-ssize_t read_scull(struct file * file, char __user * buffer, size_t count, loff_t *f_pos);
-long ioctl_scull(struct file *file, unsigned int cmd, unsigned long arg);
-
-struct scull_qset *scull_follow(struct scull_dev *dev, int n);
+int scull_release(struct inode *inode, struct file *file);
+int scull_open(struct inode * inode, struct file * file);
+ssize_t scull_write(struct file * file, const char __user * buffer, size_t count, loff_t *f_pos);
+ssize_t scull_read(struct file * file, char __user * buffer, size_t count, loff_t *f_pos);
+long scull_ioctl(struct file *file, unsigned int cmd, unsigned long arg);
 
 #endif

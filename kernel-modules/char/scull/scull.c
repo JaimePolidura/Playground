@@ -1,51 +1,45 @@
 #include "scull.h"
 
-/*
-    Ignoro los errores que pude producir kmalloc
-*/
-
-static void initializeScullDataContentPtr(struct scull_data * scull_data);
-
-struct scull_data * _scull_data;
+struct scull * my_scull;
 
 int _SCULL_MAJOR;
 int _SCULL_MINOR = 0;
 
 struct file_operations my_fops = {
     .owner = THIS_MODULE,
-    .open = open_scull,
-    .release = release_scull,
-    .read = read_scull,
-    .write = write_scull,
-    .unlocked_ioctl = ioctl_scull,
+    .open = scull_open,
+    .release = scull_release,
+    .read = scull_read,
+    .write = scull_write,
+    .unlocked_ioctl = scull_ioctl,
 };
 
-long ioctl_scull(struct file *file, unsigned int cmd, unsigned long arg) {
+long scull_ioctl(struct file *file, unsigned int cmd, unsigned long arg) {
     if(!capable(CAP_SYS_ADMIN))
         return -EPERM;
 
-    struct scull_data * scull_data = file->private_data;
+    struct scull * scull = file->private_data;
 
     switch(cmd){
         case SCULL_IOCTL_GROW:
             unsigned short newSize = (unsigned short) arg;            
-            if(newSize <= 0 || newSize <= scull_data->max_size) 
+            if(newSize <= 0 || newSize <= scull->max_size) 
                 return -EINVAL;
 
-            char * newPtr = kmalloc(sizeof(char) * newSize, GFP_KERNEL);
+            char * newPtr = kzalloc(sizeof(char) * newSize, GFP_KERNEL);
             if(newPtr == NULL)
                 return -ENOMEM;
 
-            memset(scull_data->content, 0, scull_data->max_size);
+            memset(scull->content, 0, scull->max_size);
 
-            up_write(&scull_data->sem);
+            up_write(&scull->sem);
 	            
-            memcpy(newPtr, scull_data->content, scull_data->max_size);            
-            kfree(scull_data->content);
-            scull_data->content = newPtr;
-            scull_data->max_size = newSize;        
+            memcpy(newPtr, scull->content, scull->max_size);            
+            kfree(scull->content);
+            scull->content = newPtr;
+            scull->max_size = newSize;        
 
-            down_write(&scull_data->sem);
+            down_write(&scull->sem);
 
             break;
 
@@ -56,52 +50,52 @@ long ioctl_scull(struct file *file, unsigned int cmd, unsigned long arg) {
     return 0;    
 }
 
-ssize_t write_scull(struct file * file, const char __user * buffer, size_t count, loff_t *f_pos) {
-    struct scull_data * scull_data = file->private_data;
+ssize_t scull_write(struct file * file, const char __user * buffer, size_t count, loff_t *f_pos) {
+    struct scull * scull = file->private_data;
 	
-    if(*f_pos > scull_data->max_size){
+    if(*f_pos > scull->max_size){
         return -ENOMEM;
     }
-    if(*f_pos + count >= scull_data->max_size){
-        count = scull_data->max_size - *f_pos - 1;   
+    if(*f_pos + count >= scull->max_size){
+        count = scull->max_size - *f_pos - 1;   
     }     
    
-    down_write(&scull_data->sem);
+    down_write(&scull->sem);
  
-    if(copy_from_user(scull_data->content + *f_pos, buffer, count)){
-        up_write(&scull_data->sem);    
+    if(copy_from_user(scull->content + *f_pos, buffer, count)){
+        up_write(&scull->sem);    
         return -EFAULT;    
     }    
 
     printk(KERN_ALERT "Written %i bytes to file on posicion %lld\n", count, *f_pos);
 
-    scull_data->last_written_index += count;
+    scull->last_written_index += count;
     
-    up_write(&scull_data->sem);
+    up_write(&scull->sem);
 
     *f_pos += count;
 
     return count;
 }
 
-ssize_t read_scull(struct file *file, char __user *buffer, size_t count, loff_t *f_pos) {
-    struct scull_data * scull_data = file->private_data;
+ssize_t scull_read(struct file *file, char __user *buffer, size_t count, loff_t *f_pos) {
+    struct scull * scull = file->private_data;
     
-    if(*f_pos >= scull_data->max_size){
+    if(*f_pos >= scull->max_size){
         return -ENOMEM;
     }
-    if(*f_pos + count >= scull_data->max_size) {
-        count = scull_data->max_size - *f_pos - 1;
+    if(*f_pos + count >= scull->max_size) {
+        count = scull->max_size - *f_pos - 1;
     }
     
-    down_read(&scull_data->sem);
+    down_read(&scull->sem);
 
-    if(copy_to_user(buffer, scull_data->content + *f_pos, count)){
-    	up_read(&scull_data->sem);
+    if(copy_to_user(buffer, scull->content + *f_pos, count)){
+    	up_read(&scull->sem);
         return -EFAULT;
     }
 	
-    up_read(&scull_data->sem);
+    up_read(&scull->sem);
 
     printk(KERN_ALERT "Read %i bytes on position %lld\n", count, *f_pos);
 
@@ -110,18 +104,13 @@ ssize_t read_scull(struct file *file, char __user *buffer, size_t count, loff_t 
     return count;
 }
 
-static void initializeScullDataContentPtr(struct scull_data * scull_data) {
-    scull_data->content = kmalloc(sizeof(char) * SCULL_INITIAL_MAX_CONTENT_SIZE, GFP_KERNEL);
-    memset(scull_data->content, 0, SCULL_INITIAL_MAX_CONTENT_SIZE);
-}
-
-int release_scull(struct inode *inode, struct file *file) {
+int scull_release(struct inode *inode, struct file *file) {
     return 0;
 }
 
-int open_scull(struct inode * inode, struct file * file) {
-    file->private_data = container_of(inode->i_cdev, struct scull_data, cdev);
-
+int scull_open(struct inode * inode, struct file * file) {
+    file->private_data = container_of(inode->i_cdev, struct scull, cdev);
+    
     return 0;
 }
 
@@ -136,19 +125,18 @@ static int __init scull_init(void) {
         return result;
     }
 
-    _scull_data = kmalloc(sizeof(struct scull_data), GFP_KERNEL);
-    memset(_scull_data, 0, sizeof(struct scull_data));
-
+    my_scull = kzalloc(sizeof(struct scull), GFP_KERNEL);
+    
     struct rw_semaphore * sem;
     init_rwsem(sem);
 
-    cdev_init(&_scull_data->cdev, &my_fops);
-    _scull_data->cdev.owner = THIS_MODULE;
-    _scull_data->max_size = SCULL_INITIAL_MAX_CONTENT_SIZE;    
-    _scull_data->sem = *sem;
-    initializeScullDataContentPtr(_scull_data);
+    cdev_init(&my_scull->cdev, &my_fops);
+    my_scull->cdev.owner = THIS_MODULE;
+    my_scull->max_size = SCULL_INITIAL_MAX_CONTENT_SIZE;    
+    my_scull->sem = *sem;
+    my_scull->content = kzalloc(SCULL_INITIAL_MAX_CONTENT_SIZE, GFP_KERNEL);
 
-    result = cdev_add(&_scull_data->cdev, dev, 1);
+    result = cdev_add(&my_scull->cdev, dev, 1);
     if (result < 0) {
         printk(KERN_WARNING "scull: can't add char driver\n");
         return result;
@@ -162,9 +150,9 @@ static int __init scull_init(void) {
 static void __exit scull_exit(void) {
     unregister_chrdev_region(MKDEV(_SCULL_MAJOR, _SCULL_MINOR), 1);
     
-    cdev_del(&_scull_data->cdev);
-    kfree(_scull_data->content);
-    kfree(_scull_data);
+    cdev_del(&my_scull->cdev);
+    kfree(my_scull->content);
+    kfree(my_scull);
 
     printk(KERN_ALERT "Exited!");
 }
