@@ -5,14 +5,58 @@ struct scull * my_scull;
 int _SCULL_MAJOR;
 int _SCULL_MINOR = 0;
 
-struct file_operations my_fops = {
+struct file_operations scull_ops = {
     .owner = THIS_MODULE,
     .open = scull_open,
     .release = scull_release,
     .read = scull_read,
     .write = scull_write,
     .unlocked_ioctl = scull_ioctl,
+    .mmap = scull_mmap,
 };
+
+struct vm_operations_struct scull_mmap_vma_ops = {
+    .open = scull_mmap_vma_open,
+    .close = scull_mmap_vma_close,
+    .fault = scull_mmap_vma_fault,
+}; 
+
+int scull_mmap(struct file * file, struct vm_area_struct * vma) {
+    vma->vm_private_data = file->private_data;
+    vma->vm_ops = &scull_mmap_vma_ops;
+
+    scull_mmap_vma_open(vma);
+
+    return 0;
+}
+
+vm_fault_t scull_mmap_vma_fault(struct vm_fault *vmf) {
+    struct vm_area_struct * vma = vmf->vma;
+    unsigned long page_offset = vmf->pgoff << PAGE_SHIFT;
+    unsigned long bit_offset = vmf->address - vma->vm_start;
+    unsigned long offset = page_offset + bit_offset;
+    struct scull * scull = vma->vm_private_data;
+
+    if(offset > scull->max_size){
+        return NULL;
+    }
+
+    void * new_ptr = scull->content + offset;
+
+    struct page * page = virt_to_page(new_ptr);
+    get_page(page);
+    vmf->page = page;
+
+    return 0;
+}
+
+void scull_mmap_vma_open(struct vm_area_struct * vma) {
+    printk(KERN_ALERT "Forked from other process");
+}
+
+void scull_mmap_vma_close(struct vm_area_struct * vma) {
+    printk(KERN_ALERT "Closed");
+}
 
 long scull_ioctl(struct file *file, unsigned int cmd, unsigned long arg) {
     if(!capable(CAP_SYS_ADMIN))
@@ -130,7 +174,7 @@ static int __init scull_init(void) {
     struct rw_semaphore * sem;
     init_rwsem(sem);
 
-    cdev_init(&my_scull->cdev, &my_fops);
+    cdev_init(&my_scull->cdev, &scull_ops);
     my_scull->cdev.owner = THIS_MODULE;
     my_scull->max_size = SCULL_INITIAL_MAX_CONTENT_SIZE;    
     my_scull->sem = *sem;

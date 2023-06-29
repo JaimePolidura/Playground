@@ -11,10 +11,11 @@
 #include <asm/uaccess.h>
 #include <linux/ioctl.h>
 #include <linux/capability.h>
+#include <linux/mm.h>
 
 #define SCULL_IOCTL_MAGIC 'J'
 #define SCULL_IOCTL_GROW _IOW(SCULL_IOCTL_MAGIC, 0, unsigned short)
-#define SCULL_INITIAL_MAX_CONTENT_SIZE 4096
+#define SCULL_INITIAL_MAX_CONTENT_SIZE 16384
 
 struct scull {
     char * content;
@@ -24,10 +25,15 @@ struct scull {
     struct rw_semaphore sem;
 };
 
+void scull_mmap_vma_open(struct vm_area_struct * vma);
+void scull_mmap_vma_close(struct vm_area_struct * vma);
+vm_fault_t scull_mmap_vma_fault(struct vm_fault *vmf);
+
 int scull_release(struct inode *inode, struct file *file);
 int scull_open(struct inode * inode, struct file * file);
 ssize_t scull_write(struct file * file, const char __user * buffer, size_t count, loff_t *f_pos);
 ssize_t scull_read(struct file * file, char __user * buffer, size_t count, loff_t *f_pos);
 long scull_ioctl(struct file *file, unsigned int cmd, unsigned long arg);
+int scull_mmap(struct file * file, struct vm_area_struct * vma);
 
 #endif
