@@ -13,6 +13,7 @@ struct file_operations scull_ops = {
     .write = scull_write,
     .unlocked_ioctl = scull_ioctl,
     .mmap = scull_mmap,
+    .aio_write = scull_aio_write,
 };
 
 struct vm_operations_struct scull_mmap_vma_ops = {
@@ -58,6 +59,47 @@ void scull_mmap_vma_close(struct vm_area_struct * vma) {
     printk(KERN_ALERT "Closed");
 }
 
+ssize_t scull_aio_write(struct kiocb * iocb, const char __user * buffer, size_t count, loff_t pos) {
+    if(is_sync_kiocb(iocb)){
+        return scull_write(iocb->ki_filp, buffer, count, &pos);
+    }
+
+    struct scull * scull = iocb->ki_filp->private_data;
+    
+    if(pos > scull->max_size){
+        return -ENOMEM;
+    }
+    if(pos + count >= scull->max_size){
+        count = scull->max_size - pos - 1;   
+    }
+
+    struct scull_aio_async_work * async_work = kzalloc(sizeof(struct scull_aio_async_work), GFP_KERNEL);
+
+    async_work->buffer = kzalloc(count, GFP_KERNEL);  
+    async_work->iocb = iocb;
+    async_work->count = count;
+    async_work->pos = pos;
+    copy_from_user(async_work->buffer, buffer, count);  
+
+    DECLARE_WORK(aio_async_write, (void *) async_work);
+
+    return -EIOCBQUEUED;
+}
+
+void aio_async_write(void * data) {
+    struct scull_aio_async_work * async_write_work = (struct scull_aio_async_work *) data;
+    struct scull * scull = (struct scull *) async_write_work->iocb->ki_filp->private_data;
+
+    down_write(&scull->sem);
+    memcpy(scull->content + async_write_work->pos, async_write_work->buffer, async_write_work->count);
+    up_write(&scull->sem);
+
+    async_write_work->iocb->ki_complete(async_write_work->iocb, async_write_work->count);
+
+    kfree(async_write_work->buffer);
+    kfree(async_write_work);
+}
+
 long scull_ioctl(struct file *file, unsigned int cmd, unsigned long arg) {
     if(!capable(CAP_SYS_ADMIN))
         return -EPERM;
@@ -70,7 +112,7 @@ long scull_ioctl(struct file *file, unsigned int cmd, unsigned long arg) {
             if(newSize <= 0 || newSize <= scull->max_size) 
                 return -EINVAL;
 
-            char * newPtr = kzalloc(sizeof(char) * newSize, GFP_KERNEL);
+            char * newPtr = kzalloc(newSize, GFP_KERNEL);
             if(newPtr == NULL)
                 return -ENOMEM;
 
@@ -105,7 +147,7 @@ ssize_t scull_write(struct file * file, const char __user * buffer, size_t count
     }     
    
     down_write(&scull->sem);
- 
+    
     if(copy_from_user(scull->content + *f_pos, buffer, count)){
         up_write(&scull->sem);    
         return -EFAULT;    

@@ -12,6 +12,9 @@
 #include <linux/ioctl.h>
 #include <linux/capability.h>
 #include <linux/mm.h>
+#include <linux/aio.h>
+#include <linux/workqueue.h>
+#include <linux/fs.h>
 
 #define SCULL_IOCTL_MAGIC 'J'
 #define SCULL_IOCTL_GROW _IOW(SCULL_IOCTL_MAGIC, 0, unsigned short)
@@ -25,6 +28,14 @@ struct scull {
     struct rw_semaphore sem;
 };
 
+struct scull_aio_async_work {
+    struct kiocb * iocb;
+    struct work_struct work;
+    const char * buffer;
+    size_t count;
+    loff_t pos;
+};
+
 void scull_mmap_vma_open(struct vm_area_struct * vma);
 void scull_mmap_vma_close(struct vm_area_struct * vma);
 vm_fault_t scull_mmap_vma_fault(struct vm_fault *vmf);
@@ -35,5 +46,8 @@ ssize_t scull_write(struct file * file, const char __user * buffer, size_t count
 ssize_t scull_read(struct file * file, char __user * buffer, size_t count, loff_t *f_pos);
 long scull_ioctl(struct file *file, unsigned int cmd, unsigned long arg);
 int scull_mmap(struct file * file, struct vm_area_struct * vma);
+ssize_t scull_aio_write(struct kiocb * iocb, const char __user * buffer, size_t count, loff_t pos);
+
+void aio_async_write(void * data);
 
 #endif
