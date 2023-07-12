@@ -9,7 +9,7 @@ static const struct header_ops my_net_header_ops = {
 };
 
 static const struct net_device_ops my_net_netdev_ops = {
-	.ndo_open = net_open,
+    .ndo_open = net_open,
     .ndo_tx_timeout = net_tx_timeout,
     .ndo_start_xmit = net_start_xmit,
     .ndo_stop = net_release,
@@ -81,8 +81,8 @@ static void net_hardware_xmit(char * data_packet, int length_packet, struct net_
 
     struct my_net * my_net_source = netdev_priv(source_device);
     my_net_source->tx_packetlen = length_packet;
-	my_net_source->tx_packetdata = data_packet;
-	my_net_source->status |= MY_NET_PENDING_TRANSMISSION;
+    my_net_source->tx_packetdata = data_packet;
+    my_net_source->status |= MY_NET_PENDING_TRANSMISSION;
     net_interrupt_handler(0, source_device, NULL);
 }
 
@@ -104,7 +104,7 @@ void net_regular_interrupt_handler(int irq, void * dev_id, struct pt_regs * regs
     }
     if(status & MY_NET_PENDING_TRANSMISSION){
         my_net->stats.tx_packets++;
-		my_net->stats.tx_bytes += my_net->tx_packetlen;
+	my_net->stats.tx_bytes += my_net->tx_packetlen;
 
         dev_kfree_skb(my_net->sk_buff);
     }
@@ -114,7 +114,6 @@ void net_regular_interrupt_handler(int irq, void * dev_id, struct pt_regs * regs
     if(my_net_packet_recieved){
         net_release_packet(my_net_packet_recieved);        
     }
-
 }
 
 void net_napi_interrupt_handler(int irq, void * dev_id, struct pt_regs * regs) {
@@ -128,12 +127,12 @@ void net_napi_interrupt_handler(int irq, void * dev_id, struct pt_regs * regs) {
 
     if (status & MY_NET_PENDING_READ_PACKET_INTERRUPT) {
         net_read_enable_interrupts(net_device, 0); //Disable interrupciones
-		napi_schedule(&my_net->napi);
-	}
+	napi_schedule(&my_net->napi);
+    }
     if(status & MY_NET_PENDING_TRANSMISSION){
         my_net->stats.tx_packets++;
-		my_net->stats.tx_bytes += my_net->tx_packetlen;
-		dev_kfree_skb(my_net->sk_buff);
+	my_net->stats.tx_bytes += my_net->tx_packetlen;
+	dev_kfree_skb(my_net->sk_buff);
     }
 
     spin_unlock(&my_net->lock);
@@ -151,16 +150,16 @@ int net_poll(struct napi_struct * napi, int budget) { //Utilizado por napi cada 
         skb_reserve(sk_buff, 2);
         
         memcpy(skb_put(sk_buff, my_net_packet->length), my_net_packet->data, my_net_packet->length);
-		sk_buff->dev = device;
-		sk_buff->protocol = eth_type_trans(sk_buff, device);
-		sk_buff->ip_summed = CHECKSUM_UNNECESSARY;
+	sk_buff->dev = device;
+	sk_buff->protocol = eth_type_trans(sk_buff, device);
+	sk_buff->ip_summed = CHECKSUM_UNNECESSARY;
 
         netif_receive_skb(sk_buff);
     
         n_packets++;
         my_net->stats.rx_packets++;
-		my_net->stats.rx_bytes += my_net_packet->length;
-		net_release_packet(my_net_packet);
+	my_net->stats.rx_bytes += my_net_packet->length;
+	net_release_packet(my_net_packet);
     }
 
     if(n_packets < budget){ //Todos los paquetes han sido leidos, reestablecemos las interrupciones
@@ -206,7 +205,7 @@ int net_open(struct net_device * device) {
 
     if(MY_NET_USE_NAPI){
         struct my_net * my_net = netdev_priv(device);
-		napi_enable(&my_net->napi);
+	napi_enable(&my_net->napi);
     }
 
     netif_start_queue(device);
@@ -219,7 +218,7 @@ int net_release(struct net_device * device) {
 
     if(MY_NET_USE_NAPI){
         struct my_net * my_net = netdev_priv(device);
-		napi_enable(&my_net->napi);
+	napi_enable(&my_net->napi);
     }
 
     return 0;
@@ -233,10 +232,9 @@ void net_tx_timeout(struct net_device * device, unsigned int txqueue) {
     my_net->stats.tx_errors++;
 
     spin_lock(&my_net->lock);
-	net_destroy_packet_pool(device);
-	net_setup_packet_pool(device);
-	spin_unlock(&my_net->lock);
-
+    net_destroy_packet_pool(device);
+    net_setup_packet_pool(device);
+    spin_unlock(&my_net->lock);
     netif_wake_queue(device);
 }
 
@@ -268,8 +266,8 @@ static struct my_net_packet * net_dequeue_packet_from_read_queue(struct net_devi
     spin_lock_irqsave(&my_net->lock, flags);
 
     struct my_net_packet * dequeued_packet = my_net->read_queue;
-	if (dequeued_packet != NULL) {
-		my_net->read_queue = dequeued_packet->next;
+    if (dequeued_packet != NULL) {
+	my_net->read_queue = dequeued_packet->next;
     }
 
     spin_unlock_irqrestore(&my_net->lock, flags);
@@ -278,7 +276,7 @@ static struct my_net_packet * net_dequeue_packet_from_read_queue(struct net_devi
 }
 
 static void net_enqueue_packet_read_queue(struct net_device * device, struct my_net_packet * my_net_packet) {
-	struct my_net * my_net = netdev_priv(device);
+    struct my_net * my_net = netdev_priv(device);
     unsigned long flags;
 
     spin_lock_irqsave(&my_net->lock, flags);
@@ -325,8 +323,8 @@ static void net_release_packet(struct my_net_packet * my_net_packet) {
     my_net->packet_pool = my_net_packet;
     spin_unlock_irqrestore(&my_net->lock, flags);
 
-	if (netif_queue_stopped(my_net_packet->device) && my_net_packet->next == NULL){
-		netif_wake_queue(my_net_packet->device);
+    if (netif_queue_stopped(my_net_packet->device) && my_net_packet->next == NULL){
+	netif_wake_queue(my_net_packet->device);
     }
 }
 
@@ -346,8 +344,8 @@ void net_init_device(struct net_device * device) {
         netif_napi_add(device, &my_net->napi, net_poll, 2);
     }
 
-	spin_lock_init(&my_net->lock);
-	my_net->device = device;
+    spin_lock_init(&my_net->lock);
+    my_net->device = device;
 
     net_read_enable_interrupts(device, 1);		/* permitimos interruptciones */
     net_setup_packet_pool(device);
