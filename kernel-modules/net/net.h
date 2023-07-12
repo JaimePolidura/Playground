@@ -52,23 +52,23 @@
 
 struct my_net_packet {
     struct my_net_packet * next;
-	struct net_device * device;
-	int	length;
-	u8 data [ETH_DATA_LEN];
+    struct net_device * device;
+    int	length;
+    u8 data [ETH_DATA_LEN];
 };
 
 struct my_net {
-	struct net_device_stats stats;
-	int status;
-    struct my_net_packet * packet_pool;
-	struct my_net_packet * read_queue;  /* List of incoming packets */
-	int read_interruptions_enabled;
-	int tx_packetlen;
-	u8 * tx_packetdata;
-	struct sk_buff * sk_buff;
-	spinlock_t lock;
-	struct net_device * device;
-	struct napi_struct napi;
+   struct net_device_stats stats;
+   int status;
+   struct my_net_packet * packet_pool;
+   struct my_net_packet * read_queue;  /* List of incoming packets */
+   int read_interruptions_enabled;
+   int tx_packetlen;
+   u8 * tx_packetdata;
+   struct sk_buff * sk_buff;
+   spinlock_t lock;
+   struct net_device * device;
+   struct napi_struct napi;
 };
 
 int net_open(struct net_device * device);
