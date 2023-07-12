@@ -77,9 +77,11 @@ void net_tx_timeout (struct net_device * device, unsigned int txqueue);
 int net_start_xmit(struct sk_buff * sk_buff, struct net_device * device);
 void net_read(struct net_device * device, struct my_net_packet * my_net_packet);
 int net_poll(struct napi_struct * napi, int budget);
-
+int net_create_header_arp(struct sk_buff * sk_buff, struct net_device * device, unsigned short type, const void * destination_address, 
+	const void * source_address, unsigned length);
 void net_regular_interrupt_handler(int irq, void * dev_id, struct pt_regs * regs);
 void net_napi_interrupt_handler(int irq, void * dev_id, struct pt_regs * regs);
+struct net_device_stats * net_get_stats(struct net_device * device);
 
 static void net_hardware_xmit(char * data_packet, int length_packet, struct net_device * device);
 static struct my_net_packet * net_get_packet_from_packet_pool(struct net_device * device);

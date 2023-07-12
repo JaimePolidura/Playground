@@ -5,6 +5,7 @@ static void (*net_interrupt_handler)(int, void *, struct pt_regs *);
 struct net_device * net_devices [2];
 
 static const struct header_ops my_net_header_ops = {
+    .create = net_create_header_arp
 };
 
 static const struct net_device_ops my_net_netdev_ops = {
@@ -12,6 +13,7 @@ static const struct net_device_ops my_net_netdev_ops = {
     .ndo_tx_timeout = net_tx_timeout,
     .ndo_start_xmit = net_start_xmit,
     .ndo_stop = net_release,
+    .ndo_get_stats = net_get_stats,
 };
 
 void net_read(struct net_device * device, struct my_net_packet * my_net_packet) {
@@ -173,6 +175,26 @@ int net_poll(struct napi_struct * napi, int budget) { //Utilizado por napi cada 
     }
 
     return n_packets;
+}
+
+int net_create_header_arp(struct sk_buff * sk_buff, struct net_device * device, unsigned short type, const void * destination_address, 
+	    const void *source_address, unsigned length) {
+
+    struct ethhdr * ethernet_header = (struct ethhdr *) skb_push(sk_buff, ETH_HLEN);
+
+    ethernet_header->h_proto = htons(type);
+    memcpy(ethernet_header->h_source, source_address ? source_address : device->dev-addr, device->addr_len);
+    memcpy(ethernet_header->h_dest, destination_address ? destination_address : device->dev-addr, device->addr_len);
+
+    ethernet_header->h_dest[ETH_ALEN - 1] ^= 0x01;
+
+    return device->hard_header_len;
+}
+
+struct net_device_stats * net_get_stats(struct net_device * device) {
+    struct my_net * my_net = netdev_priv(device);
+
+    return &my_net->stats;
 }
 
 int net_open(struct net_device * device) {
