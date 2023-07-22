@@ -1,0 +1,179 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="AutoImportSettings">
+    <option name="autoReloadType" value="SELECTIVE" />
+  </component>
+  <component name="ChangeListManager">
+    <list default="true" id="13896ba9-34dc-4baf-b8b3-7d21589b1cf0" name="Changes" comment="">
+      <change afterPath="$PROJECT_DIR$/.gitignore" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/pom.xml" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/main/java/es/jaime/DataStructure.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/main/java/es/jaime/list/LinkedList.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/main/java/es/jaime/list/List.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/main/java/es/jaime/list/SkipList.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/main/java/es/jaime/queues/BlockingQueue.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/main/java/es/jaime/queues/LockFreeQueue.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/main/java/es/jaime/queues/Queue.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/main/java/es/jaime/queues/SynchronousQueue.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/main/java/es/jaime/trees/AVLTree.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/main/java/es/jaime/trees/BinarySearchTree.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/main/java/es/jaime/trees/MinHeap.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/main/java/es/jaime/trees/RedBlackTree.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/main/java/es/jaime/trees/Tree.java" afterDir="false" />
+    </list>
+    <option name="SHOW_DIALOG" value="false" />
+    <option name="HIGHLIGHT_CONFLICTS" value="true" />
+    <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
+    <option name="LAST_RESOLUTION" value="IGNORE" />
+  </component>
+  <component name="Git.Settings">
+    <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$/.." />
+  </component>
+  <component name="ProjectId" id="2Sv6A3jMHePAQ3rxtSh29aY5zh0" />
+  <component name="ProjectLevelVcsManager">
+    <ConfirmationsSetting value="2" id="Add" />
+  </component>
+  <component name="ProjectViewState">
+    <option name="hideEmptyMiddlePackages" value="true" />
+    <option name="showLibraryContents" value="true" />
+  </component>
+  <component name="PropertiesComponent"><![CDATA[{
+  "keyToString": {
+    "ASKED_ADD_EXTERNAL_FILES": "true",
+    "RunOnceActivity.OpenProjectViewOnStart": "true",
+    "RunOnceActivity.ShowReadmeOnStart": "true",
+    "WebServerToolWindowFactoryState": "false",
+    "git-widget-placeholder": "main",
+    "last_opened_file_path": "C:/programacion/OtherLanguagesPlayground/data-structures",
+    "node.js.detected.package.eslint": "true",
+    "node.js.detected.package.tslint": "true",
+    "node.js.selected.package.eslint": "(autodetect)",
+    "node.js.selected.package.tslint": "(autodetect)",
+    "project.structure.last.edited": "Modules",
+    "project.structure.proportion": "0.15",
+    "project.structure.side.proportion": "0.2",
+    "settings.editor.selected.configurable": "reference.projectsettings.compiler.javacompiler",
+    "vue.rearranger.settings.migration": "true"
+  }
+}]]></component>
+  <component name="RecentsManager">
+    <key name="CopyFile.RECENT_KEYS">
+      <recent name="C:\programacion\OtherLanguagesPlayground\data-structures\src\test\java" />
+      <recent name="C:\programacion\OtherLanguagesPlayground\data-structures\src\main\java\org\example" />
+    </key>
+  </component>
+  <component name="RunManager" selected="TestNG.RedBlackTreeTest">
+    <configuration name="All in data-structures" type="JUnit" factoryName="JUnit" temporary="true" nameIsGenerated="true">
+      <module name="data-structures" />
+      <option name="PACKAGE_NAME" value="" />
+      <option name="TEST_OBJECT" value="package" />
+      <method v="2">
+        <option name="Make" enabled="true" />
+      </method>
+    </configuration>
+    <configuration name="collections in data-structures" type="JUnit" factoryName="JUnit" temporary="true" nameIsGenerated="true">
+      <module name="data-structures" />
+      <extension name="coverage">
+        <pattern>
+          <option name="PATTERN" value="collections.*" />
+          <option name="ENABLED" value="true" />
+        </pattern>
+      </extension>
+      <option name="PACKAGE_NAME" value="collections" />
+      <option name="TEST_OBJECT" value="package" />
+      <method v="2">
+        <option name="Make" enabled="true" />
+      </method>
+    </configuration>
+    <configuration default="true" type="JetRunConfigurationType">
+      <method v="2">
+        <option name="Make" enabled="true" />
+      </method>
+    </configuration>
+    <configuration default="true" type="KotlinStandaloneScriptRunConfigurationType">
+      <option name="filePath" />
+      <method v="2">
+        <option name="Make" enabled="true" />
+      </method>
+    </configuration>
+    <configuration name="BinaryTreeTest" type="TestNG" temporary="true" nameIsGenerated="true">
+      <module name="data-structures" />
+      <extension name="coverage">
+        <pattern>
+          <option name="PATTERN" value="collections.trees.*" />
+          <option name="ENABLED" value="true" />
+        </pattern>
+      </extension>
+      <option name="PACKAGE_NAME" value="collections.trees" />
+      <option name="MAIN_CLASS_NAME" value="collections.trees.BinaryTreeTest" />
+      <option name="TEST_OBJECT" value="CLASS" />
+      <properties />
+      <listeners />
+      <method v="2">
+        <option name="Make" enabled="true" />
+      </method>
+    </configuration>
+    <configuration name="RedBlackTreeTest" type="TestNG" temporary="true" nameIsGenerated="true">
+      <module name="data-structures" />
+      <extension name="coverage">
+        <pattern>
+          <option name="PATTERN" value="collections.trees.*" />
+          <option name="ENABLED" value="true" />
+        </pattern>
+      </extension>
+      <option name="PACKAGE_NAME" value="collections.trees" />
+      <option name="MAIN_CLASS_NAME" value="collections.trees.RedBlackTreeTest" />
+      <option name="TEST_OBJECT" value="CLASS" />
+      <properties />
+      <listeners />
+      <method v="2">
+        <option name="Make" enabled="true" />
+      </method>
+    </configuration>
+    <configuration name="SkipListTest" type="TestNG" temporary="true" nameIsGenerated="true">
+      <module name="data-structures" />
+      <extension name="coverage">
+        <pattern>
+          <option name="PATTERN" value="collections.list.*" />
+          <option name="ENABLED" value="true" />
+        </pattern>
+      </extension>
+      <option name="PACKAGE_NAME" value="collections.list" />
+      <option name="MAIN_CLASS_NAME" value="collections.list.SkipListTest" />
+      <option name="TEST_OBJECT" value="CLASS" />
+      <properties />
+      <listeners />
+      <method v="2">
+        <option name="Make" enabled="true" />
+      </method>
+    </configuration>
+    <recent_temporary>
+      <list>
+        <item itemvalue="TestNG.RedBlackTreeTest" />
+        <item itemvalue="TestNG.BinaryTreeTest" />
+        <item itemvalue="TestNG.SkipListTest" />
+        <item itemvalue="JUnit.All in data-structures" />
+        <item itemvalue="JUnit.collections in data-structures" />
+      </list>
+    </recent_temporary>
+  </component>
+  <component name="SpellCheckerSettings" RuntimeDictionaries="0" Folders="0" CustomDictionaries="0" DefaultDictionary="application-level" UseSingleDictionary="true" transferred="true" />
+  <component name="TaskManager">
+    <task active="true" id="Default" summary="Default task">
+      <changelist id="13896ba9-34dc-4baf-b8b3-7d21589b1cf0" name="Changes" comment="" />
+      <created>1690014561335</created>
+      <option name="number" value="Default" />
+      <option name="presentableId" value="Default" />
+      <updated>1690014561335</updated>
+      <workItem from="1690014562384" duration="509000" />
+      <workItem from="1690015078822" duration="715000" />
+    </task>
+    <servers />
+  </component>
+  <component name="TypeScriptGeneratedFilesManager">
+    <option name="version" value="3" />
+  </component>
+  <component name="VcsManagerConfiguration">
+    <option name="ADD_EXTERNAL_FILES_SILENTLY" value="true" />
+  </component>
+</project>
