@@ -4,22 +4,22 @@ import (
 	"fmt"
 	"net"
 	"strconv"
+	"sync"
 )
 
 type MessageListener struct {
 	selfNodeId uint32
 	selfPort   uint16
-	buffer     []byte
-
-	connectionsByNodeId map[uint32]*NodeConnection
+	buffer     sync.Pool
 }
 
 func CreateMessageListener(selfNodeId uint32, selfPort uint16) *MessageListener {
 	return &MessageListener{
-		selfNodeId:          selfNodeId,
-		selfPort:            selfPort,
-		buffer:              make([]byte, 1024),
-		connectionsByNodeId: make(map[uint32]*NodeConnection),
+		selfNodeId: selfNodeId,
+		selfPort:   selfPort,
+		buffer: sync.Pool{New: func() interface{} {
+			return make([]byte, 1024)
+		}},
 	}
 }
 
@@ -27,35 +27,37 @@ func (listener *MessageListener) ListenAsync(onReadCallback func(message *Messag
 	conn, err := net.Listen("tcp", "127.0.0.1:"+strconv.Itoa(int(listener.selfPort)))
 
 	if err != nil {
-		fmt.Println(err.Error())
+		fmt.Printf("[%d] ERROR %s %s\n", listener.selfNodeId, "message_listener.go:ListenAsync", err.Error())
 		return
 	}
+
+	fmt.Printf("[%d] Started listening on port %d\n", listener.selfNodeId, listener.selfPort)
 
 	go func() {
 		for {
 			conn, _ := conn.Accept()
-			go listener.handleConnection(conn, onReadCallback)
+
+			go listener.handleNewConnection(conn, onReadCallback)
 		}
 	}()
 }
 
-func (listener *MessageListener) handleConnection(conn net.Conn, onReadCallback func(message *Message)) {
+func (listener *MessageListener) handleNewConnection(conn net.Conn, onReadCallback func(message *Message)) {
 	for {
-		conn.Read(listener.buffer)
+		buffer := listener.buffer.Get().([]byte)
 
-		message, err := Deserialize(listener.buffer)
+		conn.Read(buffer)
+
+		message, err := Deserialize(buffer)
 
 		if err != nil {
-			fmt.Println(err.Error())
+			fmt.Printf("[%d] ERROR %s %s\n", listener.selfNodeId, "message_listener.go:handleNewConnection", err.Error())
 			continue
 		}
 
-		listener.connectionsByNodeId[message.NodeId] = CreateNodeConnection(message.NodeId, conn)
 		onReadCallback(message)
-		ZeroArray(&listener.buffer)
-	}
-}
+		ZeroArray(&buffer)
 
-func (listener *MessageListener) Write(nodeId uint32, message *Message) {
-	listener.connectionsByNodeId[nodeId].Write(message)
+		listener.buffer.Put(buffer)
+	}
 }

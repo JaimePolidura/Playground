@@ -9,8 +9,17 @@ import (
 type Message struct {
 	NodeId  uint32
 	SeqNum  uint32
-	TTL     uint32
+	TTL     int32
 	Content []byte //Content size 1 byte
+}
+
+func CreateMessage(nodeId uint32, content string) *Message {
+	return &Message{
+		NodeId:  nodeId,
+		Content: []byte(content),
+		TTL:     0,
+		SeqNum:  0,
+	}
 }
 
 func Serialize(message *Message) []byte {
@@ -31,9 +40,9 @@ func Deserialize(bytes []byte) (*Message, error) {
 
 	NodeId := binary.BigEndian.Uint32(bytes)
 	SeqNum := binary.BigEndian.Uint32(bytes[4:])
-	TTL := binary.BigEndian.Uint32(bytes[8:])
+	TTL := int32(binary.BigEndian.Uint32(bytes[8:]))
 	ContentSize := bytes[12]
-	Content := bytes[13:ContentSize]
+	Content := bytes[13 : 13+ContentSize]
 
 	return &Message{
 		NodeId:  NodeId,

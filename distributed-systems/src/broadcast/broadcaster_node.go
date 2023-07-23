@@ -1,5 +1,7 @@
 package broadcast
 
+import "fmt"
+
 type BroadcasterNode struct {
 	nodeId uint32
 	port   uint16
@@ -22,8 +24,28 @@ func CreateBroadcasterNode(nodeId uint32, port uint16, broadcaster Broadcaster) 
 	}
 }
 
-func (broadcasterNode BroadcasterNode) StartListening() {
+func (broadcasterNode *BroadcasterNode) AddOtherNode(nodeId uint32, port uint32) {
+	if nodeId != broadcasterNode.nodeId {
+		broadcasterNode.nodeConnectionsStore.Add(nodeId, port)
+	}
+}
+
+func (broadcasterNode *BroadcasterNode) Broadcast(content string) {
+	broadcasterNode.broadcaster.Broadcast(CreateMessage(broadcasterNode.nodeId, content))
+}
+
+func (broadcasterNode *BroadcasterNode) OpenConnectionsToNodes(nodes []*BroadcasterNode) {
+	for _, node := range nodes {
+		if node.nodeId != broadcasterNode.nodeId {
+			broadcasterNode.nodeConnectionsStore.Open(node.nodeId)
+		}
+	}
+}
+
+func (broadcasterNode *BroadcasterNode) StartListening() {
 	broadcasterNode.messageListener.ListenAsync(func(message *Message) {
-		broadcasterNode.broadcaster.OnBroadcastMessage(message)
+		broadcasterNode.broadcaster.OnBroadcastMessage(message, func(newMessage *Message) {
+			fmt.Printf("[%d] RECIEVED UNIQUE MESSAGE\n", broadcasterNode.nodeId)
+		})
 	})
 }
