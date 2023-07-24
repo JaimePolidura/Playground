@@ -10,8 +10,8 @@ func CreateNodeConnectionStore() *NodeConnectionsStore {
 	}
 }
 
-func (store *NodeConnectionsStore) Size() int {
-	return len(store.restNodesConnections)
+func (store *NodeConnectionsStore) Size() uint32 {
+	return uint32(len(store.restNodesConnections))
 }
 
 func (store *NodeConnectionsStore) Add(nodeId uint32, port uint32) {

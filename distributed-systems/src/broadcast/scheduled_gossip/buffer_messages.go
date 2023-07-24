@@ -16,7 +16,7 @@ func CreateBufferMessages() *BufferMessages {
 	}
 }
 
-func (buffer *BufferMessages) GetAll() []*broadcast.Message {
+func (buffer *BufferMessages) RetrieveAll() []*broadcast.Message {
 	buffer.lock.Lock()
 	messagesToReturn := buffer.messages
 	buffer.messages = make([]*broadcast.Message, 0)

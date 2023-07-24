@@ -14,7 +14,7 @@ func CreateFifoBufferMessages() *FifoBufferMessages {
 	}
 }
 
-func (buffer *FifoBufferMessages) GetAllDeliverable() []*broadcast.Message {
+func (buffer *FifoBufferMessages) RetrieveAllDeliverable() []*broadcast.Message {
 	toReturn := make([]*broadcast.Message, 0)
 
 	if len(buffer.messages) == 0 {
@@ -33,25 +33,6 @@ func (buffer *FifoBufferMessages) GetAllDeliverable() []*broadcast.Message {
 
 		if actual.SeqNum-prev.SeqNum == 1 {
 			toReturn = append(toReturn, actual)
-			buffer.messages = buffer.messages[1:]
-		} else {
-			break
-		}
-	}
-
-	return toReturn
-}
-
-func (buffer *FifoBufferMessages) GetUntilSeqNum(seqNumUntil uint32) []*broadcast.Message {
-	toReturn := make([]*broadcast.Message, 0)
-
-	if len(buffer.messages) == 0 {
-		return toReturn
-	}
-
-	for _, message := range buffer.messages {
-		if message.SeqNum <= seqNumUntil {
-			toReturn = append(toReturn, message)
 			buffer.messages = buffer.messages[1:]
 		} else {
 			break

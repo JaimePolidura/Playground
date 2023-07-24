@@ -31,7 +31,7 @@ func (broadcasterNode *BroadcasterNode) AddOtherNode(nodeId uint32, port uint32)
 }
 
 func (broadcasterNode *BroadcasterNode) Broadcast(content string) {
-	broadcasterNode.broadcaster.Broadcast(CreateMessage(broadcasterNode.nodeId, content))
+	broadcasterNode.broadcaster.Broadcast(CreateMessage(broadcasterNode.nodeId, broadcasterNode.nodeId, content))
 }
 
 func (broadcasterNode *BroadcasterNode) OpenConnectionsToNodes(nodes []*BroadcasterNode) {

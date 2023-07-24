@@ -9,16 +9,16 @@ import (
 )
 
 type MessageListener struct {
-	selfNodeId          uint32
-	selfPort            uint16
-	bufferMessageLength sync.Pool
+	selfNodeId        uint32
+	selfPort          uint16
+	bufferMessageSize sync.Pool
 }
 
 func CreateMessageListener(selfNodeId uint32, selfPort uint16) *MessageListener {
 	return &MessageListener{
 		selfNodeId: selfNodeId,
 		selfPort:   selfPort,
-		bufferMessageLength: sync.Pool{New: func() interface{} {
+		bufferMessageSize: sync.Pool{New: func() interface{} {
 			return make([]byte, 4)
 		}},
 	}
@@ -45,9 +45,9 @@ func (listener *MessageListener) ListenAsync(onReadCallback func(message []*Mess
 
 func (listener *MessageListener) handleNewConnection(conn net.Conn, onReadCallback func(message []*Message)) {
 	for {
-		bufferLength := listener.bufferMessageLength.Get().([]byte)
+		bufferSize := listener.bufferMessageSize.Get().([]byte)
 
-		messages, err := listener.deserializeMessages(conn, bufferLength)
+		messages, err := listener.deserializeMessages(conn, bufferSize)
 
 		if err != nil {
 			fmt.Printf("[%d] ERROR %s %s\n", listener.selfNodeId, "message_listener.go:handleNewConnection", err.Error())
@@ -55,21 +55,21 @@ func (listener *MessageListener) handleNewConnection(conn net.Conn, onReadCallba
 		}
 
 		onReadCallback(messages)
-		ZeroArray(&bufferLength)
+		ZeroArray(&bufferSize)
 
-		listener.bufferMessageLength.Put(bufferLength)
+		listener.bufferMessageSize.Put(bufferSize)
 	}
 }
 
-func (listener *MessageListener) deserializeMessages(conn net.Conn, bufferLength []byte) ([]*Message, error) {
+func (listener *MessageListener) deserializeMessages(conn net.Conn, bufferSize []byte) ([]*Message, error) {
 	messages := make([]*Message, 0)
 
-	conn.Read(bufferLength)
-	messageLength := binary.BigEndian.Uint32(bufferLength)
-	messageBuffer := make([]byte, messageLength)
+	conn.Read(bufferSize)
+	messageSize := binary.BigEndian.Uint32(bufferSize)
+	messageBuffer := make([]byte, messageSize)
 	start := uint32(0)
-	
-	for start < messageLength {
+
+	for start < messageSize {
 		conn.Read(messageBuffer)
 		message, nextStart, err := Deserialize(messageBuffer, start)
 		start += nextStart

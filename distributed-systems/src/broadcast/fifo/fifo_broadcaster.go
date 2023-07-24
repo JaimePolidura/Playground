@@ -3,9 +3,7 @@ package fifo
 import (
 	"distributed-systems/src/broadcast"
 	"fmt"
-	"math/rand"
 	"sync/atomic"
-	"time"
 )
 
 type FifoBroadcaster struct {
@@ -36,12 +34,12 @@ func (broadcaster *FifoBroadcaster) SetNodeConnectionsStore(store *broadcast.Nod
 
 func (broadcaster *FifoBroadcaster) OnBroadcastMessage(messages []*broadcast.Message, newMessageCallback func(newMessage *broadcast.Message)) {
 	message := messages[0]
-	lastSeqNumDelivered := broadcaster.getLastSeqNumDelivered(message.NodeId)
-	broadcastData := broadcaster.broadcastDataByNodeId[message.NodeId]
+	lastSeqNumDelivered := broadcaster.getLastSeqNumDelivered(message.NodeIdOrigin)
+	broadcastData := broadcaster.broadcastDataByNodeId[message.NodeIdOrigin]
 	msgSeqNumbReceived := message.SeqNum
 
 	fmt.Printf("[%d] Recieved broadcast message from node %d with TTL %d and SeqNum %d (Prev: %d). Content: \"%s\"\n",
-		broadcaster.selfNodeId, message.NodeId, message.TTL, message.SeqNum, lastSeqNumDelivered, message.Content)
+		broadcaster.selfNodeId, message.NodeIdOrigin, message.TTL, message.SeqNum, lastSeqNumDelivered, message.Content)
 
 	if msgSeqNumbReceived > lastSeqNumDelivered && message.TTL != 0 {
 		broadcastData.AddToBuffer(message)
@@ -90,40 +88,6 @@ func (broadcaster *FifoBroadcaster) doBroadcast(message *broadcast.Message, firs
 }
 
 func (broadcaster *FifoBroadcaster) pickRandomConnections() []*broadcast.NodeConnection {
-	randomNodesIdToBroadcast := broadcaster.pickRandomNodesId()
-	randomNodes := make([]*broadcast.NodeConnection, 0)
-
-	for i := 0; i < int(broadcaster.nodesToPickToBroadcast); i++ {
-		randomNodeId := randomNodesIdToBroadcast[i]
-		randomNode := broadcaster.nodeConnectionsStore.Get(randomNodeId)
-
-		randomNodes = append(randomNodes, randomNode)
-	}
-
-	return randomNodes
-}
-
-func (broadcaster *FifoBroadcaster) pickRandomNodesId() []uint32 {
-	random := make([]uint32, 0)
-
-	for uint32(len(random)) != broadcaster.nodesToPickToBroadcast {
-		rand.Seed(time.Now().UnixNano())
-		randomNodeId := uint32(rand.Intn(broadcaster.nodeConnectionsStore.Size()))
-
-		if randomNodeId != broadcaster.selfNodeId && !contains(random, randomNodeId) {
-			random = append(random, randomNodeId)
-		}
-	}
-
-	return random
-}
-
-func contains(arr []uint32, toCheck uint32) bool {
-	for _, value := range arr {
-		if value == toCheck {
-			return true
-		}
-	}
-
-	return false
+	return broadcast.PickRandomNodesConnections(broadcaster.nodeConnectionsStore,
+		broadcast.PickRandomNodesId(broadcaster.selfNodeId, broadcaster.nodesToPickToBroadcast, broadcaster.nodeConnectionsStore.Size()))
 }

@@ -8,14 +8,14 @@ import (
 
 type NodeConnection struct {
 	nativeConnection net.Conn
-	nodeId           uint32
+	selfNodeId       uint32
 	port             uint32
 }
 
 func CreateNodeConnection(nodeId uint32, port uint32) *NodeConnection {
 	return &NodeConnection{
-		nodeId: nodeId,
-		port:   port,
+		selfNodeId: nodeId,
+		port:       port,
 	}
 }
 
@@ -30,16 +30,31 @@ func (nodeConnection *NodeConnection) Open() {
 	nodeConnection.nativeConnection = conn
 }
 
+func (nodeConnection *NodeConnection) WriteAll(messages []*Message) {
+	for _, message := range messages {
+		message.NodeIdSender = nodeConnection.selfNodeId
+	}
+
+	serialized := SerializeAll(messages)
+	nodeConnection.nativeConnection.Write(serialized)
+}
+
 func (nodeConnection *NodeConnection) Write(message *Message) {
+	message.NodeIdSender = nodeConnection.selfNodeId
+
 	serialized := Serialize(message)
 	nodeConnection.nativeConnection.Write(serialized)
+}
+
+func (nodeConnection *NodeConnection) GetNodeId() uint32 {
+	return nodeConnection.selfNodeId
 }
 
 func ToString(connection []*NodeConnection) string {
 	var toReturn string
 
 	for _, connection := range connection {
-		toReturn += strconv.Itoa(int(connection.nodeId)) + ", "
+		toReturn += strconv.Itoa(int(connection.selfNodeId)) + ", "
 	}
 
 	return toReturn
