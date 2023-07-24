@@ -1,6 +1,7 @@
 package broadcast
 
 import (
+	"encoding/binary"
 	"fmt"
 	"net"
 	"strconv"
@@ -8,22 +9,22 @@ import (
 )
 
 type MessageListener struct {
-	selfNodeId uint32
-	selfPort   uint16
-	buffer     sync.Pool
+	selfNodeId          uint32
+	selfPort            uint16
+	bufferMessageLength sync.Pool
 }
 
 func CreateMessageListener(selfNodeId uint32, selfPort uint16) *MessageListener {
 	return &MessageListener{
 		selfNodeId: selfNodeId,
 		selfPort:   selfPort,
-		buffer: sync.Pool{New: func() interface{} {
-			return make([]byte, 1024)
+		bufferMessageLength: sync.Pool{New: func() interface{} {
+			return make([]byte, 4)
 		}},
 	}
 }
 
-func (listener *MessageListener) ListenAsync(onReadCallback func(message *Message)) {
+func (listener *MessageListener) ListenAsync(onReadCallback func(message []*Message)) {
 	conn, err := net.Listen("tcp", "127.0.0.1:"+strconv.Itoa(int(listener.selfPort)))
 
 	if err != nil {
@@ -42,22 +43,42 @@ func (listener *MessageListener) ListenAsync(onReadCallback func(message *Messag
 	}()
 }
 
-func (listener *MessageListener) handleNewConnection(conn net.Conn, onReadCallback func(message *Message)) {
+func (listener *MessageListener) handleNewConnection(conn net.Conn, onReadCallback func(message []*Message)) {
 	for {
-		buffer := listener.buffer.Get().([]byte)
+		bufferLength := listener.bufferMessageLength.Get().([]byte)
 
-		conn.Read(buffer)
-
-		message, err := Deserialize(buffer)
+		messages, err := listener.deserializeMessages(conn, bufferLength)
 
 		if err != nil {
 			fmt.Printf("[%d] ERROR %s %s\n", listener.selfNodeId, "message_listener.go:handleNewConnection", err.Error())
 			continue
 		}
 
-		onReadCallback(message)
-		ZeroArray(&buffer)
+		onReadCallback(messages)
+		ZeroArray(&bufferLength)
 
-		listener.buffer.Put(buffer)
+		listener.bufferMessageLength.Put(bufferLength)
 	}
+}
+
+func (listener *MessageListener) deserializeMessages(conn net.Conn, bufferLength []byte) ([]*Message, error) {
+	messages := make([]*Message, 0)
+
+	conn.Read(bufferLength)
+	messageLength := binary.BigEndian.Uint32(bufferLength)
+	messageBuffer := make([]byte, messageLength)
+	start := uint32(0)
+	
+	for start < messageLength {
+		conn.Read(messageBuffer)
+		message, nextStart, err := Deserialize(messageBuffer, start)
+		start += nextStart
+
+		if err != nil {
+			return nil, err
+		}
+		messages = append(messages, message)
+	}
+
+	return messages, nil
 }

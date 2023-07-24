@@ -8,7 +8,7 @@ import (
 	"time"
 )
 
-type FifoGossipBroadcaster struct {
+type FifoBroadcaster struct {
 	selfNodeId             uint32
 	nodesToPickToBroadcast uint32
 	initialTTL             int32
@@ -16,25 +16,26 @@ type FifoGossipBroadcaster struct {
 
 	nodeConnectionsStore *broadcast.NodeConnectionsStore
 
-	broadcastDataByNodeId map[uint32]*FifoGossipNodeBroadcastData
+	broadcastDataByNodeId map[uint32]*FifoNodeBroadcastData
 }
 
-func CreateFifoGossip(nodesToPickToBroadcast uint32, initialTTL int32, selfNodeId uint32) *FifoGossipBroadcaster {
-	return &FifoGossipBroadcaster{
+func CreateFifoBroadcaster(nodesToPickToBroadcast uint32, initialTTL int32, selfNodeId uint32) *FifoBroadcaster {
+	return &FifoBroadcaster{
 		nodesToPickToBroadcast: nodesToPickToBroadcast,
 		initialTTL:             initialTTL,
 		selfNodeId:             selfNodeId,
 		seqNum:                 0,
-		broadcastDataByNodeId:  make(map[uint32]*FifoGossipNodeBroadcastData),
+		broadcastDataByNodeId:  make(map[uint32]*FifoNodeBroadcastData),
 	}
 }
 
-func (broadcaster *FifoGossipBroadcaster) SetNodeConnectionsStore(store *broadcast.NodeConnectionsStore) broadcast.Broadcaster {
+func (broadcaster *FifoBroadcaster) SetNodeConnectionsStore(store *broadcast.NodeConnectionsStore) broadcast.Broadcaster {
 	broadcaster.nodeConnectionsStore = store
 	return broadcaster
 }
 
-func (broadcaster *FifoGossipBroadcaster) OnBroadcastMessage(message *broadcast.Message, newMessageCallback func(newMessage *broadcast.Message)) {
+func (broadcaster *FifoBroadcaster) OnBroadcastMessage(messages []*broadcast.Message, newMessageCallback func(newMessage *broadcast.Message)) {
+	message := messages[0]
 	lastSeqNumDelivered := broadcaster.getLastSeqNumDelivered(message.NodeId)
 	broadcastData := broadcaster.broadcastDataByNodeId[message.NodeId]
 	msgSeqNumbReceived := message.SeqNum
@@ -54,20 +55,20 @@ func (broadcaster *FifoGossipBroadcaster) OnBroadcastMessage(message *broadcast.
 	}
 }
 
-func (broadcaster *FifoGossipBroadcaster) getLastSeqNumDelivered(nodeId uint32) uint32 {
+func (broadcaster *FifoBroadcaster) getLastSeqNumDelivered(nodeId uint32) uint32 {
 	if prevSeqNum, found := broadcaster.broadcastDataByNodeId[nodeId]; found {
 		return prevSeqNum.GetLastSeqNumDelivered()
 	} else {
-		broadcaster.broadcastDataByNodeId[nodeId] = CreateFifoGossipNodeBroadcastData()
+		broadcaster.broadcastDataByNodeId[nodeId] = CreateFifoNodeBroadcastData()
 		return 0
 	}
 }
 
-func (broadcaster *FifoGossipBroadcaster) Broadcast(message *broadcast.Message) {
+func (broadcaster *FifoBroadcaster) Broadcast(message *broadcast.Message) {
 	broadcaster.doBroadcast(message, true)
 }
 
-func (broadcaster *FifoGossipBroadcaster) doBroadcast(message *broadcast.Message, firstTime bool) {
+func (broadcaster *FifoBroadcaster) doBroadcast(message *broadcast.Message, firstTime bool) {
 	atomic.AddUint32(&broadcaster.seqNum, 1)
 
 	if firstTime {
@@ -88,7 +89,7 @@ func (broadcaster *FifoGossipBroadcaster) doBroadcast(message *broadcast.Message
 	}
 }
 
-func (broadcaster *FifoGossipBroadcaster) pickRandomConnections() []*broadcast.NodeConnection {
+func (broadcaster *FifoBroadcaster) pickRandomConnections() []*broadcast.NodeConnection {
 	randomNodesIdToBroadcast := broadcaster.pickRandomNodesId()
 	randomNodes := make([]*broadcast.NodeConnection, 0)
 
@@ -102,7 +103,7 @@ func (broadcaster *FifoGossipBroadcaster) pickRandomConnections() []*broadcast.N
 	return randomNodes
 }
 
-func (broadcaster *FifoGossipBroadcaster) pickRandomNodesId() []uint32 {
+func (broadcaster *FifoBroadcaster) pickRandomNodesId() []uint32 {
 	random := make([]uint32, 0)
 
 	for uint32(len(random)) != broadcaster.nodesToPickToBroadcast {

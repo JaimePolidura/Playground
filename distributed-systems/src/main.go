@@ -16,7 +16,7 @@ func main() {
 	broadcasterNodes := make([]*broadcast.BroadcasterNode, nNodes)
 
 	for i := uint32(0); i < nNodes; i++ {
-		broadcasterNodes[i] = broadcast.CreateBroadcasterNode(i, initPort+uint16(i), fifo.CreateFifoGossip(nodesToPick, ttl, i))
+		broadcasterNodes[i] = broadcast.CreateBroadcasterNode(i, initPort+uint16(i), fifo.CreateFifoBroadcaster(nodesToPick, ttl, i))
 
 		for j := uint32(0); j < nNodes; j++ {
 			broadcasterNodes[i].AddOtherNode(j, j+1000)

@@ -4,17 +4,17 @@ import (
 	"distributed-systems/src/broadcast"
 )
 
-type BufferMessages struct {
+type FifoBufferMessages struct {
 	messages []*broadcast.Message //Natural order
 }
 
-func CreateBufferMessages() *BufferMessages {
-	return &BufferMessages{
+func CreateFifoBufferMessages() *FifoBufferMessages {
+	return &FifoBufferMessages{
 		messages: make([]*broadcast.Message, 0),
 	}
 }
 
-func (buffer *BufferMessages) GetAllDeliverable() []*broadcast.Message {
+func (buffer *FifoBufferMessages) GetAllDeliverable() []*broadcast.Message {
 	toReturn := make([]*broadcast.Message, 0)
 
 	if len(buffer.messages) == 0 {
@@ -42,7 +42,7 @@ func (buffer *BufferMessages) GetAllDeliverable() []*broadcast.Message {
 	return toReturn
 }
 
-func (buffer *BufferMessages) GetUntilSeqNum(seqNumUntil uint32) []*broadcast.Message {
+func (buffer *FifoBufferMessages) GetUntilSeqNum(seqNumUntil uint32) []*broadcast.Message {
 	toReturn := make([]*broadcast.Message, 0)
 
 	if len(buffer.messages) == 0 {
@@ -61,12 +61,12 @@ func (buffer *BufferMessages) GetUntilSeqNum(seqNumUntil uint32) []*broadcast.Me
 	return toReturn
 }
 
-func (buffer *BufferMessages) Add(message *broadcast.Message) {
+func (buffer *FifoBufferMessages) Add(message *broadcast.Message) {
 	index := buffer.getIndexToAdd(message.SeqNum)
 	buffer.messages = buffer.insert(index, message)
 }
 
-func (buffer *BufferMessages) getIndexToAdd(seqNum uint32) int {
+func (buffer *FifoBufferMessages) getIndexToAdd(seqNum uint32) int {
 	indexToAdd := 0
 
 	for i := 0; i < len(buffer.messages); i++ {
@@ -82,7 +82,7 @@ func (buffer *BufferMessages) getIndexToAdd(seqNum uint32) int {
 	return indexToAdd
 }
 
-func (buffer *BufferMessages) insert(index int, value *broadcast.Message) []*broadcast.Message {
+func (buffer *FifoBufferMessages) insert(index int, value *broadcast.Message) []*broadcast.Message {
 	if len(buffer.messages) == index {
 		return append(buffer.messages, value)
 	}
