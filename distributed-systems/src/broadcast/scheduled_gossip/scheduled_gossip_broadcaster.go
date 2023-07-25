@@ -7,6 +7,7 @@ import (
 	"time"
 )
 
+// ScheduledGossipBroadcaster Bad implementation, not tested
 type ScheduledGossipBroadcaster struct {
 	selfNodeId             uint32
 	nodesToPickToBroadcast uint32
@@ -17,7 +18,7 @@ type ScheduledGossipBroadcaster struct {
 
 	broadcastDataByNodeId          map[uint32]*ScheduledGossipBroadcastData
 	seqNumsDeliveredByOriginNodeId map[uint32]uint32
-	newMessageCallback             func(newMessage *broadcast.Message)
+	newMessageCallback             func(newMessage *broadcast.BroadcastMessage)
 	nodeConnectionsStore           *broadcast.NodeConnectionsStore
 	buffer                         *BufferMessages
 	gossipTaskLock                 sync.Mutex
@@ -65,9 +66,9 @@ func (this *ScheduledGossipBroadcaster) startGossip() {
 	this.gossipTaskLock.Unlock()
 }
 
-func (this *ScheduledGossipBroadcaster) removeDuplicatedMessages(duplicatedMessages []*broadcast.Message) []*broadcast.Message {
+func (this *ScheduledGossipBroadcaster) removeDuplicatedMessages(duplicatedMessages []*broadcast.BroadcastMessage) []*broadcast.BroadcastMessage {
 	messagesIdsSeen := make(map[uint64]uint64)
-	notDuplicatedMessages := make([]*broadcast.Message, 0)
+	notDuplicatedMessages := make([]*broadcast.BroadcastMessage, 0)
 
 	for _, message := range duplicatedMessages {
 		if _, contained := messagesIdsSeen[message.GetMessageId()]; !contained {
@@ -94,7 +95,7 @@ func (this *ScheduledGossipBroadcaster) GetNodesConnectionPendingToSync() []*bro
 	return connectionsToSync
 }
 
-func (this *ScheduledGossipBroadcaster) decreaseTTL(messages []*broadcast.Message) []*broadcast.Message {
+func (this *ScheduledGossipBroadcaster) decreaseTTL(messages []*broadcast.BroadcastMessage) []*broadcast.BroadcastMessage {
 	for _, message := range messages {
 		message.TTL = message.TTL - 1
 	}
@@ -102,11 +103,11 @@ func (this *ScheduledGossipBroadcaster) decreaseTTL(messages []*broadcast.Messag
 	return messages
 }
 
-func (this *ScheduledGossipBroadcaster) Broadcast(message *broadcast.Message) {
-	this.doBroadcast([]*broadcast.Message{message}, true)
+func (this *ScheduledGossipBroadcaster) Broadcast(message *broadcast.BroadcastMessage) {
+	this.doBroadcast([]*broadcast.BroadcastMessage{message}, true)
 }
 
-func (this *ScheduledGossipBroadcaster) doBroadcast(messages []*broadcast.Message, firstTime bool) {
+func (this *ScheduledGossipBroadcaster) doBroadcast(messages []*broadcast.BroadcastMessage, firstTime bool) {
 	for _, message := range messages {
 		if firstTime {
 			atomic.AddUint32(&this.seqNum, 1)
@@ -132,7 +133,7 @@ func (this *ScheduledGossipBroadcaster) doBroadcast(messages []*broadcast.Messag
 	}
 }
 
-func (this *ScheduledGossipBroadcaster) OnBroadcastMessage(messages []*broadcast.Message, newMessageCallback func(newMessage *broadcast.Message)) {
+func (this *ScheduledGossipBroadcaster) OnBroadcastMessage(messages []*broadcast.BroadcastMessage, newMessageCallback func(newMessage *broadcast.BroadcastMessage)) {
 	this.newMessageCallback = newMessageCallback
 	this.doBroadcast(messages, false)
 }

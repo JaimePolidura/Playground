@@ -1,15 +1,19 @@
 package broadcast
 
 import (
+	"bufio"
 	"fmt"
 	"net"
 	"strconv"
+	"sync"
 )
 
 type NodeConnection struct {
 	nativeConnection net.Conn
-	selfNodeId       uint32
-	port             uint32
+	nativeWriter     *bufio.Writer
+
+	selfNodeId uint32
+	port       uint32
 }
 
 func CreateNodeConnection(nodeId uint32, port uint32) *NodeConnection {
@@ -19,35 +23,50 @@ func CreateNodeConnection(nodeId uint32, port uint32) *NodeConnection {
 	}
 }
 
-func (nodeConnection *NodeConnection) Open() {
-	conn, err := net.Dial("tcp", "127.0.0.1:"+strconv.Itoa(int(nodeConnection.port)))
+func (this *NodeConnection) Open() {
+	conn, err := net.Dial("tcp", "127.0.0.1:"+strconv.Itoa(int(this.port)))
 
 	if err != nil {
 		fmt.Printf(err.Error())
 		return
 	}
 
-	nodeConnection.nativeConnection = conn
+	this.nativeWriter = bufio.NewWriter(conn)
+	this.nativeConnection = conn
 }
 
-func (nodeConnection *NodeConnection) WriteAll(messages []*Message) {
+func (this *NodeConnection) WriteAll(messages []*BroadcastMessage) {
 	for _, message := range messages {
-		message.NodeIdSender = nodeConnection.selfNodeId
+		message.NodeIdSender = this.selfNodeId
 	}
 
 	serialized := SerializeAll(messages)
-	nodeConnection.nativeConnection.Write(serialized)
+	this.nativeConnection.Write(serialized)
 }
 
-func (nodeConnection *NodeConnection) Write(message *Message) {
-	message.NodeIdSender = nodeConnection.selfNodeId
+func (this *NodeConnection) Write(message *BroadcastMessage) {
+	message.NodeIdSender = this.selfNodeId
 
 	serialized := Serialize(message)
-	nodeConnection.nativeConnection.Write(serialized)
+	this.nativeConnection.Write(serialized)
 }
 
-func (nodeConnection *NodeConnection) GetNodeId() uint32 {
-	return nodeConnection.selfNodeId
+func (this *NodeConnection) WriteBuffered(message *BroadcastMessage) {
+	message.NodeIdSender = this.selfNodeId
+
+	serialized := Serialize(message)
+	this.nativeWriter.Write(serialized)
+}
+
+func (this *NodeConnection) FlushAsync(wait *sync.WaitGroup) {
+	go func() {
+		this.nativeWriter.Flush()
+		wait.Done()
+	}()
+}
+
+func (this *NodeConnection) GetNodeId() uint32 {
+	return this.selfNodeId
 }
 
 func ToString(connection []*NodeConnection) string {

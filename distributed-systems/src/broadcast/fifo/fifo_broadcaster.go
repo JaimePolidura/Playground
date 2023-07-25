@@ -32,7 +32,7 @@ func (broadcaster *FifoBroadcaster) SetNodeConnectionsStore(store *broadcast.Nod
 	return broadcaster
 }
 
-func (broadcaster *FifoBroadcaster) OnBroadcastMessage(messages []*broadcast.Message, newMessageCallback func(newMessage *broadcast.Message)) {
+func (broadcaster *FifoBroadcaster) OnBroadcastMessage(messages []*broadcast.BroadcastMessage, newMessageCallback func(newMessage *broadcast.BroadcastMessage)) {
 	message := messages[0]
 	lastSeqNumDelivered := broadcaster.getLastSeqNumDelivered(message.NodeIdOrigin)
 	broadcastData := broadcaster.broadcastDataByNodeId[message.NodeIdOrigin]
@@ -62,11 +62,11 @@ func (broadcaster *FifoBroadcaster) getLastSeqNumDelivered(nodeId uint32) uint32
 	}
 }
 
-func (broadcaster *FifoBroadcaster) Broadcast(message *broadcast.Message) {
+func (broadcaster *FifoBroadcaster) Broadcast(message *broadcast.BroadcastMessage) {
 	broadcaster.doBroadcast(message, true)
 }
 
-func (broadcaster *FifoBroadcaster) doBroadcast(message *broadcast.Message, firstTime bool) {
+func (broadcaster *FifoBroadcaster) doBroadcast(message *broadcast.BroadcastMessage, firstTime bool) {
 	atomic.AddUint32(&broadcaster.seqNum, 1)
 
 	if firstTime {

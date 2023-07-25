@@ -5,17 +5,17 @@ import (
 )
 
 type FifoBufferMessages struct {
-	messages []*broadcast.Message //Natural order
+	messages []*broadcast.BroadcastMessage //Natural order
 }
 
 func CreateFifoBufferMessages() *FifoBufferMessages {
 	return &FifoBufferMessages{
-		messages: make([]*broadcast.Message, 0),
+		messages: make([]*broadcast.BroadcastMessage, 0),
 	}
 }
 
-func (buffer *FifoBufferMessages) RetrieveAllDeliverable() []*broadcast.Message {
-	toReturn := make([]*broadcast.Message, 0)
+func (buffer *FifoBufferMessages) RetrieveAllDeliverable() []*broadcast.BroadcastMessage {
+	toReturn := make([]*broadcast.BroadcastMessage, 0)
 
 	if len(buffer.messages) == 0 {
 		return toReturn
@@ -23,7 +23,7 @@ func (buffer *FifoBufferMessages) RetrieveAllDeliverable() []*broadcast.Message 
 
 	if len(buffer.messages) == 1 {
 		toReturn = append(toReturn, buffer.messages[0])
-		buffer.messages = make([]*broadcast.Message, 0)
+		buffer.messages = make([]*broadcast.BroadcastMessage, 0)
 		return toReturn
 	}
 
@@ -42,7 +42,7 @@ func (buffer *FifoBufferMessages) RetrieveAllDeliverable() []*broadcast.Message 
 	return toReturn
 }
 
-func (buffer *FifoBufferMessages) Add(message *broadcast.Message) {
+func (buffer *FifoBufferMessages) Add(message *broadcast.BroadcastMessage) {
 	index := buffer.getIndexToAdd(message.SeqNum)
 	buffer.messages = buffer.insert(index, message)
 }
@@ -63,7 +63,7 @@ func (buffer *FifoBufferMessages) getIndexToAdd(seqNum uint32) int {
 	return indexToAdd
 }
 
-func (buffer *FifoBufferMessages) insert(index int, value *broadcast.Message) []*broadcast.Message {
+func (buffer *FifoBufferMessages) insert(index int, value *broadcast.BroadcastMessage) []*broadcast.BroadcastMessage {
 	if len(buffer.messages) == index {
 		return append(buffer.messages, value)
 	}

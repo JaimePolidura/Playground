@@ -1,8 +1,8 @@
 package broadcast
 
 type Broadcaster interface {
-	Broadcast(message *Message)
-	OnBroadcastMessage(message []*Message, newMessageCallback func(newMessage *Message))
+	Broadcast(message *BroadcastMessage)
+	OnBroadcastMessage(message []*BroadcastMessage, newMessageCallback func(newMessage *BroadcastMessage))
 
 	SetNodeConnectionsStore(store *NodeConnectionsStore) Broadcaster
 }
