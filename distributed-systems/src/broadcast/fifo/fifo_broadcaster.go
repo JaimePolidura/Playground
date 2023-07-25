@@ -27,58 +27,58 @@ func CreateFifoBroadcaster(nodesToPickToBroadcast uint32, initialTTL int32, self
 	}
 }
 
-func (broadcaster *FifoBroadcaster) SetNodeConnectionsStore(store *broadcast.NodeConnectionsStore) broadcast.Broadcaster {
-	broadcaster.nodeConnectionsStore = store
-	return broadcaster
+func (this *FifoBroadcaster) SetNodeConnectionsStore(store *broadcast.NodeConnectionsStore) broadcast.Broadcaster {
+	this.nodeConnectionsStore = store
+	return this
 }
 
-func (broadcaster *FifoBroadcaster) OnBroadcastMessage(messages []*broadcast.BroadcastMessage, newMessageCallback func(newMessage *broadcast.BroadcastMessage)) {
+func (this *FifoBroadcaster) OnBroadcastMessage(messages []*broadcast.BroadcastMessage, newMessageCallback func(newMessage *broadcast.BroadcastMessage)) {
 	message := messages[0]
-	lastSeqNumDelivered := broadcaster.getLastSeqNumDelivered(message.NodeIdOrigin)
-	broadcastData := broadcaster.broadcastDataByNodeId[message.NodeIdOrigin]
+	lastSeqNumDelivered := this.getLastSeqNumDelivered(message.NodeIdOrigin)
+	broadcastData := this.broadcastDataByNodeId[message.NodeIdOrigin]
 	msgSeqNumbReceived := message.SeqNum
 
 	fmt.Printf("[%d] Recieved broadcast message from node %d with TTL %d and SeqNum %d (Prev: %d). Content: \"%s\"\n",
-		broadcaster.selfNodeId, message.NodeIdOrigin, message.TTL, message.SeqNum, lastSeqNumDelivered, message.Content)
+		this.selfNodeId, message.NodeIdOrigin, message.TTL, message.SeqNum, lastSeqNumDelivered, message.Content)
 
-	if msgSeqNumbReceived > lastSeqNumDelivered && message.TTL != 0 {
+	if msgSeqNumbReceived > lastSeqNumDelivered && message.TTL != 0 && message.NodeIdOrigin != this.selfNodeId {
 		broadcastData.AddToBuffer(message)
 
 		for _, messageInBuffer := range broadcastData.GetDeliverableMessages(msgSeqNumbReceived) {
 			broadcastData.lastSeqNumDelivered = messageInBuffer.SeqNum
-			broadcaster.doBroadcast(messageInBuffer, false)
+			this.doBroadcast(messageInBuffer, false)
 
 			newMessageCallback(messageInBuffer)
 		}
 	}
 }
 
-func (broadcaster *FifoBroadcaster) getLastSeqNumDelivered(nodeId uint32) uint32 {
-	if prevSeqNum, found := broadcaster.broadcastDataByNodeId[nodeId]; found {
+func (this *FifoBroadcaster) getLastSeqNumDelivered(nodeId uint32) uint32 {
+	if prevSeqNum, found := this.broadcastDataByNodeId[nodeId]; found {
 		return prevSeqNum.GetLastSeqNumDelivered()
 	} else {
-		broadcaster.broadcastDataByNodeId[nodeId] = CreateFifoNodeBroadcastData()
+		this.broadcastDataByNodeId[nodeId] = CreateFifoNodeBroadcastData()
 		return 0
 	}
 }
 
-func (broadcaster *FifoBroadcaster) Broadcast(message *broadcast.BroadcastMessage) {
-	broadcaster.doBroadcast(message, true)
+func (this *FifoBroadcaster) Broadcast(message *broadcast.BroadcastMessage) {
+	this.doBroadcast(message, true)
 }
 
-func (broadcaster *FifoBroadcaster) doBroadcast(message *broadcast.BroadcastMessage, firstTime bool) {
-	atomic.AddUint32(&broadcaster.seqNum, 1)
+func (this *FifoBroadcaster) doBroadcast(message *broadcast.BroadcastMessage, firstTime bool) {
+	atomic.AddUint32(&this.seqNum, 1)
 
 	if firstTime {
-		message.SeqNum = broadcaster.seqNum
-		message.TTL = broadcaster.initialTTL
+		message.SeqNum = this.seqNum
+		message.TTL = this.initialTTL
 	} else {
 		message.TTL = message.TTL - 1
 	}
 
-	randomNodesConnections := broadcaster.pickRandomConnections()
+	randomNodesConnections := this.pickRandomConnections()
 
-	fmt.Printf("[%d] Broadcasting \"%s\" with TTL %d and SeqNum %d to %s\n", broadcaster.selfNodeId, message.Content,
+	fmt.Printf("[%d] Broadcasting \"%s\" with TTL %d and SeqNum %d to %s\n", this.selfNodeId, message.Content,
 		message.TTL, message.SeqNum, broadcast.ToString(randomNodesConnections))
 
 	for i := 0; i < len(randomNodesConnections); i++ {
@@ -87,7 +87,7 @@ func (broadcaster *FifoBroadcaster) doBroadcast(message *broadcast.BroadcastMess
 	}
 }
 
-func (broadcaster *FifoBroadcaster) pickRandomConnections() []*broadcast.NodeConnection {
-	return broadcast.PickRandomNodesConnections(broadcaster.nodeConnectionsStore,
-		broadcast.PickRandomNodesId(broadcaster.selfNodeId, broadcaster.nodesToPickToBroadcast, broadcaster.nodeConnectionsStore.Size()))
+func (this *FifoBroadcaster) pickRandomConnections() []*broadcast.NodeConnection {
+	return broadcast.PickRandomNodesConnections(this.nodeConnectionsStore,
+		broadcast.PickRandomNodesId(this.selfNodeId, this.nodesToPickToBroadcast, this.nodeConnectionsStore.Size()))
 }

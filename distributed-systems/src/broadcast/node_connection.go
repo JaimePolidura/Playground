@@ -1,16 +1,13 @@
 package broadcast
 
 import (
-	"bufio"
 	"fmt"
 	"net"
 	"strconv"
-	"sync"
 )
 
 type NodeConnection struct {
 	nativeConnection net.Conn
-	nativeWriter     *bufio.Writer
 
 	selfNodeId uint32
 	port       uint32
@@ -31,7 +28,6 @@ func (this *NodeConnection) Open() {
 		return
 	}
 
-	this.nativeWriter = bufio.NewWriter(conn)
 	this.nativeConnection = conn
 }
 
@@ -49,20 +45,6 @@ func (this *NodeConnection) Write(message *BroadcastMessage) {
 
 	serialized := Serialize(message)
 	this.nativeConnection.Write(serialized)
-}
-
-func (this *NodeConnection) WriteBuffered(message *BroadcastMessage) {
-	message.NodeIdSender = this.selfNodeId
-
-	serialized := Serialize(message)
-	this.nativeWriter.Write(serialized)
-}
-
-func (this *NodeConnection) FlushAsync(wait *sync.WaitGroup) {
-	go func() {
-		this.nativeWriter.Flush()
-		wait.Done()
-	}()
 }
 
 func (this *NodeConnection) GetNodeId() uint32 {

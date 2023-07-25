@@ -21,17 +21,18 @@ type ZabBroadcaster struct {
 	broadcastDataByNodeId map[uint32]*fifo.FifoNodeBroadcastData
 }
 
-func Create(selfNodeId uint32, leaderNodeId uint32) *ZabBroadcaster {
+func CreateZabBroadcaster(selfNodeId uint32, leaderNodeId uint32) *ZabBroadcaster {
 	return &ZabBroadcaster{
 		selfNodeId:            selfNodeId,
 		leaderNodeId:          leaderNodeId,
 		broadcastDataByNodeId: map[uint32]*fifo.FifoNodeBroadcastData{},
+		seqNumToSendTurn:      1,
 	}
 }
 
 func (this *ZabBroadcaster) Broadcast(message *broadcast.BroadcastMessage) {
-	if this.selfNodeId != this.leaderNodeId {
-		this.nodeConnectionsStore.Get(this.leaderNodeId).Write(message)
+	if this.isFollower() {
+		this.sendBroadcastMessageToLeader(message)
 	} else {
 		seqNumForMessage := atomic.AddUint32(&this.seqNum, 1)
 		message.SeqNum = seqNumForMessage
@@ -47,6 +48,11 @@ func (this *ZabBroadcaster) Broadcast(message *broadcast.BroadcastMessage) {
 	}
 }
 
+func (this *ZabBroadcaster) sendBroadcastMessageToLeader(message *broadcast.BroadcastMessage) {
+	message.SeqNum = atomic.AddUint32(&this.seqNum, 1)
+	this.nodeConnectionsStore.Get(this.leaderNodeId).Write(message)
+}
+
 func (this *ZabBroadcaster) waitBroadcastLeaderTurn(seqNumBroadcastToWait uint32) {
 	for seqNumBroadcastToWait != atomic.LoadUint32(&this.seqNumToSendTurn) {
 		time.Sleep(0) //Deschedule go routine
@@ -55,38 +61,28 @@ func (this *ZabBroadcaster) waitBroadcastLeaderTurn(seqNumBroadcastToWait uint32
 
 func (this *ZabBroadcaster) broadcastMessageToFollowers(message *broadcast.BroadcastMessage) {
 	this.forEachFollower(func(followerNodeConnection *broadcast.NodeConnection) {
-		followerNodeConnection.WriteBuffered(message)
+		followerNodeConnection.Write(message)
 	})
-
-	waitFlush := sync.WaitGroup{}
-	this.forEachFollower(func(followerNodeConnection *broadcast.NodeConnection) {
-		followerNodeConnection.FlushAsync(&waitFlush)
-	})
-}
-
-func (this *ZabBroadcaster) forEachFollower(consumer func(connection *broadcast.NodeConnection)) {
-	for _, followerNodeConnection := range this.nodeConnectionsStore.ToArrayNodeConnections() {
-		if followerNodeConnection.GetNodeId() != this.leaderNodeId {
-			consumer(followerNodeConnection)
-		}
-	}
 }
 
 func (this *ZabBroadcaster) OnBroadcastMessage(messages []*broadcast.BroadcastMessage, newMessageCallback func(newMessage *broadcast.BroadcastMessage)) {
 	message := messages[0]
-	msgSeqNumbReceived := message.SeqNum
-	broadcastData := this.broadcastDataByNodeId[message.NodeIdOrigin]
-	lastSeqNumDelivered := this.getLastSeqNumDelivered(message.NodeIdOrigin)
 
-	if msgSeqNumbReceived > lastSeqNumDelivered {
-		broadcastData.AddToBuffer(message)
+	if this.isFollower() {
+		msgSeqNumbReceived := message.SeqNum
+		lastSeqNumDelivered := this.getLastSeqNumDelivered(message.NodeIdOrigin)
+		broadcastData := this.broadcastDataByNodeId[message.NodeIdOrigin]
 
-		for _, messageInBuffer := range broadcastData.GetDeliverableMessages(msgSeqNumbReceived) {
-			newMessageCallback(messageInBuffer)
+		if msgSeqNumbReceived > lastSeqNumDelivered && message.NodeIdOrigin != this.selfNodeId {
+			broadcastData.AddToBuffer(message)
+
+			for _, messageInBuffer := range broadcastData.GetDeliverableMessages(msgSeqNumbReceived) {
+				newMessageCallback(messageInBuffer)
+			}
 		}
+	} else {
+		this.Broadcast(message)
 	}
-	
-	//Ack(message)
 }
 
 func (this *ZabBroadcaster) SetNodeConnectionsStore(store *broadcast.NodeConnectionsStore) broadcast.Broadcaster {
@@ -101,4 +97,23 @@ func (this *ZabBroadcaster) getLastSeqNumDelivered(nodeId uint32) uint32 {
 		this.broadcastDataByNodeId[nodeId] = fifo.CreateFifoNodeBroadcastData()
 		return 0
 	}
+}
+
+func (this *ZabBroadcaster) isFollower() bool {
+	return this.leaderNodeId != this.selfNodeId
+}
+
+func (this *ZabBroadcaster) forEachFollower(consumer func(connection *broadcast.NodeConnection)) {
+	for _, followerNodeConnection := range this.nodeConnectionsStore.ToArrayNodeConnections() {
+		if followerNodeConnection.GetNodeId() != this.leaderNodeId {
+			consumer(followerNodeConnection)
+		}
+	}
+}
+
+func (this *ZabBroadcaster) createWaitGroupFollowers() *sync.WaitGroup {
+	wait := &sync.WaitGroup{}
+	size := int(this.nodeConnectionsStore.Size())
+	wait.Add(size)
+	return wait
 }

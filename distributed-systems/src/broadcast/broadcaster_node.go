@@ -45,7 +45,7 @@ func (broadcasterNode *BroadcasterNode) OpenConnectionsToNodes(nodes []*Broadcas
 func (broadcasterNode *BroadcasterNode) StartListening() {
 	broadcasterNode.messageListener.ListenAsync(func(message []*BroadcastMessage) {
 		broadcasterNode.broadcaster.OnBroadcastMessage(message, func(newMessage *BroadcastMessage) {
-			fmt.Printf("[%d] RECIEVED UNIQUE MESSAGE\n", broadcasterNode.nodeId)
+			fmt.Printf("[%d] RECIEVED UNIQUE MESSAGE \"%s\"\n", broadcasterNode.nodeId, newMessage.Content)
 		})
 	})
 }
