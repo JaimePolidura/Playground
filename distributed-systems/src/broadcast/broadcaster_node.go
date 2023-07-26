@@ -1,26 +1,34 @@
 package broadcast
 
-import "fmt"
+import (
+	"distributed-systems/src/nodes"
+)
 
 type BroadcasterNode struct {
 	selfNodeId uint32
 	port       uint16
 
-	nodeConnectionsStore *NodeConnectionsStore
-	messageListener      *MessageListener
+	canBroadcast bool
+
+	nodeConnectionsStore *nodes.NodeConnectionsStore
+	messageListener      *nodes.MessageListener
 	broadcaster          Broadcaster
+
+	pendingToBroadcast []*nodes.Message
 }
 
 func CreateBroadcasterNode(nodeId uint32, port uint16, broadcaster Broadcaster) *BroadcasterNode {
-	nodeConnectionsStore := CreateNodeConnectionStore()
+	nodeConnectionsStore := nodes.CreateNodeConnectionStore()
 	broadcaster.SetNodeConnectionsStore(nodeConnectionsStore)
 
 	return &BroadcasterNode{
 		selfNodeId:           nodeId,
 		port:                 port,
 		broadcaster:          broadcaster,
-		messageListener:      CreateMessageListener(nodeId, port),
+		messageListener:      nodes.CreateMessageListener(nodeId, port),
 		nodeConnectionsStore: nodeConnectionsStore,
+		canBroadcast:         true,
+		pendingToBroadcast:   make([]*nodes.Message, 0),
 	}
 }
 
@@ -30,8 +38,17 @@ func (this *BroadcasterNode) AddOtherNode(otherNodeId uint32, port uint32) {
 	}
 }
 
-func (this *BroadcasterNode) Broadcast(content string) {
-	this.broadcaster.Broadcast(CreateMessage(this.selfNodeId, this.selfNodeId, content))
+func (this *BroadcasterNode) Broadcast(message *nodes.Message) {
+	if !this.canBroadcast {
+		this.pendingToBroadcast = append(this.pendingToBroadcast, message)
+		return
+	}
+
+	this.broadcaster.Broadcast(message)
+}
+
+func (this *BroadcasterNode) GetBroadcaster() Broadcaster {
+	return this.broadcaster
 }
 
 func (this *BroadcasterNode) OpenConnectionsToNodes(nodes []*BroadcasterNode) {
@@ -42,10 +59,15 @@ func (this *BroadcasterNode) OpenConnectionsToNodes(nodes []*BroadcasterNode) {
 	}
 }
 
-func (this *BroadcasterNode) StartListening() {
-	this.messageListener.ListenAsync(func(message []*BroadcastMessage) {
-		this.broadcaster.OnBroadcastMessage(message, func(newMessage *BroadcastMessage) {
-			fmt.Printf("[%d] RECIEVED UNIQUE MESSAGE \"%s\"\n", this.selfNodeId, newMessage.Content)
-		})
-	})
+func (this *BroadcasterNode) DisableBroadcast() {
+	this.canBroadcast = false
+}
+
+func (this *BroadcasterNode) EnableBroadcast() {
+	this.canBroadcast = true
+	for _, message := range this.pendingToBroadcast {
+		this.broadcaster.Broadcast(message)
+	}
+
+	this.pendingToBroadcast = []*nodes.Message{}
 }

@@ -1,31 +1,31 @@
 package scheduled_gossip
 
 import (
-	"distributed-systems/src/broadcast"
+	"distributed-systems/src/nodes"
 	"sync"
 )
 
 type BufferMessages struct {
-	messages []*broadcast.BroadcastMessage
+	messages []*nodes.Message
 	lock     sync.Mutex
 }
 
 func CreateBufferMessages() *BufferMessages {
 	return &BufferMessages{
-		messages: make([]*broadcast.BroadcastMessage, 0),
+		messages: make([]*nodes.Message, 0),
 	}
 }
 
-func (buffer *BufferMessages) RetrieveAll() []*broadcast.BroadcastMessage {
+func (buffer *BufferMessages) RetrieveAll() []*nodes.Message {
 	buffer.lock.Lock()
 	messagesToReturn := buffer.messages
-	buffer.messages = make([]*broadcast.BroadcastMessage, 0)
+	buffer.messages = make([]*nodes.Message, 0)
 	buffer.lock.Unlock()
 
 	return messagesToReturn
 }
 
-func (buffer *BufferMessages) Add(message *broadcast.BroadcastMessage) {
+func (buffer *BufferMessages) Add(message *nodes.Message) {
 	buffer.lock.Lock()
 	buffer.messages = append(buffer.messages, message)
 	buffer.lock.Unlock()

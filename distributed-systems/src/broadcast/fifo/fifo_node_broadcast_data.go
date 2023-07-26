@@ -1,6 +1,8 @@
 package fifo
 
-import "distributed-systems/src/broadcast"
+import (
+	"distributed-systems/src/nodes"
+)
 
 type FifoNodeBroadcastData struct {
 	lastSeqNumDelivered uint32
@@ -14,7 +16,7 @@ func CreateFifoNodeBroadcastData() *FifoNodeBroadcastData {
 	}
 }
 
-func (data *FifoNodeBroadcastData) RetrieveDeliverableMessages(seqNumbReceived uint32) []*broadcast.BroadcastMessage {
+func (data *FifoNodeBroadcastData) RetrieveDeliverableMessages(seqNumbReceived uint32) []*nodes.Message {
 	if data.lastSeqNumDelivered+1 == seqNumbReceived {
 		arr := data.buffer.RetrieveAllDeliverable()
 
@@ -25,11 +27,11 @@ func (data *FifoNodeBroadcastData) RetrieveDeliverableMessages(seqNumbReceived u
 		return arr
 
 	} else {
-		return make([]*broadcast.BroadcastMessage, 0)
+		return make([]*nodes.Message, 0)
 	}
 }
 
-func (data *FifoNodeBroadcastData) AddToBuffer(message *broadcast.BroadcastMessage) {
+func (data *FifoNodeBroadcastData) AddToBuffer(message *nodes.Message) {
 	data.buffer.Add(message)
 }
 

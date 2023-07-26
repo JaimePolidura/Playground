@@ -2,6 +2,7 @@ package fifo
 
 import (
 	"distributed-systems/src/broadcast"
+	"distributed-systems/src/nodes"
 	"fmt"
 	"sync/atomic"
 )
@@ -12,7 +13,7 @@ type FifoBroadcaster struct {
 	initialTTL             int32
 	seqNum                 uint32
 
-	nodeConnectionsStore *broadcast.NodeConnectionsStore
+	nodeConnectionsStore *nodes.NodeConnectionsStore
 
 	broadcastDataByNodeId map[uint32]*FifoNodeBroadcastData
 }
@@ -27,12 +28,12 @@ func CreateFifoBroadcaster(nodesToPickToBroadcast uint32, initialTTL int32, self
 	}
 }
 
-func (this *FifoBroadcaster) SetNodeConnectionsStore(store *broadcast.NodeConnectionsStore) broadcast.Broadcaster {
+func (this *FifoBroadcaster) SetNodeConnectionsStore(store *nodes.NodeConnectionsStore) broadcast.Broadcaster {
 	this.nodeConnectionsStore = store
 	return this
 }
 
-func (this *FifoBroadcaster) OnBroadcastMessage(messages []*broadcast.BroadcastMessage, newMessageCallback func(newMessage *broadcast.BroadcastMessage)) {
+func (this *FifoBroadcaster) OnBroadcastMessage(messages []*nodes.Message, newMessageCallback func(newMessage *nodes.Message)) {
 	message := messages[0]
 	lastSeqNumDelivered := this.getLastSeqNumDelivered(message.NodeIdOrigin)
 	broadcastData := this.broadcastDataByNodeId[message.NodeIdOrigin]
@@ -62,11 +63,11 @@ func (this *FifoBroadcaster) getLastSeqNumDelivered(nodeId uint32) uint32 {
 	}
 }
 
-func (this *FifoBroadcaster) Broadcast(message *broadcast.BroadcastMessage) {
+func (this *FifoBroadcaster) Broadcast(message *nodes.Message) {
 	this.doBroadcast(message, true)
 }
 
-func (this *FifoBroadcaster) doBroadcast(message *broadcast.BroadcastMessage, firstTime bool) {
+func (this *FifoBroadcaster) doBroadcast(message *nodes.Message, firstTime bool) {
 	atomic.AddUint32(&this.seqNum, 1)
 
 	if firstTime {
@@ -79,7 +80,7 @@ func (this *FifoBroadcaster) doBroadcast(message *broadcast.BroadcastMessage, fi
 	randomNodesConnections := this.pickRandomConnections()
 
 	fmt.Printf("[%d] Broadcasting \"%s\" with TTL %d and SeqNum %d to %s\n", this.selfNodeId, message.Content,
-		message.TTL, message.SeqNum, broadcast.ToString(randomNodesConnections))
+		message.TTL, message.SeqNum, nodes.ToString(randomNodesConnections))
 
 	for i := 0; i < len(randomNodesConnections); i++ {
 		nodeConnection := randomNodesConnections[i]
@@ -87,7 +88,7 @@ func (this *FifoBroadcaster) doBroadcast(message *broadcast.BroadcastMessage, fi
 	}
 }
 
-func (this *FifoBroadcaster) pickRandomConnections() []*broadcast.NodeConnection {
+func (this *FifoBroadcaster) pickRandomConnections() []*nodes.NodeConnection {
 	return broadcast.PickRandomNodesConnections(this.nodeConnectionsStore,
 		broadcast.PickRandomNodesId(this.selfNodeId, this.nodesToPickToBroadcast, this.nodeConnectionsStore.Size()))
 }

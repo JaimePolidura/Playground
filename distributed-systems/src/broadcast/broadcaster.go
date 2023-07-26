@@ -1,8 +1,12 @@
 package broadcast
 
-type Broadcaster interface {
-	Broadcast(message *BroadcastMessage)
-	OnBroadcastMessage(message []*BroadcastMessage, newMessageCallback func(newMessage *BroadcastMessage))
+import (
+	"distributed-systems/src/nodes"
+)
 
-	SetNodeConnectionsStore(store *NodeConnectionsStore) Broadcaster
+type Broadcaster interface {
+	Broadcast(message *nodes.Message)
+	OnBroadcastMessage(message []*nodes.Message, newMessageCallback func(newMessage *nodes.Message))
+
+	SetNodeConnectionsStore(store *nodes.NodeConnectionsStore) Broadcaster
 }

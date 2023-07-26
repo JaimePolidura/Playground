@@ -2,6 +2,7 @@ package scheduled_gossip
 
 import (
 	"distributed-systems/src/broadcast"
+	"distributed-systems/src/nodes"
 	"sync"
 	"sync/atomic"
 	"time"
@@ -18,8 +19,8 @@ type ScheduledGossipBroadcaster struct {
 
 	broadcastDataByNodeId          map[uint32]*ScheduledGossipBroadcastData
 	seqNumsDeliveredByOriginNodeId map[uint32]uint32
-	newMessageCallback             func(newMessage *broadcast.BroadcastMessage)
-	nodeConnectionsStore           *broadcast.NodeConnectionsStore
+	newMessageCallback             func(newMessage *nodes.Message)
+	nodeConnectionsStore           *nodes.NodeConnectionsStore
 	buffer                         *BufferMessages
 	gossipTaskLock                 sync.Mutex
 }
@@ -66,9 +67,9 @@ func (this *ScheduledGossipBroadcaster) startGossip() {
 	this.gossipTaskLock.Unlock()
 }
 
-func (this *ScheduledGossipBroadcaster) removeDuplicatedMessages(duplicatedMessages []*broadcast.BroadcastMessage) []*broadcast.BroadcastMessage {
+func (this *ScheduledGossipBroadcaster) removeDuplicatedMessages(duplicatedMessages []*nodes.Message) []*nodes.Message {
 	messagesIdsSeen := make(map[uint64]uint64)
-	notDuplicatedMessages := make([]*broadcast.BroadcastMessage, 0)
+	notDuplicatedMessages := make([]*nodes.Message, 0)
 
 	for _, message := range duplicatedMessages {
 		if _, contained := messagesIdsSeen[message.GetMessageId()]; !contained {
@@ -80,7 +81,7 @@ func (this *ScheduledGossipBroadcaster) removeDuplicatedMessages(duplicatedMessa
 	return notDuplicatedMessages
 }
 
-func (this *ScheduledGossipBroadcaster) GetNodesConnectionPendingToSync() []*broadcast.NodeConnection {
+func (this *ScheduledGossipBroadcaster) GetNodesConnectionPendingToSync() []*nodes.NodeConnection {
 	topology := this.getNodeConnectionsTopology()
 	connectionsToSync := topology
 
@@ -95,7 +96,7 @@ func (this *ScheduledGossipBroadcaster) GetNodesConnectionPendingToSync() []*bro
 	return connectionsToSync
 }
 
-func (this *ScheduledGossipBroadcaster) decreaseTTL(messages []*broadcast.BroadcastMessage) []*broadcast.BroadcastMessage {
+func (this *ScheduledGossipBroadcaster) decreaseTTL(messages []*nodes.Message) []*nodes.Message {
 	for _, message := range messages {
 		message.TTL = message.TTL - 1
 	}
@@ -103,11 +104,11 @@ func (this *ScheduledGossipBroadcaster) decreaseTTL(messages []*broadcast.Broadc
 	return messages
 }
 
-func (this *ScheduledGossipBroadcaster) Broadcast(message *broadcast.BroadcastMessage) {
-	this.doBroadcast([]*broadcast.BroadcastMessage{message}, true)
+func (this *ScheduledGossipBroadcaster) Broadcast(message *nodes.Message) {
+	this.doBroadcast([]*nodes.Message{message}, true)
 }
 
-func (this *ScheduledGossipBroadcaster) doBroadcast(messages []*broadcast.BroadcastMessage, firstTime bool) {
+func (this *ScheduledGossipBroadcaster) doBroadcast(messages []*nodes.Message, firstTime bool) {
 	for _, message := range messages {
 		if firstTime {
 			atomic.AddUint32(&this.seqNum, 1)
@@ -133,18 +134,18 @@ func (this *ScheduledGossipBroadcaster) doBroadcast(messages []*broadcast.Broadc
 	}
 }
 
-func (this *ScheduledGossipBroadcaster) OnBroadcastMessage(messages []*broadcast.BroadcastMessage, newMessageCallback func(newMessage *broadcast.BroadcastMessage)) {
+func (this *ScheduledGossipBroadcaster) OnBroadcastMessage(messages []*nodes.Message, newMessageCallback func(newMessage *nodes.Message)) {
 	this.newMessageCallback = newMessageCallback
 	this.doBroadcast(messages, false)
 }
 
-func (this *ScheduledGossipBroadcaster) SetNodeConnectionsStore(store *broadcast.NodeConnectionsStore) broadcast.Broadcaster {
+func (this *ScheduledGossipBroadcaster) SetNodeConnectionsStore(store *nodes.NodeConnectionsStore) broadcast.Broadcaster {
 	this.nodeConnectionsStore = store
 	return this
 }
 
-func (this *ScheduledGossipBroadcaster) getNodeConnectionsTopology() []*broadcast.NodeConnection {
-	connectionsTopology := make([]*broadcast.NodeConnection, len(this.topology))
+func (this *ScheduledGossipBroadcaster) getNodeConnectionsTopology() []*nodes.NodeConnection {
+	connectionsTopology := make([]*nodes.NodeConnection, len(this.topology))
 
 	for index, nodeId := range this.topology {
 		connectionsTopology[index] = this.nodeConnectionsStore.Get(nodeId)

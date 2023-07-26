@@ -1,4 +1,4 @@
-package broadcast
+package nodes
 
 import (
 	"bytes"
@@ -6,60 +6,78 @@ import (
 	"errors"
 )
 
-type BroadcastMessage struct {
+const BROADCAST_FLAG = 0
+
+type Message struct {
 	NodeIdOrigin uint32
 	NodeIdSender uint32
 	SeqNum       uint32
 	TTL          int32
+	Type         uint8
 	Flags        uint8
 	Content      []byte //Content size 1 byte
 }
 
-func (this *BroadcastMessage) GetSizeInBytes() uint32 {
+func (this *Message) GetSizeInBytes() uint32 {
 	return 4 + 4 + 4 + 4 + 1 + 1 + uint32(len(this.Content))
 }
 
-func (this *BroadcastMessage) GetMessageId() uint64 {
+func (this *Message) GetMessageId() uint64 {
 	return uint64(this.NodeIdOrigin)<<32 | uint64(this.SeqNum)
 }
 
-func (this *BroadcastMessage) SetFlag(flag uint8) *BroadcastMessage {
+func (this *Message) AddFlag(flag uint8) *Message {
 	this.Flags |= flag
 	return this
 }
 
-func (this *BroadcastMessage) HasFlag(flag uint8) bool {
+func (this *Message) HasFlag(flag uint8) bool {
 	return this.Flags&flag != 0
 }
 
-func (this *BroadcastMessage) SetContentUin32(newContent uint32) {
+func (this *Message) WithFlag(flag uint8) *Message {
+	this.Flags |= flag
+	return this
+}
+
+func (this *Message) WithType(typeToSet uint8) *Message {
+	this.Type = typeToSet
+	return this
+}
+
+func (this *Message) IsType(flag uint8) bool {
+	return this.Type&flag != 0
+}
+
+func (this *Message) SetContentUin32(newContent uint32) {
 	var buf bytes.Buffer
 	binary.Write(&buf, binary.BigEndian, newContent)
 	this.Content = buf.Bytes()
 }
 
-func (this *BroadcastMessage) GetContentToUint32() uint32 {
+func (this *Message) GetContentToUint32() uint32 {
 	return binary.BigEndian.Uint32(this.Content)
 }
 
-func CreateMessageWithFlags(nodeIdOrigin uint32, nodeIdSender uint32, content string, flags uint8) *BroadcastMessage {
-	return &BroadcastMessage{
+func CreateMessageWithType(nodeIdOrigin uint32, nodeIdSender uint32, content string, typeMessage uint8) *Message {
+	return &Message{
 		NodeIdOrigin: nodeIdOrigin,
 		NodeIdSender: nodeIdSender,
 		Content:      []byte(content),
-		Flags:        flags,
+		Type:         typeMessage,
 	}
 }
 
-func CreateMessage(nodeIdOrigin uint32, nodeIdSender uint32, content string) *BroadcastMessage {
-	return &BroadcastMessage{
+func CreateMessageBroadcast(nodeIdOrigin uint32, nodeIdSender uint32, content string) *Message {
+	return &Message{
 		NodeIdOrigin: nodeIdOrigin,
 		NodeIdSender: nodeIdSender,
 		Content:      []byte(content),
+		Flags:        BROADCAST_FLAG,
 	}
 }
 
-func SerializeAll(messages []*BroadcastMessage) []byte {
+func SerializeAll(messages []*Message) []byte {
 	sizeBytes := sizeToBytes(GetSizeAllInBytes(messages))
 
 	contentBytes := make([]byte, 0)
@@ -70,19 +88,20 @@ func SerializeAll(messages []*BroadcastMessage) []byte {
 	return append(sizeBytes, contentBytes...)
 }
 
-func Serialize(message *BroadcastMessage) []byte {
+func Serialize(message *Message) []byte {
 	sizeBytes := sizeToBytes(message.GetSizeInBytes())
 	contentBytes := serializeNotIncludingSize(message)
 
 	return append(sizeBytes, contentBytes...)
 }
 
-func serializeNotIncludingSize(message *BroadcastMessage) []byte {
+func serializeNotIncludingSize(message *Message) []byte {
 	var buf bytes.Buffer
 	binary.Write(&buf, binary.BigEndian, message.NodeIdOrigin)
 	binary.Write(&buf, binary.BigEndian, message.NodeIdSender)
 	binary.Write(&buf, binary.BigEndian, message.SeqNum)
 	binary.Write(&buf, binary.BigEndian, message.TTL)
+	binary.Write(&buf, binary.BigEndian, message.Type)
 	binary.Write(&buf, binary.BigEndian, message.Flags)
 	binary.Write(&buf, binary.BigEndian, uint8(len(message.Content)))
 	binary.Write(&buf, binary.BigEndian, message.Content)
@@ -96,7 +115,7 @@ func sizeToBytes(size uint32) []byte {
 	return buf.Bytes()
 }
 
-func Deserialize(bytes []byte, start uint32) (_message *BroadcastMessage, _endInclusive uint32, _error error) {
+func Deserialize(bytes []byte, start uint32) (_message *Message, _endInclusive uint32, _error error) {
 	if len(bytes) < 5 {
 		return nil, 0, errors.New("invalid raw message format")
 	}
@@ -105,23 +124,25 @@ func Deserialize(bytes []byte, start uint32) (_message *BroadcastMessage, _endIn
 	NodeIdSender := binary.BigEndian.Uint32(bytes[start+4:])
 	SeqNum := binary.BigEndian.Uint32(bytes[start+8:])
 	TTL := int32(binary.BigEndian.Uint32(bytes[start+12:]))
-	Flags := bytes[start+12+4]
-	ContentSize := bytes[start+17]
-	Content := bytes[start+18 : uint32(start)+18+uint32(ContentSize)]
+	Type := bytes[start+12+4]
+	Flags := bytes[start+18]
+	ContentSize := bytes[start+18]
+	Content := bytes[start+19 : uint32(start)+19+uint32(ContentSize)]
 
-	message := &BroadcastMessage{
+	message := &Message{
 		NodeIdOrigin: NodeIdOrigin,
 		NodeIdSender: NodeIdSender,
-		SeqNum:       SeqNum,
-		TTL:          TTL,
-		Flags:        Flags,
 		Content:      Content,
+		SeqNum:       SeqNum,
+		Flags:        Flags,
+		Type:         Type,
+		TTL:          TTL,
 	}
 
 	return message, message.GetSizeInBytes() + start, nil
 }
 
-func GetSizeAllInBytes(messages []*BroadcastMessage) uint32 {
+func GetSizeAllInBytes(messages []*Message) uint32 {
 	totalSize := uint32(0)
 	for _, message := range messages {
 		totalSize += message.GetSizeInBytes()

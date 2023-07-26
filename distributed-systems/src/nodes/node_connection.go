@@ -1,4 +1,4 @@
-package broadcast
+package nodes
 
 import (
 	"fmt"
@@ -34,7 +34,7 @@ func (this *NodeConnection) Open() {
 	this.nativeConnection = conn
 }
 
-func (this *NodeConnection) WriteAll(messages []*BroadcastMessage) {
+func (this *NodeConnection) WriteAll(messages []*Message) {
 	for _, message := range messages {
 		message.NodeIdSender = this.selfNodeId
 	}
@@ -43,7 +43,7 @@ func (this *NodeConnection) WriteAll(messages []*BroadcastMessage) {
 	this.nativeConnection.Write(serialized)
 }
 
-func (this *NodeConnection) Write(message *BroadcastMessage) {
+func (this *NodeConnection) Write(message *Message) {
 	message.NodeIdSender = this.selfNodeId
 
 	serialized := Serialize(message)

@@ -29,8 +29,8 @@ func startZab() {
 	for nodeId := uint32(0); nodeId < nNodes; nodeId++ {
 		broadcasterNodes[nodeId].OpenConnectionsToNodes(broadcasterNodes)
 	}
-	broadcasterNodes[1].Broadcast("Running on zab 1º!")
-	broadcasterNodes[1].Broadcast("Running on zab 2º!")
+	broadcasterNodes[1].BroadcastString("Running on zab 1º!")
+	broadcasterNodes[1].BroadcastString("Running on zab 2º!")
 	time.Sleep(time.Second * 5)
 }
 
@@ -56,7 +56,7 @@ func startFifo() {
 		broadcasterNodes[i].OpenConnectionsToNodes(broadcasterNodes)
 	}
 
-	broadcasterNodes[0].Broadcast("Running on fifo :D")
+	broadcasterNodes[0].BroadcastString("Running on fifo :D")
 	time.Sleep(time.Second * 5)
 
 }

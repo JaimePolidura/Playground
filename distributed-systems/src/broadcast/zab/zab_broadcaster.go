@@ -3,17 +3,18 @@ package zab
 import (
 	"distributed-systems/src/broadcast"
 	"distributed-systems/src/broadcast/fifo"
+	"distributed-systems/src/nodes"
 	"strconv"
 )
 
-const ACK_FLAG = 1
-const ACK_RETRANSMISSION_FLAG = 2
+const MESSAGE_ACK = 1
+const MESSAGE_ACK_RETRANSMISSION = 2
 
 type ZabBroadcaster struct {
 	selfNodeId           uint32
 	leaderNodeId         uint32
-	nodeConnectionsStore *broadcast.NodeConnectionsStore
-	
+	nodeConnectionsStore *nodes.NodeConnectionsStore
+
 	//Leader
 	seqNum                         uint32
 	seqNumToSendTurn               uint32
@@ -37,7 +38,7 @@ func CreateZabBroadcaster(selfNodeId uint32, leaderNodeId uint32) *ZabBroadcaste
 	}
 }
 
-func (this *ZabBroadcaster) Broadcast(message *broadcast.BroadcastMessage) {
+func (this *ZabBroadcaster) Broadcast(message *nodes.Message) {
 	if this.isFollower() {
 		this.sendBroadcastMessageToLeader(message)
 	} else {
@@ -45,7 +46,7 @@ func (this *ZabBroadcaster) Broadcast(message *broadcast.BroadcastMessage) {
 	}
 }
 
-func (this *ZabBroadcaster) OnBroadcastMessage(messages []*broadcast.BroadcastMessage, newMessageCallback func(newMessage *broadcast.BroadcastMessage)) {
+func (this *ZabBroadcaster) OnBroadcastMessage(messages []*nodes.Message, newMessageCallback func(newMessage *nodes.Message)) {
 	message := messages[0]
 
 	if this.isFollower() {
@@ -55,12 +56,12 @@ func (this *ZabBroadcaster) OnBroadcastMessage(messages []*broadcast.BroadcastMe
 	}
 }
 
-func (this *ZabBroadcaster) SetNodeConnectionsStore(store *broadcast.NodeConnectionsStore) broadcast.Broadcaster {
+func (this *ZabBroadcaster) SetNodeConnectionsStore(store *nodes.NodeConnectionsStore) broadcast.Broadcaster {
 	this.nodeConnectionsStore = store
 	return this
 }
 
-func (this *ZabBroadcaster) addMessagePendingAck(pendingAck map[uint32]*fifo.FifoBufferMessages, nodeId uint32, message *broadcast.BroadcastMessage) {
+func (this *ZabBroadcaster) addMessagePendingAck(pendingAck map[uint32]*fifo.FifoBufferMessages, nodeId uint32, message *nodes.Message) {
 	if _, contained := pendingAck[nodeId]; !contained {
 		pendingAck[nodeId] = fifo.CreateFifoBufferMessages()
 	}
@@ -72,15 +73,15 @@ func (this *ZabBroadcaster) isFollower() bool {
 	return this.leaderNodeId != this.selfNodeId
 }
 
-func (this *ZabBroadcaster) sendAckToNode(nodeIdToSendAck uint32, messageToAck *broadcast.BroadcastMessage) {
-	ackMessage := broadcast.CreateMessageWithFlags(messageToAck.NodeIdOrigin, this.selfNodeId, strconv.Itoa(int(messageToAck.SeqNum)),
-		ACK_FLAG)
+func (this *ZabBroadcaster) sendAckToNode(nodeIdToSendAck uint32, messageToAck *nodes.Message) {
+	ackMessage := nodes.CreateMessageWithType(messageToAck.NodeIdOrigin, this.selfNodeId, strconv.Itoa(int(messageToAck.SeqNum)),
+		MESSAGE_ACK).AddFlag(nodes.BROADCAST_FLAG)
 	ackMessage.SetContentUin32(messageToAck.SeqNum)
 
 	this.nodeConnectionsStore.Get(nodeIdToSendAck).Write(ackMessage)
 }
 
-func (this *ZabBroadcaster) removeMessagePendingAck(pendingAcksMap map[uint32]*fifo.FifoBufferMessages, ackMessage *broadcast.BroadcastMessage) {
+func (this *ZabBroadcaster) removeMessagePendingAck(pendingAcksMap map[uint32]*fifo.FifoBufferMessages, ackMessage *nodes.Message) {
 	seqNumAcked := ackMessage.GetContentToUint32()
 
 	fifoMessagesPendingAck := pendingAcksMap[ackMessage.NodeIdSender]
@@ -88,7 +89,7 @@ func (this *ZabBroadcaster) removeMessagePendingAck(pendingAcksMap map[uint32]*f
 	fifoMessagesPendingAck.RemoveBySeqNum(seqNumAcked)
 
 	for _, messageToResend := range messagesToResend {
-		messageToResend = messageToResend.SetFlag(ACK_RETRANSMISSION_FLAG)
+		messageToResend = messageToResend.WithType(MESSAGE_ACK_RETRANSMISSION)
 		this.nodeConnectionsStore.Get(ackMessage.NodeIdSender).Write(messageToResend)
 	}
 }

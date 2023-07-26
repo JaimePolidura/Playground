@@ -1,4 +1,4 @@
-package broadcast
+package nodes
 
 type NodeConnectionsStore struct {
 	restNodesConnections map[uint32]*NodeConnection

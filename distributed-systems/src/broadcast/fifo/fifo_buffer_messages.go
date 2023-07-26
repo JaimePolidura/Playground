@@ -1,21 +1,21 @@
 package fifo
 
 import (
-	"distributed-systems/src/broadcast"
+	"distributed-systems/src/nodes"
 )
 
 type FifoBufferMessages struct {
-	messages []*broadcast.BroadcastMessage //Natural order
+	messages []*nodes.Message //Natural order
 }
 
 func CreateFifoBufferMessages() *FifoBufferMessages {
 	return &FifoBufferMessages{
-		messages: make([]*broadcast.BroadcastMessage, 0),
+		messages: make([]*nodes.Message, 0),
 	}
 }
 
-func (this *FifoBufferMessages) GetMessagesLessThanSeqNum(seqNum uint32) []*broadcast.BroadcastMessage {
-	toReturn := make([]*broadcast.BroadcastMessage, 0)
+func (this *FifoBufferMessages) GetMessagesLessThanSeqNum(seqNum uint32) []*nodes.Message {
+	toReturn := make([]*nodes.Message, 0)
 
 	for _, message := range this.messages {
 		if message.SeqNum < seqNum {
@@ -34,8 +34,8 @@ func (this *FifoBufferMessages) RemoveBySeqNum(seqNum uint32) {
 	}
 }
 
-func (this *FifoBufferMessages) RetrieveAllDeliverable() []*broadcast.BroadcastMessage {
-	toReturn := make([]*broadcast.BroadcastMessage, 0)
+func (this *FifoBufferMessages) RetrieveAllDeliverable() []*nodes.Message {
+	toReturn := make([]*nodes.Message, 0)
 
 	if len(this.messages) == 0 {
 		return toReturn
@@ -43,7 +43,7 @@ func (this *FifoBufferMessages) RetrieveAllDeliverable() []*broadcast.BroadcastM
 
 	if len(this.messages) == 1 {
 		toReturn = append(toReturn, this.messages[0])
-		this.messages = make([]*broadcast.BroadcastMessage, 0)
+		this.messages = make([]*nodes.Message, 0)
 		return toReturn
 	}
 
@@ -62,7 +62,7 @@ func (this *FifoBufferMessages) RetrieveAllDeliverable() []*broadcast.BroadcastM
 	return toReturn
 }
 
-func (this *FifoBufferMessages) Add(message *broadcast.BroadcastMessage) {
+func (this *FifoBufferMessages) Add(message *nodes.Message) {
 	index := this.getIndexToAdd(message.SeqNum)
 	this.messages = this.insert(index, message)
 }
@@ -93,7 +93,7 @@ func (this *FifoBufferMessages) getIndexToAdd(seqNum uint32) int {
 	return indexToAdd
 }
 
-func (this *FifoBufferMessages) insert(index int, value *broadcast.BroadcastMessage) []*broadcast.BroadcastMessage {
+func (this *FifoBufferMessages) insert(index int, value *nodes.Message) []*nodes.Message {
 	if len(this.messages) == index {
 		return append(this.messages, value)
 	}

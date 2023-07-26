@@ -1,12 +1,13 @@
 package broadcast
 
 import (
+	"distributed-systems/src/nodes"
 	"math/rand"
 	"time"
 )
 
-func PickRandomNodesConnections(nodeConnectionsStore *NodeConnectionsStore, randomNodesId []uint32) []*NodeConnection {
-	randomNodes := make([]*NodeConnection, 0)
+func PickRandomNodesConnections(nodeConnectionsStore *nodes.NodeConnectionsStore, randomNodesId []uint32) []*nodes.NodeConnection {
+	randomNodes := make([]*nodes.NodeConnection, 0)
 
 	for i := 0; i < len(randomNodesId); i++ {
 		randomNodeId := randomNodesId[i]

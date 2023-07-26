@@ -1,13 +1,13 @@
 package zab
 
 import (
-	"distributed-systems/src/broadcast"
 	"distributed-systems/src/broadcast/fifo"
+	"distributed-systems/src/nodes"
 	"sync/atomic"
 )
 
-func (this *ZabBroadcaster) onBroadcastMessageFollower(message *broadcast.BroadcastMessage, newMessageCallback func(newMessage *broadcast.BroadcastMessage)) {
-	if !message.HasFlag(ACK_FLAG) {
+func (this *ZabBroadcaster) onBroadcastMessageFollower(message *nodes.Message, newMessageCallback func(newMessage *nodes.Message)) {
+	if !message.IsType(MESSAGE_ACK) {
 		msgSeqNumbReceived := message.SeqNum
 		lastSeqNumDelivered := this.getLastSeqNumDelivered(message.NodeIdOrigin)
 		broadcastData := this.fifoBroadcastDataByNodeId[message.NodeIdOrigin]
@@ -21,7 +21,7 @@ func (this *ZabBroadcaster) onBroadcastMessageFollower(message *broadcast.Broadc
 		}
 
 		this.sendAckToNode(this.leaderNodeId, message)
-		if !message.HasFlag(ACK_RETRANSMISSION_FLAG) {
+		if !message.IsType(MESSAGE_ACK_RETRANSMISSION) {
 			this.addMessagePendingAck(this.pendingLeaderAck, this.leaderNodeId, message)
 		}
 
@@ -30,7 +30,7 @@ func (this *ZabBroadcaster) onBroadcastMessageFollower(message *broadcast.Broadc
 	}
 }
 
-func (this *ZabBroadcaster) sendBroadcastMessageToLeader(message *broadcast.BroadcastMessage) {
+func (this *ZabBroadcaster) sendBroadcastMessageToLeader(message *nodes.Message) {
 	message.SeqNum = atomic.AddUint32(&this.seqNum, 1)
 	this.nodeConnectionsStore.Get(this.leaderNodeId).Write(message)
 }

@@ -1,6 +1,7 @@
-package broadcast
+package nodes
 
 import (
+	"distributed-systems/src/broadcast"
 	"encoding/binary"
 	"fmt"
 	"net"
@@ -24,7 +25,7 @@ func CreateMessageListener(selfNodeId uint32, selfPort uint16) *MessageListener 
 	}
 }
 
-func (listener *MessageListener) ListenAsync(onReadCallback func(message []*BroadcastMessage)) {
+func (listener *MessageListener) ListenAsync(onReadCallback func(message []*Message)) {
 	conn, err := net.Listen("tcp", "127.0.0.1:"+strconv.Itoa(int(listener.selfPort)))
 
 	if err != nil {
@@ -43,7 +44,7 @@ func (listener *MessageListener) ListenAsync(onReadCallback func(message []*Broa
 	}()
 }
 
-func (listener *MessageListener) handleNewConnection(conn net.Conn, onReadCallback func(message []*BroadcastMessage)) {
+func (listener *MessageListener) handleNewConnection(conn net.Conn, onReadCallback func(message []*Message)) {
 	for {
 		bufferSize := listener.bufferMessageSize.Get().([]byte)
 
@@ -55,14 +56,14 @@ func (listener *MessageListener) handleNewConnection(conn net.Conn, onReadCallba
 		}
 
 		onReadCallback(messages)
-		ZeroArray(&bufferSize)
+		broadcast.ZeroArray(&bufferSize)
 
 		listener.bufferMessageSize.Put(bufferSize)
 	}
 }
 
-func (listener *MessageListener) deserializeMessages(conn net.Conn, bufferSize []byte) ([]*BroadcastMessage, error) {
-	messages := make([]*BroadcastMessage, 0)
+func (listener *MessageListener) deserializeMessages(conn net.Conn, bufferSize []byte) ([]*Message, error) {
+	messages := make([]*Message, 0)
 
 	conn.Read(bufferSize)
 	messageSize := binary.BigEndian.Uint32(bufferSize)
