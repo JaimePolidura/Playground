@@ -6,7 +6,7 @@ import (
 	"errors"
 )
 
-const BROADCAST_FLAG = 0
+const BROADCAST_FLAG = 1
 
 type Message struct {
 	NodeIdOrigin uint32
@@ -125,9 +125,9 @@ func Deserialize(bytes []byte, start uint32) (_message *Message, _endInclusive u
 	SeqNum := binary.BigEndian.Uint32(bytes[start+8:])
 	TTL := int32(binary.BigEndian.Uint32(bytes[start+12:]))
 	Type := bytes[start+12+4]
-	Flags := bytes[start+18]
+	Flags := bytes[start+17]
 	ContentSize := bytes[start+18]
-	Content := bytes[start+19 : uint32(start)+19+uint32(ContentSize)]
+	Content := bytes[start+19 : uint32(start)+19+uint32(ContentSize)-1]
 
 	message := &Message{
 		NodeIdOrigin: NodeIdOrigin,

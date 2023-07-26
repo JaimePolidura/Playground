@@ -1,8 +1,6 @@
 package broadcast
 
-import (
-	"distributed-systems/src/nodes"
-)
+import "distributed-systems/src/nodes"
 
 type BroadcasterNode struct {
 	selfNodeId uint32
@@ -17,24 +15,17 @@ type BroadcasterNode struct {
 	pendingToBroadcast []*nodes.Message
 }
 
-func CreateBroadcasterNode(nodeId uint32, port uint16, broadcaster Broadcaster) *BroadcasterNode {
-	nodeConnectionsStore := nodes.CreateNodeConnectionStore()
-	broadcaster.SetNodeConnectionsStore(nodeConnectionsStore)
+func CreateBroadcasterNode(nodeId uint32, port uint16, broadcaster Broadcaster, store *nodes.NodeConnectionsStore) *BroadcasterNode {
+	broadcaster.SetNodeConnectionsStore(store)
 
 	return &BroadcasterNode{
 		selfNodeId:           nodeId,
 		port:                 port,
 		broadcaster:          broadcaster,
 		messageListener:      nodes.CreateMessageListener(nodeId, port),
-		nodeConnectionsStore: nodeConnectionsStore,
+		nodeConnectionsStore: store,
 		canBroadcast:         true,
 		pendingToBroadcast:   make([]*nodes.Message, 0),
-	}
-}
-
-func (this *BroadcasterNode) AddOtherNode(otherNodeId uint32, port uint32) {
-	if otherNodeId != this.selfNodeId {
-		this.nodeConnectionsStore.Add(otherNodeId, port, this.selfNodeId)
 	}
 }
 

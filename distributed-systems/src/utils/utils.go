@@ -1,4 +1,4 @@
-package broadcast
+package utils
 
 func ZeroArray(bytes *[]byte) {
 	for i := 0; i < len(*bytes); i++ {

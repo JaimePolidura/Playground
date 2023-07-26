@@ -16,7 +16,7 @@ const MESSAGE_ELECTION_ACK_PROPOSAL = 6
 const MESSAGE_ELECTION_COMMIT = 7
 
 type ZabNode struct {
-	node *nodes.Node
+	node *broadcast.Node
 
 	state NodeState
 
@@ -35,7 +35,7 @@ type ZabNode struct {
 
 func CreateZabNode(selfNodeId uint32, port uint16, leaderNodeId uint32, heartbeatTimeMs uint64, broadcasterNode broadcast.Broadcaster) *ZabNode {
 	zabNode := &ZabNode{
-		node:                  nodes.CreateNode(selfNodeId, port, broadcasterNode),
+		node:                  broadcast.CreateNode(selfNodeId, port, broadcasterNode),
 		heartbeatSenderTicker: time.NewTicker(time.Duration(heartbeatTimeMs)),
 		heartbeatTimerTimeout: time.NewTimer(time.Duration(heartbeatTimeMs*10 + heartbeatTimeMs/2)),
 		heartbeatTimeMs:       heartbeatTimeMs,

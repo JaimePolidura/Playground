@@ -1,7 +1,7 @@
 package nodes
 
 import (
-	"distributed-systems/src/broadcast"
+	"distributed-systems/src/utils"
 	"encoding/binary"
 	"fmt"
 	"net"
@@ -56,7 +56,7 @@ func (listener *MessageListener) handleNewConnection(conn net.Conn, onReadCallba
 		}
 
 		onReadCallback(messages)
-		broadcast.ZeroArray(&bufferSize)
+		utils.ZeroArray(&bufferSize)
 
 		listener.bufferMessageSize.Put(bufferSize)
 	}
@@ -70,7 +70,7 @@ func (listener *MessageListener) deserializeMessages(conn net.Conn, bufferSize [
 	messageBuffer := make([]byte, messageSize)
 	start := uint32(0)
 
-	for start < messageSize {
+	for start+1 < messageSize {
 		conn.Read(messageBuffer)
 		message, nextStart, err := Deserialize(messageBuffer, start)
 		start += nextStart
