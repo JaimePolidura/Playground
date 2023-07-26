@@ -17,17 +17,17 @@ func startZab() {
 	initPort := uint16(1000)
 	broadcasterNodes := make([]*broadcast.BroadcasterNode, nNodes)
 
-	for i := uint32(0); i < nNodes; i++ {
-		broadcasterNodes[i] = broadcast.CreateBroadcasterNode(i, initPort+uint16(i), zab.CreateZabBroadcaster(i, 0))
-		for j := uint32(0); j < nNodes; j++ {
-			broadcasterNodes[i].AddOtherNode(j, j+1000)
+	for nodeId := uint32(0); nodeId < nNodes; nodeId++ {
+		broadcasterNodes[nodeId] = broadcast.CreateBroadcasterNode(nodeId, initPort+uint16(nodeId), zab.CreateZabBroadcaster(nodeId, 0))
+		for otherNodeId := uint32(0); otherNodeId < nNodes; otherNodeId++ {
+			broadcasterNodes[nodeId].AddOtherNode(otherNodeId, otherNodeId+1000)
 		}
 	}
-	for i := uint32(0); i < nNodes; i++ {
-		broadcasterNodes[i].StartListening()
+	for nodeId := uint32(0); nodeId < nNodes; nodeId++ {
+		broadcasterNodes[nodeId].StartListening()
 	}
-	for i := uint32(0); i < nNodes; i++ {
-		broadcasterNodes[i].OpenConnectionsToNodes(broadcasterNodes)
+	for nodeId := uint32(0); nodeId < nNodes; nodeId++ {
+		broadcasterNodes[nodeId].OpenConnectionsToNodes(broadcasterNodes)
 	}
 	broadcasterNodes[1].Broadcast("Running on zab 1º!")
 	broadcasterNodes[1].Broadcast("Running on zab 2º!")

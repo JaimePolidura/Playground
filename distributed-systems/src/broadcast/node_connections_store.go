@@ -14,8 +14,8 @@ func (store *NodeConnectionsStore) Size() uint32 {
 	return uint32(len(store.restNodesConnections))
 }
 
-func (store *NodeConnectionsStore) Add(nodeId uint32, port uint32) {
-	store.restNodesConnections[nodeId] = CreateNodeConnection(nodeId, port)
+func (store *NodeConnectionsStore) Add(otherNodeId uint32, otherNodePort uint32, selfNodeId uint32) {
+	store.restNodesConnections[otherNodeId] = CreateNodeConnection(otherNodeId, otherNodePort, selfNodeId)
 }
 
 func (store *NodeConnectionsStore) Contains(nodeId uint32) bool {

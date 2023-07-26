@@ -11,15 +11,44 @@ type BroadcastMessage struct {
 	NodeIdSender uint32
 	SeqNum       uint32
 	TTL          int32
+	Flags        uint8
 	Content      []byte //Content size 1 byte
 }
 
-func (message *BroadcastMessage) GetSizeInBytes() uint32 {
-	return 4 + 4 + 4 + 4 + 1 + uint32(len(message.Content))
+func (this *BroadcastMessage) GetSizeInBytes() uint32 {
+	return 4 + 4 + 4 + 4 + 1 + 1 + uint32(len(this.Content))
 }
 
-func (message *BroadcastMessage) GetMessageId() uint64 {
-	return uint64(message.NodeIdOrigin)<<32 | uint64(message.SeqNum)
+func (this *BroadcastMessage) GetMessageId() uint64 {
+	return uint64(this.NodeIdOrigin)<<32 | uint64(this.SeqNum)
+}
+
+func (this *BroadcastMessage) SetFlag(flag uint8) *BroadcastMessage {
+	this.Flags |= flag
+	return this
+}
+
+func (this *BroadcastMessage) HasFlag(flag uint8) bool {
+	return this.Flags&flag != 0
+}
+
+func (this *BroadcastMessage) SetContentUin32(newContent uint32) {
+	var buf bytes.Buffer
+	binary.Write(&buf, binary.BigEndian, newContent)
+	this.Content = buf.Bytes()
+}
+
+func (this *BroadcastMessage) GetContentToUint32() uint32 {
+	return binary.BigEndian.Uint32(this.Content)
+}
+
+func CreateMessageWithFlags(nodeIdOrigin uint32, nodeIdSender uint32, content string, flags uint8) *BroadcastMessage {
+	return &BroadcastMessage{
+		NodeIdOrigin: nodeIdOrigin,
+		NodeIdSender: nodeIdSender,
+		Content:      []byte(content),
+		Flags:        flags,
+	}
 }
 
 func CreateMessage(nodeIdOrigin uint32, nodeIdSender uint32, content string) *BroadcastMessage {
@@ -54,6 +83,7 @@ func serializeNotIncludingSize(message *BroadcastMessage) []byte {
 	binary.Write(&buf, binary.BigEndian, message.NodeIdSender)
 	binary.Write(&buf, binary.BigEndian, message.SeqNum)
 	binary.Write(&buf, binary.BigEndian, message.TTL)
+	binary.Write(&buf, binary.BigEndian, message.Flags)
 	binary.Write(&buf, binary.BigEndian, uint8(len(message.Content)))
 	binary.Write(&buf, binary.BigEndian, message.Content)
 
@@ -75,14 +105,16 @@ func Deserialize(bytes []byte, start uint32) (_message *BroadcastMessage, _endIn
 	NodeIdSender := binary.BigEndian.Uint32(bytes[start+4:])
 	SeqNum := binary.BigEndian.Uint32(bytes[start+8:])
 	TTL := int32(binary.BigEndian.Uint32(bytes[start+12:]))
-	ContentSize := bytes[start+16]
-	Content := bytes[start+17 : uint32(start)+17+uint32(ContentSize)]
+	Flags := bytes[start+12+4]
+	ContentSize := bytes[start+17]
+	Content := bytes[start+18 : uint32(start)+18+uint32(ContentSize)]
 
 	message := &BroadcastMessage{
 		NodeIdOrigin: NodeIdOrigin,
 		NodeIdSender: NodeIdSender,
 		SeqNum:       SeqNum,
 		TTL:          TTL,
+		Flags:        Flags,
 		Content:      Content,
 	}
 

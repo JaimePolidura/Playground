@@ -14,7 +14,7 @@ func CreateFifoNodeBroadcastData() *FifoNodeBroadcastData {
 	}
 }
 
-func (data *FifoNodeBroadcastData) GetDeliverableMessages(seqNumbReceived uint32) []*broadcast.BroadcastMessage {
+func (data *FifoNodeBroadcastData) RetrieveDeliverableMessages(seqNumbReceived uint32) []*broadcast.BroadcastMessage {
 	if data.lastSeqNumDelivered+1 == seqNumbReceived {
 		arr := data.buffer.RetrieveAllDeliverable()
 

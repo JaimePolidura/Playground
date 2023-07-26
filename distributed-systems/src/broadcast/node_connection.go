@@ -9,13 +9,16 @@ import (
 type NodeConnection struct {
 	nativeConnection net.Conn
 
-	selfNodeId uint32
-	port       uint32
+	selfNodeId uint32 //References nodeId of the node that holds the conenction
+
+	nodeId uint32 //References nodeId of nativeConnections
+	port   uint32
 }
 
-func CreateNodeConnection(nodeId uint32, port uint32) *NodeConnection {
+func CreateNodeConnection(nodeId uint32, port uint32, selfNodeId uint32) *NodeConnection {
 	return &NodeConnection{
-		selfNodeId: nodeId,
+		selfNodeId: selfNodeId,
+		nodeId:     nodeId,
 		port:       port,
 	}
 }
@@ -48,14 +51,14 @@ func (this *NodeConnection) Write(message *BroadcastMessage) {
 }
 
 func (this *NodeConnection) GetNodeId() uint32 {
-	return this.selfNodeId
+	return this.nodeId
 }
 
 func ToString(connection []*NodeConnection) string {
 	var toReturn string
 
 	for _, connection := range connection {
-		toReturn += strconv.Itoa(int(connection.selfNodeId)) + ", "
+		toReturn += strconv.Itoa(int(connection.nodeId)) + ", "
 	}
 
 	return toReturn
