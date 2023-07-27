@@ -6,32 +6,43 @@ import (
 	"sync/atomic"
 )
 
-func (this *ZabBroadcaster) onBroadcastMessageFollower(message *nodes.Message, newMessageCallback func(newMessage *nodes.Message)) {
-	if !message.IsType(MESSAGE_ACK) {
-		msgSeqNumbReceived := message.SeqNum
-		lastSeqNumDelivered := this.getLastSeqNumDelivered(message.NodeIdOrigin)
-		broadcastData := this.fifoBroadcastDataByNodeId[message.NodeIdOrigin]
+func (this *ZabBroadcaster) handleAckRetransmissionMessageFollower(message *nodes.Message) {
+	msgSeqNumbReceived := message.SeqNum
+	lastSeqNumDelivered := this.getLastSeqNumDelivered(message.NodeIdOrigin)
+	broadcastData := this.fifoBroadcastDataByNodeId[message.NodeIdOrigin]
 
-		if msgSeqNumbReceived > lastSeqNumDelivered && message.NodeIdOrigin != this.selfNodeId {
-			broadcastData.AddToBuffer(message)
+	if msgSeqNumbReceived > lastSeqNumDelivered && message.NodeIdOrigin != this.selfNodeId {
+		broadcastData.AddToBuffer(message)
 
-			for _, messageInBuffer := range broadcastData.RetrieveDeliverableMessages(msgSeqNumbReceived) {
-				newMessageCallback(messageInBuffer)
-			}
+		for _, messageInBuffer := range broadcastData.RetrieveDeliverableMessages(msgSeqNumbReceived) {
+			this.onBroadcastMessageCallback(messageInBuffer)
 		}
-
-		this.sendAckToNode(this.leaderNodeId, message)
-		if !message.IsType(MESSAGE_ACK_RETRANSMISSION) {
-			this.addMessagePendingAck(this.pendingLeaderAck, this.leaderNodeId, message)
-		}
-
-	} else {
-		this.removeMessagePendingAck(this.pendingLeaderAck, message)
 	}
+
+	this.sendAckToNode(this.leaderNodeId, message)
+}
+
+func (this *ZabBroadcaster) onBroadcastMessageFollower(message *nodes.Message) {
+	msgSeqNumbReceived := message.SeqNum
+	lastSeqNumDelivered := this.getLastSeqNumDelivered(message.NodeIdOrigin)
+	broadcastData := this.fifoBroadcastDataByNodeId[message.NodeIdOrigin]
+
+	if msgSeqNumbReceived > lastSeqNumDelivered && message.NodeIdOrigin != this.selfNodeId {
+		broadcastData.AddToBuffer(message)
+
+		for _, messageInBuffer := range broadcastData.RetrieveDeliverableMessages(msgSeqNumbReceived) {
+			this.onBroadcastMessageCallback(messageInBuffer)
+		}
+	}
+
+	this.sendAckToNode(this.leaderNodeId, message)
 }
 
 func (this *ZabBroadcaster) sendBroadcastMessageToLeader(message *nodes.Message) {
 	message.SeqNum = atomic.AddUint32(&this.seqNum, 1)
+	//message = message.WithType(MESSAGE_DO_BROADCAST)
+
+	this.messagesPendingLeaderAck.Add(this.leaderNodeId, message)
 	this.nodeConnectionsStore.Get(this.leaderNodeId).Write(message)
 }
 

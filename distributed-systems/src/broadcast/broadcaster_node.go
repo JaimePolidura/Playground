@@ -1,6 +1,8 @@
 package broadcast
 
-import "distributed-systems/src/nodes"
+import (
+	"distributed-systems/src/nodes"
+)
 
 type BroadcasterNode struct {
 	selfNodeId uint32

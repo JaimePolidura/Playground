@@ -6,7 +6,9 @@ import (
 	"errors"
 )
 
-const BROADCAST_FLAG = 1
+const FLAG_URGENT = 1 //Skips order, ack. Used for heartbeats
+const MESSAGE_BROADCAST = 0
+const MESSAGE_DO_BROADCAST = 8
 
 type Message struct {
 	NodeIdOrigin uint32
@@ -16,6 +18,18 @@ type Message struct {
 	Type         uint8
 	Flags        uint8
 	Content      []byte //Content size 1 byte
+}
+
+func (this *Message) Clone() *Message {
+	return &Message{
+		NodeIdOrigin: this.NodeIdOrigin,
+		NodeIdSender: this.NodeIdSender,
+		SeqNum:       this.SeqNum,
+		TTL:          this.TTL,
+		Type:         this.Type,
+		Flags:        this.Flags,
+		Content:      this.Content,
+	}
 }
 
 func (this *Message) GetSizeInBytes() uint32 {
@@ -31,10 +45,6 @@ func (this *Message) AddFlag(flag uint8) *Message {
 	return this
 }
 
-func (this *Message) HasFlag(flag uint8) bool {
-	return this.Flags&flag != 0
-}
-
 func (this *Message) WithFlag(flag uint8) *Message {
 	this.Flags |= flag
 	return this
@@ -45,8 +55,16 @@ func (this *Message) WithType(typeToSet uint8) *Message {
 	return this
 }
 
-func (this *Message) IsType(flag uint8) bool {
-	return this.Type&flag != 0
+func (this *Message) HasFlag(flag uint8) bool {
+	return this.Flags&flag != 0
+}
+
+func (this *Message) HasNotFlag(flag uint8) bool {
+	return this.Flags&flag == 0
+}
+
+func (this *Message) IsType(Type uint8) bool {
+	return this.Type&Type != 0
 }
 
 func (this *Message) SetContentUin32(newContent uint32) {
@@ -81,7 +99,6 @@ func CreateMessageBroadcast(nodeIdOrigin uint32, nodeIdSender uint32, content st
 		NodeIdOrigin: nodeIdOrigin,
 		NodeIdSender: nodeIdSender,
 		Content:      []byte(content),
-		Flags:        BROADCAST_FLAG,
 	}
 }
 

@@ -16,6 +16,8 @@ type FifoBroadcaster struct {
 	nodeConnectionsStore *nodes.NodeConnectionsStore
 
 	broadcastDataByNodeId map[uint32]*FifoNodeBroadcastData
+
+	onBroadcastMessageCallback func(newMessage *nodes.Message)
 }
 
 func CreateFifoBroadcaster(nodesToPickToBroadcast uint32, initialTTL int32, selfNodeId uint32) *FifoBroadcaster {
@@ -28,13 +30,11 @@ func CreateFifoBroadcaster(nodesToPickToBroadcast uint32, initialTTL int32, self
 	}
 }
 
-func (this *FifoBroadcaster) SetNodeConnectionsStore(store *nodes.NodeConnectionsStore) broadcast.Broadcaster {
-	this.nodeConnectionsStore = store
-	return this
+func (this *FifoBroadcaster) Broadcast(message *nodes.Message) {
+	this.doBroadcast(message, true)
 }
 
-func (this *FifoBroadcaster) OnBroadcastMessage(messages []*nodes.Message, newMessageCallback func(newMessage *nodes.Message)) {
-	message := messages[0]
+func (this *FifoBroadcaster) OnBroadcastMessage(message *nodes.Message) {
 	lastSeqNumDelivered := this.getLastSeqNumDelivered(message.NodeIdOrigin)
 	broadcastData := this.broadcastDataByNodeId[message.NodeIdOrigin]
 	msgSeqNumbReceived := message.SeqNum
@@ -46,12 +46,22 @@ func (this *FifoBroadcaster) OnBroadcastMessage(messages []*nodes.Message, newMe
 		broadcastData.AddToBuffer(message)
 
 		for _, messageInBuffer := range broadcastData.RetrieveDeliverableMessages(msgSeqNumbReceived) {
-			newMessageCallback(messageInBuffer)
+			this.onBroadcastMessageCallback(messageInBuffer)
 		}
 	}
 	if message.TTL != 0 {
 		this.doBroadcast(message, false)
 	}
+}
+
+func (this *FifoBroadcaster) SetOnBroadcastMessageCallback(callback func(newMessage *nodes.Message)) broadcast.Broadcaster {
+	this.onBroadcastMessageCallback = callback
+	return this
+}
+
+func (this *FifoBroadcaster) SetNodeConnectionsStore(store *nodes.NodeConnectionsStore) broadcast.Broadcaster {
+	this.nodeConnectionsStore = store
+	return this
 }
 
 func (this *FifoBroadcaster) getLastSeqNumDelivered(nodeId uint32) uint32 {
@@ -61,10 +71,6 @@ func (this *FifoBroadcaster) getLastSeqNumDelivered(nodeId uint32) uint32 {
 		this.broadcastDataByNodeId[nodeId] = CreateFifoNodeBroadcastData()
 		return 0
 	}
-}
-
-func (this *FifoBroadcaster) Broadcast(message *nodes.Message) {
-	this.doBroadcast(message, true)
 }
 
 func (this *FifoBroadcaster) doBroadcast(message *nodes.Message, firstTime bool) {

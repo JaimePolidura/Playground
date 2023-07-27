@@ -2,38 +2,45 @@ package zab
 
 import (
 	"distributed-systems/src/nodes"
+	"fmt"
 	"sync/atomic"
 	"time"
 )
 
-func (this *ZabBroadcaster) onBroadcastMessageLeader(message *nodes.Message) {
-	if message.IsType(MESSAGE_ACK) {
-		this.removeMessagePendingAck(this.pendingFollowerAck, message)
+func (this *ZabBroadcaster) broadcastToFollowers(message *nodes.Message) {
+	seqNumForMessage := this.getSeqNumForMessage(message)
+	messageToBroadcast := message.Clone()
+	messageToBroadcast.SeqNum = seqNumForMessage
+	messageToBroadcast.NodeIdSender = this.selfNodeId
+	messageToBroadcast.NodeIdOrigin = message.NodeIdSender
+
+	if message.HasFlag(nodes.FLAG_URGENT) {
+		this.broadcastMessageToFollowers(message.NodeIdSender, messageToBroadcast)
 	} else {
-		this.broadcastLeader(message)
+		this.executeNonUrgentMessage(seqNumForMessage, message.NodeIdSender, messageToBroadcast)
 	}
 }
 
-func (this *ZabBroadcaster) broadcastLeader(message *nodes.Message) {
-	if this.isAlreadyReceivedSeqNumByFollowerNodeId(message) {
-		this.sendAckToNode(message.NodeIdSender, message)
-		return
-	}
-
-	seqNumForMessage := atomic.AddUint32(&this.seqNum, 1)
-	messageToBroadcast := nodes.CreateMessageBroadcast(this.selfNodeId, this.selfNodeId, string(message.Content))
-	messageToBroadcast.SeqNum = seqNumForMessage
-	messageToBroadcast.NodeIdOrigin = this.selfNodeId
+func (this *ZabBroadcaster) executeNonUrgentMessage(seqNumForMessage uint32, nodeIdSender uint32, message *nodes.Message) {
+	fmt.Printf("[%d] Broadcasting message from node %d old SeqNum %d with new SeqNum %d of message type %d\n", this.selfNodeId,
+		message.NodeIdSender, message.SeqNum, message.SeqNum, message.Type)
 
 	go func() {
 		this.waitBroadcastLeaderTurn(seqNumForMessage)
-		this.broadcastMessageToFollowers(messageToBroadcast)
+
+		this.sendAckToNode(nodeIdSender, message)
+		this.broadcastMessageToFollowers(nodeIdSender, message)
+
 		atomic.AddUint32(&this.seqNumToSendTurn, 1)
 	}()
+}
 
-	this.addReceivedSeqNumByFollowerNodeId(message)
-
-	this.sendAckToNode(message.NodeIdSender, message)
+func (this *ZabBroadcaster) getSeqNumForMessage(message *nodes.Message) uint32 {
+	if message.HasNotFlag(nodes.FLAG_URGENT) {
+		return atomic.AddUint32(&this.seqNum, 1)
+	} else {
+		return message.SeqNum
+	}
 }
 
 func (this *ZabBroadcaster) waitBroadcastLeaderTurn(seqNumBroadcastToWait uint32) {
@@ -42,39 +49,27 @@ func (this *ZabBroadcaster) waitBroadcastLeaderTurn(seqNumBroadcastToWait uint32
 	}
 }
 
-func (this *ZabBroadcaster) broadcastMessageToFollowers(message *nodes.Message) {
-	this.forEachFollower(func(followerNodeConnection *nodes.NodeConnection) {
-		followerNodeConnection.Write(message)
+func (this *ZabBroadcaster) broadcastMessageToFollowers(originalNodeSender uint32, message *nodes.Message) {
+	message.Type = nodes.MESSAGE_BROADCAST
 
-		if !message.IsType(MESSAGE_ACK_RETRANSMISSION) {
-			this.addMessagePendingAck(this.pendingFollowerAck, followerNodeConnection.GetNodeId(), message)
+	this.forEachFollowerExcept(originalNodeSender, func(followerNodeConnection *nodes.NodeConnection) {
+		if followerNodeConnection.GetNodeId() != this.leaderNodeId {
+			followerNodeConnection.Write(message)
+
+		} else if followerNodeConnection.GetNodeId() == this.leaderNodeId && message.HasNotFlag(nodes.FLAG_URGENT) {
+			this.onBroadcastMessageCallback(message)
+		}
+
+		if message.HasNotFlag(nodes.FLAG_URGENT) {
+			this.messagesPendingFollowersAck.Add(followerNodeConnection.GetNodeId(), message)
 		}
 	})
 }
 
-func (this *ZabBroadcaster) forEachFollower(consumer func(connection *nodes.NodeConnection)) {
+func (this *ZabBroadcaster) forEachFollowerExcept(exceptNodeId uint32, consumer func(connection *nodes.NodeConnection)) {
 	for _, followerNodeConnection := range this.nodeConnectionsStore.ToArrayNodeConnections() {
-		if followerNodeConnection.GetNodeId() != this.leaderNodeId {
+		if followerNodeConnection.GetNodeId() != exceptNodeId {
 			consumer(followerNodeConnection)
 		}
 	}
-}
-
-func (this *ZabBroadcaster) addReceivedSeqNumByFollowerNodeId(message *nodes.Message) {
-	if _, contains := this.receivedSeqNumByFollowerNodeId[message.NodeIdSender]; !contains {
-		this.receivedSeqNumByFollowerNodeId[message.NodeIdSender] = map[uint32]uint32{}
-	}
-
-	this.receivedSeqNumByFollowerNodeId[message.NodeIdSender][message.SeqNum] = message.SeqNum
-}
-
-func (this *ZabBroadcaster) isAlreadyReceivedSeqNumByFollowerNodeId(message *nodes.Message) bool {
-	if _, contains := this.receivedSeqNumByFollowerNodeId[message.NodeIdSender]; !contains {
-		this.receivedSeqNumByFollowerNodeId[message.NodeIdSender] = map[uint32]uint32{}
-		return false
-	}
-
-	_, contained := this.receivedSeqNumByFollowerNodeId[message.NodeIdSender][message.SeqNum]
-
-	return contained
 }
