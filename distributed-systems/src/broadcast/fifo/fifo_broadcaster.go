@@ -42,15 +42,15 @@ func (this *FifoBroadcaster) OnBroadcastMessage(messages []*nodes.Message, newMe
 	fmt.Printf("[%d] Recieved broadcast message from node %d with TTL %d and SeqNum %d (Prev: %d). Content: \"%s\"\n",
 		this.selfNodeId, message.NodeIdOrigin, message.TTL, message.SeqNum, lastSeqNumDelivered, message.Content)
 
-	if msgSeqNumbReceived > lastSeqNumDelivered && message.TTL != 0 && message.NodeIdOrigin != this.selfNodeId {
+	if msgSeqNumbReceived > lastSeqNumDelivered && message.NodeIdOrigin != this.selfNodeId {
 		broadcastData.AddToBuffer(message)
 
 		for _, messageInBuffer := range broadcastData.RetrieveDeliverableMessages(msgSeqNumbReceived) {
-			broadcastData.lastSeqNumDelivered = messageInBuffer.SeqNum
-			this.doBroadcast(messageInBuffer, false)
-
 			newMessageCallback(messageInBuffer)
 		}
+	}
+	if message.TTL != 0 {
+		this.doBroadcast(message, false)
 	}
 }
 

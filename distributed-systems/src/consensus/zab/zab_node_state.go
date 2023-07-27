@@ -5,4 +5,5 @@ type NodeState int
 const (
 	BROADCAST = iota
 	ELECTION
+	STARTING
 )

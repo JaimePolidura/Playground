@@ -4,11 +4,15 @@ import (
 	"distributed-systems/src/broadcast"
 	"distributed-systems/src/broadcast/fifo"
 	"distributed-systems/src/nodes"
-	"strconv"
 )
 
 const MESSAGE_ACK = 1
 const MESSAGE_ACK_RETRANSMISSION = 2
+const MESSAGE_HEARTBEAT = 3
+const MESSAGE_ELECTION_FAILURE_DETECTED = 4
+const MESSAGE_ELECTION_PROPOSAL = 5
+const MESSAGE_ELECTION_ACK_PROPOSAL = 6
+const MESSAGE_ELECTION_COMMIT = 7
 
 type ZabBroadcaster struct {
 	selfNodeId           uint32
@@ -74,8 +78,8 @@ func (this *ZabBroadcaster) isFollower() bool {
 }
 
 func (this *ZabBroadcaster) sendAckToNode(nodeIdToSendAck uint32, messageToAck *nodes.Message) {
-	ackMessage := nodes.CreateMessageWithType(messageToAck.NodeIdOrigin, this.selfNodeId, strconv.Itoa(int(messageToAck.SeqNum)),
-		MESSAGE_ACK).AddFlag(nodes.BROADCAST_FLAG)
+	ackMessage := nodes.CreateMessage(messageToAck.NodeIdOrigin, this.selfNodeId, MESSAGE_ACK)
+	ackMessage.AddFlag(nodes.BROADCAST_FLAG)
 	ackMessage.SetContentUin32(messageToAck.SeqNum)
 
 	this.nodeConnectionsStore.Get(nodeIdToSendAck).Write(ackMessage)

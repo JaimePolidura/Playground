@@ -9,7 +9,7 @@ import (
 type NodeConnection struct {
 	nativeConnection net.Conn
 
-	selfNodeId uint32 //References nodeId of the node that holds the conenction
+	selfNodeId uint32 //References nodeId of the node that holds the connection
 
 	nodeId uint32 //References nodeId of nativeConnections
 	port   uint32

@@ -1,0 +1,25 @@
+[0] Broadcasting "Running on fifo :D" with TTL 3 and SeqNum 1 to 1, 4,
+[1] Recieved broadcast message from node 0 with TTL 3 and SeqNum 1 (Prev: 0). Content: "Running on fifo :D"
+[4] Recieved broadcast message from node 0 with TTL 3 and SeqNum 1 (Prev: 0). Content: "Running on fifo :D"
+
+[4] Broadcasting "Running on fifo :D" with TTL 2 and SeqNum 1 to 1, 2,
+[1] Broadcasting "Running on fifo :D" with TTL 2 and SeqNum 1 to 4, 2,
+[1] Recieved broadcast message from node 0 with TTL 2 and SeqNum 1 (Prev: 1). Content: "Running on fifo :D"
+[2] Recieved broadcast message from node 0 with TTL 2 and SeqNum 1 (Prev: 0). Content: "Running on fifo :D"
+[4] Recieved broadcast message from node 0 with TTL 2 and SeqNum 1 (Prev: 1). Content: "Running on fifo :D"
+[2] Recieved broadcast message from node 0 with TTL 2 and SeqNum 1 (Prev: 0). Content: "Running on fifo :D"
+
+[4] Broadcasting "Running on fifo :D" with TTL 2 and SeqNum 1 to 1, 2,
+[1] Broadcasting "Running on fifo :D" with TTL 2 and SeqNum 1 to 4, 2,
+[1] Recieved broadcast message from node 0 with TTL 2 and SeqNum 1 (Prev: 1). Content: "Running on fifo :D"
+[2] Recieved broadcast message from node 0 with TTL 2 and SeqNum 1 (Prev: 0). Content: "Running on fifo :D"
+[4] Recieved broadcast message from node 0 with TTL 2 and SeqNum 1 (Prev: 1). Content: "Running on fifo :D"
+[2] Recieved broadcast message from node 0 with TTL 2 and SeqNum 1 (Prev: 0). Content: "Running on fifo :D"
+
+[2] Broadcasting "Running on fifo :D" with TTL 1 and SeqNum 1 to 3, 0,
+[3] Recieved broadcast message from node 0 with TTL 1 and SeqNum 1 (Prev: 0). Content: "Running on fifo :D"
+[0] Recieved broadcast message from node 0 with TTL 1 and SeqNum 1 (Prev: 0). Content: "Running on fifo :D"
+
+[3] Broadcasting "Running on fifo :D" with TTL 0 and SeqNum 1 to 0, 1,
+[0] Recieved broadcast message from node 0 with TTL 0 and SeqNum 1 (Prev: 0). Content: "Running on fifo :D"
+[1] Recieved broadcast message from node 0 with TTL 0 and SeqNum 1 (Prev: 1). Content: "Running on fifo :D"

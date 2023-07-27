@@ -19,7 +19,7 @@ type Message struct {
 }
 
 func (this *Message) GetSizeInBytes() uint32 {
-	return 4 + 4 + 4 + 4 + 1 + 1 + uint32(len(this.Content))
+	return 4 + 4 + 4 + 4 + 1 + 1 + 1 + uint32(len(this.Content))
 }
 
 func (this *Message) GetMessageId() uint64 {
@@ -57,6 +57,14 @@ func (this *Message) SetContentUin32(newContent uint32) {
 
 func (this *Message) GetContentToUint32() uint32 {
 	return binary.BigEndian.Uint32(this.Content)
+}
+
+func CreateMessage(nodeIdOrigin uint32, nodeIdSender uint32, typeMessage uint8) *Message {
+	return &Message{
+		NodeIdOrigin: nodeIdOrigin,
+		NodeIdSender: nodeIdSender,
+		Type:         typeMessage,
+	}
 }
 
 func CreateMessageWithType(nodeIdOrigin uint32, nodeIdSender uint32, content string, typeMessage uint8) *Message {
@@ -112,7 +120,8 @@ func serializeNotIncludingSize(message *Message) []byte {
 func sizeToBytes(size uint32) []byte {
 	var buf bytes.Buffer
 	binary.Write(&buf, binary.BigEndian, size)
-	return buf.Bytes()
+	a := buf.Bytes()
+	return a
 }
 
 func Deserialize(bytes []byte, start uint32) (_message *Message, _endInclusive uint32, _error error) {
@@ -127,7 +136,7 @@ func Deserialize(bytes []byte, start uint32) (_message *Message, _endInclusive u
 	Type := bytes[start+12+4]
 	Flags := bytes[start+17]
 	ContentSize := bytes[start+18]
-	Content := bytes[start+19 : uint32(start)+19+uint32(ContentSize)-1]
+	Content := bytes[start+19 : uint32(start)+19+uint32(ContentSize)]
 
 	message := &Message{
 		NodeIdOrigin: NodeIdOrigin,

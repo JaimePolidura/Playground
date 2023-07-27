@@ -1,11 +1,16 @@
 package zab
 
-import "distributed-systems/src/nodes"
+import (
+	"distributed-systems/src/broadcast/zab"
+	"distributed-systems/src/nodes"
+)
 
 func (this *ZabNode) startHeartbeatTimer() {
 	select {
 	case <-this.heartbeatTimerTimeout.C:
-		this.node.Broadcast(nodes.CreateMessageBroadcast(this.node.GetNodeId(), this.node.GetNodeId(), "").WithType(MESSAGE_ELECTION_FAILURE_DETECTED))
+		if this.IsFollower() && this.state == BROADCAST {
+			this.node.Broadcast(nodes.CreateMessageBroadcast(this.node.GetNodeId(), this.node.GetNodeId(), "").WithType(zab.MESSAGE_ELECTION_FAILURE_DETECTED))
+		}
 	}
 }
 
@@ -16,7 +21,7 @@ func (this *ZabNode) handleNodeFailureMessage() {
 	distance := this.getRingDistanceClockwise(this.leaderNodeId)
 
 	if distance == 1 {
-		this.node.Broadcast(nodes.CreateMessageBroadcast(this.node.GetNodeId(), this.node.GetNodeId(), "").WithType(MESSAGE_ELECTION_PROPOSAL))
+		this.node.Broadcast(nodes.CreateMessageBroadcast(this.node.GetNodeId(), this.node.GetNodeId(), "").WithType(zab.MESSAGE_ELECTION_PROPOSAL))
 	}
 }
 
@@ -24,7 +29,7 @@ func (this *ZabNode) ackProposal(message *nodes.Message) {
 	proposerNodeId := message.NodeIdSender
 	nodeConnection := this.node.GetNodeConnectionsStore().Get(proposerNodeId)
 
-	nodeConnection.Write(nodes.CreateMessageWithType(this.GetNodeId(), this.GetNodeId(), "", MESSAGE_ELECTION_ACK_PROPOSAL))
+	nodeConnection.Write(nodes.CreateMessageWithType(this.GetNodeId(), this.GetNodeId(), "", zab.MESSAGE_ELECTION_ACK_PROPOSAL))
 }
 
 func (this *ZabNode) collectAckProposal() {
@@ -33,7 +38,7 @@ func (this *ZabNode) collectAckProposal() {
 	isQuorumSatisfied := this.nNodesThatHaveAckElectionProposal >= nNodesQuorum
 
 	if isQuorumSatisfied {
-		this.node.Broadcast(nodes.CreateMessageBroadcast(this.node.GetNodeId(), this.node.GetNodeId(), "").WithType(MESSAGE_ELECTION_COMMIT))
+		this.node.Broadcast(nodes.CreateMessageBroadcast(this.node.GetNodeId(), this.node.GetNodeId(), "").WithType(zab.MESSAGE_ELECTION_COMMIT))
 		this.saveNewLeader(this.selfNodeIdRingIndex)
 	}
 }

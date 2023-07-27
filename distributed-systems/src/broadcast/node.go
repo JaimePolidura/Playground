@@ -86,6 +86,12 @@ func (this *Node) OpenConnectionsToNodes(nodes []*Node) {
 	}
 }
 
+func (this *Node) OpenConnectionToNode(node *Node) {
+	if node.selfNodeId != this.selfNodeId {
+		this.nodeConnectionsStore.Open(node.selfNodeId)
+	}
+}
+
 func (this *Node) GetNodeConnectionsStore() *nodes.NodeConnectionsStore {
 	return this.nodeConnectionsStore
 }

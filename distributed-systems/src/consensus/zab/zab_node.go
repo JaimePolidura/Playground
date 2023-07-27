@@ -2,6 +2,7 @@ package zab
 
 import (
 	"distributed-systems/src/broadcast"
+	"distributed-systems/src/broadcast/zab"
 	"distributed-systems/src/nodes"
 )
 
@@ -9,18 +10,13 @@ import (
 	"time"
 )
 
-const MESSAGE_HEARTBEAT = 3
-const MESSAGE_ELECTION_FAILURE_DETECTED = 4
-const MESSAGE_ELECTION_PROPOSAL = 5
-const MESSAGE_ELECTION_ACK_PROPOSAL = 6
-const MESSAGE_ELECTION_COMMIT = 7
-
 type ZabNode struct {
 	node *broadcast.Node
 
 	state NodeState
 
 	heartbeatTimeMs       uint64
+	heartbeatTimeoutMs    uint64
 	heartbeatSenderTicker *time.Ticker
 	heartbeatTimerTimeout *time.Timer
 
@@ -33,15 +29,15 @@ type ZabNode struct {
 	leaderNodeId uint32
 }
 
-func CreateZabNode(selfNodeId uint32, port uint16, leaderNodeId uint32, heartbeatTimeMs uint64, broadcasterNode broadcast.Broadcaster) *ZabNode {
+func CreateZabNode(selfNodeId uint32, port uint16, leaderNodeId uint32, heartbeatTimeMs uint64, heartbeatTimeoutMs uint64, broadcasterNode broadcast.Broadcaster) *ZabNode {
 	zabNode := &ZabNode{
 		node:                  broadcast.CreateNode(selfNodeId, port, broadcasterNode),
-		heartbeatSenderTicker: time.NewTicker(time.Duration(heartbeatTimeMs)),
-		heartbeatTimerTimeout: time.NewTimer(time.Duration(heartbeatTimeMs*10 + heartbeatTimeMs/2)),
+		heartbeatSenderTicker: time.NewTicker(time.Duration(heartbeatTimeMs * uint64(time.Millisecond))),
+		heartbeatTimerTimeout: time.NewTimer(time.Duration(heartbeatTimeoutMs * uint64(time.Millisecond))),
 		heartbeatTimeMs:       heartbeatTimeMs,
 		leaderNodeId:          leaderNodeId,
 		epoch:                 0,
-		state:                 BROADCAST,
+		state:                 STARTING,
 		nodesIdRing:           make([]uint32, 0),
 	}
 
@@ -59,20 +55,20 @@ func CreateZabNode(selfNodeId uint32, port uint16, leaderNodeId uint32, heartbea
 }
 
 func (this *ZabNode) OnBroadcastMessage(message *nodes.Message) {
-	if message.IsType(MESSAGE_HEARTBEAT) && this.IsFollower() {
+	if message.IsType(zab.MESSAGE_HEARTBEAT) && this.IsFollower() {
 		this.heartbeatTimerTimeout.Reset(this.GetDurationHeartbeatTimeout(this.heartbeatTimeMs))
 		return
 	}
 }
 
 func (this *ZabNode) OnSingleMessage(message *nodes.Message) {
-	if message.IsType(MESSAGE_ELECTION_FAILURE_DETECTED) {
+	if message.IsType(zab.MESSAGE_ELECTION_FAILURE_DETECTED) {
 		this.handleNodeFailureMessage()
-	} else if message.IsType(MESSAGE_ELECTION_PROPOSAL) {
+	} else if message.IsType(zab.MESSAGE_ELECTION_PROPOSAL) {
 		this.ackProposal(message)
-	} else if message.IsType(MESSAGE_ELECTION_ACK_PROPOSAL) {
+	} else if message.IsType(zab.MESSAGE_ELECTION_ACK_PROPOSAL) {
 		this.collectAckProposal()
-	} else if message.IsType(MESSAGE_ELECTION_COMMIT) {
+	} else if message.IsType(zab.MESSAGE_ELECTION_COMMIT) {
 		this.saveNewLeader(message.NodeIdSender)
 	}
 }
@@ -85,10 +81,18 @@ func (this *ZabNode) GetNodeId() uint32 {
 	return this.node.GetNodeId()
 }
 
+func (this *ZabNode) GetNode() *broadcast.Node {
+	return this.node
+}
+
 func (this *ZabNode) IsLeader() bool {
 	return this.leaderNodeId == this.node.GetNodeId()
 }
 
 func (this *ZabNode) IsFollower() bool {
 	return this.leaderNodeId != this.node.GetNodeId()
+}
+
+func (this *ZabNode) SetStateToBroadcast() {
+	this.state = BROADCAST
 }
