@@ -12,7 +12,11 @@ func (this *ZabNode) startSendingHeartbeats() {
 		select {
 		case <-this.heartbeatSenderTicker.C:
 			if this.IsLeader() && this.state == BROADCAST {
-				message := nodes.CreateMessageBroadcast(this.node.GetNodeId(), this.node.GetNodeId(), "").WithType(zab.MESSAGE_HEARTBEAT).WithFlag(nodes.FLAG_URGENT)
+				message := nodes.CreateMessage(
+					nodes.WithNodeId(this.GetNodeId()),
+					nodes.WithType(zab.MESSAGE_HEARTBEAT),
+					nodes.WithFlags(nodes.FLAG_URGENT))
+
 				this.node.Broadcast(message)
 			}
 		}

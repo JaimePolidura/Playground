@@ -60,10 +60,6 @@ func CreateZabNode(selfNodeId uint32, port uint16, leaderNodeId uint32, heartbea
 	return zabNode
 }
 
-func (this *ZabNode) GetDurationHeartbeatTimeout(heartbeatSenderTicker uint64) time.Duration {
-	return time.Duration(heartbeatSenderTicker*2 + heartbeatSenderTicker)
-}
-
 func (this *ZabNode) GetNodeId() uint32 {
 	return this.node.GetNodeId()
 }

@@ -27,7 +27,7 @@ func startZab() {
 			initPort+uint16(nodeId),
 			0,
 			100,
-			300,
+			1000,
 			zab.CreateZabBroadcaster(nodeId, 0, func(newMessage *nodes.Message) { onMessage(copyOfNodeId, newMessage) }))
 
 		for otherNodeId := uint32(0); otherNodeId < nNodes; otherNodeId++ {

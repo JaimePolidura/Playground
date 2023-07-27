@@ -3,14 +3,17 @@ package zab
 import (
 	"distributed-systems/src/broadcast/zab"
 	"distributed-systems/src/nodes"
+	"time"
 )
 
 func (this *ZabNode) startHeartbeatTimer() {
 	select {
 	case <-this.heartbeatTimerTimeout.C:
 		if this.IsFollower() && this.state == BROADCAST {
-			message := nodes.CreateMessageBroadcast(this.node.GetNodeId(), this.node.GetNodeId(), "").WithType(zab.MESSAGE_ELECTION_FAILURE_DETECTED).WithFlag(nodes.FLAG_URGENT)
-			this.node.Broadcast(message)
+			this.node.Broadcast(nodes.CreateMessage(
+				nodes.WithNodeId(this.GetNodeId()),
+				nodes.WithType(zab.MESSAGE_ELECTION_FAILURE_DETECTED),
+				nodes.WithFlags(nodes.FLAG_BYPASS_LEADER)))
 		}
 	}
 }
@@ -22,7 +25,10 @@ func (this *ZabNode) handleNodeFailureMessage(message []*nodes.Message) {
 	distance := this.getRingDistanceClockwise(this.leaderNodeId)
 
 	if distance == 1 {
-		this.node.Broadcast(nodes.CreateMessageBroadcast(this.node.GetNodeId(), this.node.GetNodeId(), "").WithType(zab.MESSAGE_ELECTION_PROPOSAL))
+		this.node.Broadcast(nodes.CreateMessage(
+			nodes.WithNodeId(this.GetNodeId()),
+			nodes.WithType(zab.MESSAGE_ELECTION_PROPOSAL),
+			nodes.WithFlags(nodes.FLAG_BYPASS_LEADER)))
 	}
 }
 
@@ -30,7 +36,10 @@ func (this *ZabNode) handleElectionProposalMessage(messages []*nodes.Message) {
 	proposerNodeId := messages[0].NodeIdSender
 	nodeConnection := this.node.GetNodeConnectionsStore().Get(proposerNodeId)
 
-	nodeConnection.Write(nodes.CreateMessageWithType(this.GetNodeId(), this.GetNodeId(), "", zab.MESSAGE_ELECTION_ACK_PROPOSAL))
+	nodeConnection.Write(nodes.CreateMessage(
+		nodes.WithNodeId(this.GetNodeId()),
+		nodes.WithType(zab.MESSAGE_ELECTION_PROPOSAL),
+		nodes.WithFlags(nodes.FLAG_BYPASS_LEADER)))
 }
 
 func (this *ZabNode) handleElectionAckProposalMessage(message []*nodes.Message) {
@@ -39,13 +48,17 @@ func (this *ZabNode) handleElectionAckProposalMessage(message []*nodes.Message) 
 	isQuorumSatisfied := this.nNodesThatHaveAckElectionProposal >= nNodesQuorum
 
 	if isQuorumSatisfied {
-		this.node.Broadcast(nodes.CreateMessageBroadcast(this.node.GetNodeId(), this.node.GetNodeId(), "").WithType(zab.MESSAGE_ELECTION_COMMIT))
+		this.node.Broadcast(nodes.CreateMessage(
+			nodes.WithNodeId(this.GetNodeId()),
+			nodes.WithType(zab.MESSAGE_ELECTION_COMMIT),
+			nodes.WithFlags(nodes.FLAG_BYPASS_LEADER)))
+
 		this.saveNewLeader(this.selfNodeIdRingIndex)
 	}
 }
 
 func (this *ZabNode) handleHeartbeatMessage(message []*nodes.Message) {
-	this.heartbeatTimerTimeout.Reset(this.GetDurationHeartbeatTimeout(this.heartbeatTimeMs))
+	this.heartbeatTimerTimeout.Reset(time.Duration(this.heartbeatTimeoutMs))
 }
 
 func (this *ZabNode) handleElectionCommitMessage(messages []*nodes.Message) {

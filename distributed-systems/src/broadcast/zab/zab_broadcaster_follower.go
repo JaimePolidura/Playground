@@ -40,8 +40,6 @@ func (this *ZabBroadcaster) onBroadcastMessageFollower(message *nodes.Message) {
 
 func (this *ZabBroadcaster) sendBroadcastMessageToLeader(message *nodes.Message) {
 	message.SeqNum = atomic.AddUint32(&this.seqNum, 1)
-	//message = message.WithType(MESSAGE_DO_BROADCAST)
-
 	this.messagesPendingLeaderAck.Add(this.leaderNodeId, message)
 	this.nodeConnectionsStore.Get(this.leaderNodeId).Write(message)
 }

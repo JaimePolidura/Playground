@@ -52,7 +52,7 @@ func (this *ZabBroadcaster) Broadcast(message *nodes.Message) {
 	if this.isFollower() {
 		this.sendBroadcastMessageToLeader(message)
 	} else {
-		this.broadcastToFollowers(message)
+		this.sendMessageToFollowers(message)
 	}
 }
 
@@ -74,7 +74,7 @@ func (this *ZabBroadcaster) SetNodeConnectionsStore(store *nodes.NodeConnections
 
 func (this *ZabBroadcaster) HandleDoBroadcast(messages []*nodes.Message) {
 	for _, message := range messages {
-		this.broadcastToFollowers(message)
+		this.sendMessageToFollowers(message.WithType(nodes.MESSAGE_BROADCAST))
 	}
 }
 
@@ -117,7 +117,10 @@ func (this *ZabBroadcaster) isFollower() bool {
 
 func (this *ZabBroadcaster) sendAckToNode(nodeIdToSendAck uint32, messageToAck *nodes.Message) {
 	if this.selfNodeId != nodeIdToSendAck && !messageToAck.HasFlag(nodes.FLAG_URGENT) {
-		ackMessage := nodes.CreateMessage(messageToAck.NodeIdOrigin, this.selfNodeId, MESSAGE_ACK)
+		ackMessage := nodes.CreateMessage(
+			nodes.WithOrigin(messageToAck.NodeIdOrigin),
+			nodes.WithSenderNodeId(this.selfNodeId),
+			nodes.WithType(MESSAGE_ACK))
 		ackMessage.SetContentUin32(messageToAck.SeqNum)
 
 		fmt.Printf("[%d] Sending ACK to node %d with SeqNum %d\n", this.selfNodeId, nodeIdToSendAck, messageToAck.SeqNum)

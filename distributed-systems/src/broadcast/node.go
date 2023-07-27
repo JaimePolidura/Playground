@@ -67,7 +67,10 @@ func (this *Node) OnBroadcastMessage(callback func(message *nodes.Message)) {
 }
 
 func (this *Node) BroadcastString(content string) {
-	this.broadcasterNode.Broadcast(nodes.CreateMessageBroadcast(this.selfNodeId, this.selfNodeId, content).WithType(nodes.MESSAGE_DO_BROADCAST))
+	this.broadcasterNode.Broadcast(nodes.CreateMessage(
+		nodes.WithNodeId(this.selfNodeId),
+		nodes.WithType(nodes.MESSAGE_DO_BROADCAST),
+		nodes.WithContentString(content)))
 }
 
 func (this *Node) Broadcast(message *nodes.Message) {

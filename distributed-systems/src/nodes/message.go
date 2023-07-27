@@ -6,22 +6,21 @@ import (
 	"errors"
 )
 
-const FLAG_URGENT = 1 //Skips order, ack. Used for heartbeats
+// Skips order, ack. Used for heartbeats
+const FLAG_URGENT = 1
+
+// The follower will communicate to the other followers without pass through the leader
+// Used for when leader has failed
+const FLAG_BYPASS_LEADER = 2
 const MESSAGE_BROADCAST = 0
 const MESSAGE_DO_BROADCAST = 8
 
 type Message struct {
-	NodeIdOrigin uint32
-	NodeIdSender uint32
-	SeqNum       uint32
-	TTL          int32
-	Type         uint8
-	Flags        uint8
-	Content      []byte //Content size 1 byte
+	Opts
 }
 
 func (this *Message) Clone() *Message {
-	return &Message{
+	return &Message{Opts{
 		NodeIdOrigin: this.NodeIdOrigin,
 		NodeIdSender: this.NodeIdSender,
 		SeqNum:       this.SeqNum,
@@ -29,7 +28,7 @@ func (this *Message) Clone() *Message {
 		Type:         this.Type,
 		Flags:        this.Flags,
 		Content:      this.Content,
-	}
+	}}
 }
 
 func (this *Message) GetSizeInBytes() uint32 {
@@ -41,11 +40,6 @@ func (this *Message) GetMessageId() uint64 {
 }
 
 func (this *Message) AddFlag(flag uint8) *Message {
-	this.Flags |= flag
-	return this
-}
-
-func (this *Message) WithFlag(flag uint8) *Message {
 	this.Flags |= flag
 	return this
 }
@@ -75,31 +69,6 @@ func (this *Message) SetContentUin32(newContent uint32) {
 
 func (this *Message) GetContentToUint32() uint32 {
 	return binary.BigEndian.Uint32(this.Content)
-}
-
-func CreateMessage(nodeIdOrigin uint32, nodeIdSender uint32, typeMessage uint8) *Message {
-	return &Message{
-		NodeIdOrigin: nodeIdOrigin,
-		NodeIdSender: nodeIdSender,
-		Type:         typeMessage,
-	}
-}
-
-func CreateMessageWithType(nodeIdOrigin uint32, nodeIdSender uint32, content string, typeMessage uint8) *Message {
-	return &Message{
-		NodeIdOrigin: nodeIdOrigin,
-		NodeIdSender: nodeIdSender,
-		Content:      []byte(content),
-		Type:         typeMessage,
-	}
-}
-
-func CreateMessageBroadcast(nodeIdOrigin uint32, nodeIdSender uint32, content string) *Message {
-	return &Message{
-		NodeIdOrigin: nodeIdOrigin,
-		NodeIdSender: nodeIdSender,
-		Content:      []byte(content),
-	}
 }
 
 func SerializeAll(messages []*Message) []byte {
@@ -155,7 +124,7 @@ func Deserialize(bytes []byte, start uint32) (_message *Message, _endInclusive u
 	ContentSize := bytes[start+18]
 	Content := bytes[start+19 : uint32(start)+19+uint32(ContentSize)]
 
-	message := &Message{
+	message := &Message{Opts{
 		NodeIdOrigin: NodeIdOrigin,
 		NodeIdSender: NodeIdSender,
 		Content:      Content,
@@ -163,9 +132,66 @@ func Deserialize(bytes []byte, start uint32) (_message *Message, _endInclusive u
 		Flags:        Flags,
 		Type:         Type,
 		TTL:          TTL,
-	}
+	}}
 
 	return message, message.GetSizeInBytes() + start, nil
+}
+
+func WithSenderNodeId(nodeId uint32) OptFunc {
+	return func(opts *Opts) {
+		opts.NodeIdSender = nodeId
+	}
+}
+
+func WithSeqNum(seqNum uint32) OptFunc {
+	return func(opts *Opts) {
+		opts.SeqNum = seqNum
+	}
+}
+
+func WithOrigin(nodeId uint32) OptFunc {
+	return func(opts *Opts) {
+		opts.NodeIdSender = nodeId
+	}
+}
+
+func WithContentString(content string) OptFunc {
+	return func(opts *Opts) {
+		opts.Content = []byte(content)
+	}
+}
+
+func WithContentBytes(content []byte) OptFunc {
+	return func(opts *Opts) {
+		opts.Content = content
+	}
+}
+
+func WithFlags(flags ...uint8) OptFunc {
+	return func(opts *Opts) {
+		for _, flag := range flags {
+			opts.Flags |= flag
+		}
+	}
+}
+
+func WithType(Type uint8) OptFunc {
+	return func(opts *Opts) {
+		opts.Type = Type
+	}
+}
+
+func WithTTL(TTL int32) OptFunc {
+	return func(opts *Opts) {
+		opts.TTL = TTL
+	}
+}
+
+func WithNodeId(nodeId uint32) OptFunc {
+	return func(opts *Opts) {
+		opts.NodeIdOrigin = nodeId
+		opts.NodeIdSender = nodeId
+	}
 }
 
 func GetSizeAllInBytes(messages []*Message) uint32 {
@@ -175,4 +201,31 @@ func GetSizeAllInBytes(messages []*Message) uint32 {
 	}
 
 	return totalSize
+}
+
+type OptFunc func(*Opts)
+
+func CreateMessage(opts ...OptFunc) *Message {
+	o := defaultOpts()
+	for _, fn := range opts {
+		fn(&o)
+	}
+
+	return &Message{o}
+}
+
+func defaultOpts() Opts {
+	return Opts{
+		Content: []byte{},
+	}
+}
+
+type Opts struct {
+	NodeIdOrigin uint32
+	NodeIdSender uint32
+	SeqNum       uint32
+	TTL          int32
+	Type         uint8
+	Flags        uint8
+	Content      []byte //Content size 1 byte
 }
