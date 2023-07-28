@@ -23,6 +23,10 @@ func CreateNodeConnection(nodeId uint32, port uint32, selfNodeId uint32) *NodeCo
 	}
 }
 
+func (this *NodeConnection) Close() {
+	this.nativeConnection.Close()
+}
+
 func (this *NodeConnection) Open() {
 	conn, err := net.Dial("tcp", "127.0.0.1:"+strconv.Itoa(int(this.port)))
 

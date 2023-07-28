@@ -33,6 +33,22 @@ func CreateMessagesPendingAck(timeoutRetransmissionMs uint64) *MessagesPendingAc
 	}
 }
 
+func (this *MessagesPendingAck) StopRetransmissionTimer() {
+	for _, entry := range this.messagesPendingAckByNodeId {
+		for _, timer := range entry.retransmissionTimersBySeqNum {
+			timer.Stop()
+		}
+	}
+}
+
+func (this *MessagesPendingAck) RestartRetransmissionTimer() {
+	for _, entry := range this.messagesPendingAckByNodeId {
+		for nodeId, _ := range entry.retransmissionTimersBySeqNum {
+			entry.retransmissionTimersBySeqNum[nodeId] = time.NewTimer(this.timeoutRetransmissionMs)
+		}
+	}
+}
+
 func (this *MessagesPendingAck) SetOnRetransmissionCallback(retransmissionCallback func(nodeId uint32, message *nodes.Message)) {
 	this.retransmissionCallback = retransmissionCallback
 }

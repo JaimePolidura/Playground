@@ -16,12 +16,12 @@ func CreateFifoNodeBroadcastData() *FifoNodeBroadcastData {
 	}
 }
 
-func (data *FifoNodeBroadcastData) RetrieveDeliverableMessages(seqNumbReceived uint32) []*nodes.Message {
-	if data.lastSeqNumDelivered+1 == seqNumbReceived {
-		arr := data.buffer.RetrieveAllDeliverable()
+func (this *FifoNodeBroadcastData) RetrieveDeliverableMessages(seqNumbReceived uint32) []*nodes.Message {
+	if this.lastSeqNumDelivered+1 == seqNumbReceived {
+		arr := this.buffer.RetrieveAllDeliverable()
 
 		if len(arr) > 0 {
-			data.lastSeqNumDelivered = arr[len(arr)-1].SeqNum
+			this.lastSeqNumDelivered = arr[len(arr)-1].SeqNum
 		}
 
 		return arr
@@ -31,10 +31,10 @@ func (data *FifoNodeBroadcastData) RetrieveDeliverableMessages(seqNumbReceived u
 	}
 }
 
-func (data *FifoNodeBroadcastData) AddToBuffer(message *nodes.Message) {
-	data.buffer.Add(message)
+func (this *FifoNodeBroadcastData) AddToBuffer(message *nodes.Message) {
+	this.buffer.Add(message)
 }
 
-func (data *FifoNodeBroadcastData) GetLastSeqNumDelivered() uint32 {
-	return data.lastSeqNumDelivered
+func (this *FifoNodeBroadcastData) GetLastSeqNumDelivered() uint32 {
+	return this.lastSeqNumDelivered
 }

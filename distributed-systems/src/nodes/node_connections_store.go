@@ -10,33 +10,43 @@ func CreateNodeConnectionStore() *NodeConnectionsStore {
 	}
 }
 
-func (store *NodeConnectionsStore) Size() uint32 {
-	return uint32(len(store.restNodesConnections))
+func (this *NodeConnectionsStore) Size() uint32 {
+	return uint32(len(this.restNodesConnections))
 }
 
-func (store *NodeConnectionsStore) Add(otherNodeId uint32, otherNodePort uint32, selfNodeId uint32) {
-	store.restNodesConnections[otherNodeId] = CreateNodeConnection(otherNodeId, otherNodePort, selfNodeId)
+func (this *NodeConnectionsStore) AddConnection(connection *NodeConnection) {
+	this.restNodesConnections[connection.nodeId] = connection
 }
 
-func (store *NodeConnectionsStore) Contains(nodeId uint32) bool {
-	_, contained := store.restNodesConnections[nodeId]
+func (this *NodeConnectionsStore) Add(otherNodeId uint32, otherNodePort uint32, selfNodeId uint32) {
+	this.restNodesConnections[otherNodeId] = CreateNodeConnection(otherNodeId, otherNodePort, selfNodeId)
+}
+
+func (this *NodeConnectionsStore) Contains(nodeId uint32) bool {
+	_, contained := this.restNodesConnections[nodeId]
 	return contained
 }
 
-func (store *NodeConnectionsStore) Open(nodeId uint32) {
-	nodeConnection := store.restNodesConnections[nodeId]
+func (this *NodeConnectionsStore) Open(nodeId uint32) {
+	nodeConnection := this.restNodesConnections[nodeId]
 	nodeConnection.Open()
 }
 
-func (store *NodeConnectionsStore) Get(nodeId uint32) *NodeConnection {
-	return store.restNodesConnections[nodeId]
+func (this *NodeConnectionsStore) CloseAll() {
+	for _, connection := range this.restNodesConnections {
+		connection.Close()
+	}
 }
 
-func (store *NodeConnectionsStore) ToArrayNodeConnections() []*NodeConnection {
+func (this *NodeConnectionsStore) Get(nodeId uint32) *NodeConnection {
+	return this.restNodesConnections[nodeId]
+}
+
+func (this *NodeConnectionsStore) ToArrayNodeConnections() []*NodeConnection {
 	nodeConnections := make([]*NodeConnection, 0)
 
-	for key := range store.restNodesConnections {
-		nodeConnections = append(nodeConnections, store.restNodesConnections[key])
+	for key := range this.restNodesConnections {
+		nodeConnections = append(nodeConnections, this.restNodesConnections[key])
 	}
 
 	return nodeConnections

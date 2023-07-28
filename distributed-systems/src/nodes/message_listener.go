@@ -9,60 +9,88 @@ import (
 	"sync"
 )
 
+type NewMessage struct {
+	from    net.Conn
+	message *Message
+}
+
 type MessageListener struct {
 	selfNodeId        uint32
 	selfPort          uint16
 	bufferMessageSize sync.Pool
+
+	listener            net.Listener
+	nodeConnectionStore *NodeConnectionsStore
+
+	newMessage chan NewMessage
 }
 
 func CreateMessageListener(selfNodeId uint32, selfPort uint16) *MessageListener {
 	return &MessageListener{
-		selfNodeId: selfNodeId,
-		selfPort:   selfPort,
+		selfNodeId:          selfNodeId,
+		selfPort:            selfPort,
+		newMessage:          make(chan NewMessage, 100),
+		nodeConnectionStore: CreateNodeConnectionStore(),
 		bufferMessageSize: sync.Pool{New: func() interface{} {
 			return make([]byte, 4)
 		}},
 	}
 }
 
-func (listener *MessageListener) ListenAsync(onReadCallback func(message []*Message)) {
-	conn, err := net.Listen("tcp", "127.0.0.1:"+strconv.Itoa(int(listener.selfPort)))
+func (this *MessageListener) Stop() {
+	this.listener.Close()
+}
+
+func (this *MessageListener) ListenAsync() {
+	lis, err := net.Listen("tcp", "127.0.0.1:"+strconv.Itoa(int(this.selfPort)))
 
 	if err != nil {
-		fmt.Printf("[%d] ERROR %s %s\n", listener.selfNodeId, "message_listener.go:ListenAsync", err.Error())
+		fmt.Printf("[%d] ERROR %s %s\n", this.selfNodeId, "message_listener.go:ListenAsync", err.Error())
 		return
 	}
 
-	fmt.Printf("[%d] Started listening on port %d\n", listener.selfNodeId, listener.selfPort)
+	this.listener = lis
+
+	fmt.Printf("[%d] Started listening on port %d\n", this.selfNodeId, this.selfPort)
 
 	go func() {
 		for {
-			conn, _ := conn.Accept()
+			conn, _ := lis.Accept()
 
-			go listener.handleNewConnection(conn, onReadCallback)
+			go this.handleNewConnection(conn)
 		}
 	}()
 }
 
-func (listener *MessageListener) handleNewConnection(conn net.Conn, onReadCallback func(message []*Message)) {
-	for {
-		bufferSize := listener.bufferMessageSize.Get().([]byte)
+func (this *MessageListener) handleNewConnection(conn net.Conn) {
+	defer func() {
+		recover() //Interrupted by close
+	}()
 
-		messages, err := listener.deserializeMessages(conn, bufferSize)
+	for {
+		bufferSize := this.bufferMessageSize.Get().([]byte)
+
+		messages, err := this.deserializeMessages(conn, bufferSize)
 
 		if err != nil {
-			fmt.Printf("[%d] ERROR %s %s\n", listener.selfNodeId, "message_listener.go:handleNewConnection", err.Error())
+			fmt.Printf("[%d] ERROR %s %s\n", this.selfNodeId, "message_listener.go:handleNewConnection", err.Error())
 			continue
 		}
 
-		onReadCallback(messages)
+		for _, message := range messages {
+			this.newMessage <- NewMessage{
+				from:    conn,
+				message: message,
+			}
+		}
+
 		utils.ZeroArray(&bufferSize)
 
-		listener.bufferMessageSize.Put(bufferSize)
+		this.bufferMessageSize.Put(bufferSize)
 	}
 }
 
-func (listener *MessageListener) deserializeMessages(conn net.Conn, bufferSize []byte) ([]*Message, error) {
+func (this *MessageListener) deserializeMessages(conn net.Conn, bufferSize []byte) ([]*Message, error) {
 	messages := make([]*Message, 0)
 
 	conn.Read(bufferSize)

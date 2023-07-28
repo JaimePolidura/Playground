@@ -3,6 +3,7 @@ package zab
 import (
 	"distributed-systems/src/broadcast"
 	"distributed-systems/src/broadcast/zab"
+	"distributed-systems/src/nodes"
 )
 
 import (
@@ -14,18 +15,23 @@ type ZabNode struct {
 
 	state NodeState
 
-	heartbeatTimeMs       uint64
-	heartbeatTimeoutMs    uint64
-	heartbeatSenderTicker *time.Ticker
-	heartbeatTimerTimeout *time.Timer
+	nodesIdRing         []uint32
+	selfNodeIdRingIndex uint32
+	leaderNodeId        uint32
 
-	nodesIdRing                       []uint32
-	selfNodeIdRingIndex               uint32
+	//Follower
+	heartbeatTimerTimeout *time.Timer
+	heartbeatTimeoutMs    uint64
+	firstTimeout          bool
+
+	//Follower Election
 	nNodesThatHaveAckElectionProposal uint32
+	largestSeqNumSeenFromFollowers    uint32
+
+	//Leader
+	heartbeatSenderTicker *time.Ticker
 
 	epoch uint32
-
-	leaderNodeId uint32
 }
 
 func CreateZabNode(selfNodeId uint32, port uint16, leaderNodeId uint32, heartbeatTimeMs uint64, heartbeatTimeoutMs uint64, broadcasterNode *zab.ZabBroadcaster) *ZabNode {
@@ -33,8 +39,8 @@ func CreateZabNode(selfNodeId uint32, port uint16, leaderNodeId uint32, heartbea
 		node:                  broadcast.CreateNode(selfNodeId, port, broadcasterNode),
 		heartbeatSenderTicker: time.NewTicker(time.Duration(heartbeatTimeMs * uint64(time.Millisecond))),
 		heartbeatTimerTimeout: time.NewTimer(time.Duration(heartbeatTimeoutMs * uint64(time.Millisecond))),
-		heartbeatTimeMs:       heartbeatTimeMs,
 		leaderNodeId:          leaderNodeId,
+		firstTimeout:          true,
 		epoch:                 0,
 		state:                 STARTING,
 		nodesIdRing:           make([]uint32, 0),
@@ -73,6 +79,14 @@ func (this *ZabNode) IsLeader() bool {
 
 func (this *ZabNode) IsFollower() bool {
 	return this.leaderNodeId != this.node.GetNodeId()
+}
+
+func (this *ZabNode) Stop() {
+	this.node.Stop()
+}
+
+func (this *ZabNode) GetConnectionManager() *nodes.ConnectionManager {
+	return this.node.GetConnectionManager()
 }
 
 func (this *ZabNode) SetStateToBroadcast() {

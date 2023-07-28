@@ -27,7 +27,7 @@ func startZab() {
 			initPort+uint16(nodeId),
 			0,
 			100,
-			1000,
+			2000,
 			zab.CreateZabBroadcaster(nodeId, 0, 1500, func(newMessage *nodes.Message) { onMessage(copyOfNodeId, newMessage) }))
 
 		for otherNodeId := uint32(0); otherNodeId < nNodes; otherNodeId++ {
@@ -35,20 +35,20 @@ func startZab() {
 		}
 	}
 	for nodeId := uint32(0); nodeId < nNodes; nodeId++ {
-		zabNodes[nodeId].GetNode().StartListening()
+		zabNodes[nodeId].GetNode().StartListeningAsync()
 	}
 	for nodeId := uint32(0); nodeId < nNodes; nodeId++ {
-		for _, zabNode := range zabNodes {
-			zabNodes[nodeId].GetNode().OpenConnectionToNode(zabNode.GetNode())
-		}
+		zabNodes[nodeId].GetNode().GetConnectionManager().OpenAllConnections()
 	}
 	for _, zabNode := range zabNodes {
 		zabNode.SetStateToBroadcast()
 	}
 
-	zabNodes[1].GetNode().BroadcastString("Running on zab 1º!")
-	//zabNodes[1].GetNode().BroadcastString("Running on zab 2º!")
-	time.Sleep(time.Second * 5)
+	zabNodes[1].GetNode().BroadcastString("Running on zab 1º!", zab.MESSAGE_DO_BROADCAST)
+	time.Sleep(time.Second * 2)
+	fmt.Println("    ")
+	zabNodes[0].Stop()
+	time.Sleep(time.Second * 500)
 }
 
 func startFifo() {
@@ -70,15 +70,14 @@ func startFifo() {
 		for j := uint32(0); j < nNodes; j++ {
 			broadcasterNodes[i].AddOtherNodeConnection(j, j+1000)
 		}
+
+		broadcasterNodes[i].StartListeningAsync()
 	}
 	for i := uint32(0); i < nNodes; i++ {
-		broadcasterNodes[i].StartListening()
-	}
-	for i := uint32(0); i < nNodes; i++ {
-		broadcasterNodes[i].OpenConnectionsToNodes(broadcasterNodes)
+		broadcasterNodes[i].GetConnectionManager().OpenAllConnections()
 	}
 
-	broadcasterNodes[0].BroadcastString("Running on fifo :D")
+	broadcasterNodes[1].BroadcastString("Running on fifo :D", zab2.BROADCAST)
 	time.Sleep(time.Second * 5000)
 }
 

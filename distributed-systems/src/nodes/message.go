@@ -7,7 +7,7 @@ import (
 )
 
 // Skips order, ack. Used for heartbeats
-const FLAG_URGENT = 1
+const FLAG_BYPASS_ORDERING = 1
 
 // The follower will communicate to the other followers without pass through the leader
 // Used for when leader has failed
@@ -152,6 +152,14 @@ func WithSeqNum(seqNum uint32) OptFunc {
 func WithOrigin(nodeId uint32) OptFunc {
 	return func(opts *Opts) {
 		opts.NodeIdSender = nodeId
+	}
+}
+
+func WithContentUInt32(content uint32) OptFunc {
+	return func(opts *Opts) {
+		var buf bytes.Buffer
+		binary.Write(&buf, binary.BigEndian, content)
+		opts.Content = buf.Bytes()
 	}
 }
 

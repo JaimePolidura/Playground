@@ -14,15 +14,15 @@ func (this *ZabBroadcaster) sendMessageToFollowers(message *nodes.Message) {
 	messageToBroadcast.NodeIdSender = this.selfNodeId
 	messageToBroadcast.NodeIdOrigin = message.NodeIdSender
 
-	if message.HasFlag(nodes.FLAG_URGENT) {
-		this.sendUrgentMessageToFollowers(message.NodeIdSender, messageToBroadcast)
+	if message.HasFlag(nodes.FLAG_BYPASS_ORDERING) {
+		this.sendNonOrderedMessageToFollowers(message.NodeIdSender, messageToBroadcast)
 	} else {
-		this.sendNonUrgentMessageToFollowers(seqNumForMessage, message.NodeIdSender, messageToBroadcast)
+		this.orderAndSendMessageToFollowers(seqNumForMessage, message.NodeIdSender, messageToBroadcast)
 	}
 }
 
-func (this *ZabBroadcaster) sendUrgentMessageToFollowers(originalNodeSender uint32, message *nodes.Message) {
-	this.forEachFollowerExcept(originalNodeSender, func(followerNodeConnection *nodes.NodeConnection) {
+func (this *ZabBroadcaster) sendNonOrderedMessageToFollowers(originalNodeSender uint32, message *nodes.Message) {
+	this.nodesConnectionManager.ForEachConnectionExcept(originalNodeSender, func(followerNodeConnection *nodes.NodeConnection) {
 		if this.messagesDeliveredToFollowers.IsAlreadyDelivered(followerNodeConnection.GetNodeId(), message.SeqNum) {
 			return
 		}
@@ -33,7 +33,7 @@ func (this *ZabBroadcaster) sendUrgentMessageToFollowers(originalNodeSender uint
 	})
 }
 
-func (this *ZabBroadcaster) sendNonUrgentMessageToFollowers(seqNumForMessage uint32, nodeIdSender uint32, message *nodes.Message) {
+func (this *ZabBroadcaster) orderAndSendMessageToFollowers(seqNumForMessage uint32, nodeIdSender uint32, message *nodes.Message) {
 	fmt.Printf("[%d] Broadcasting message from node %d old SeqNum %d with new SeqNum %d of message type %d\n", this.selfNodeId,
 		message.NodeIdSender, message.SeqNum, message.SeqNum, message.Type)
 
@@ -41,7 +41,7 @@ func (this *ZabBroadcaster) sendNonUrgentMessageToFollowers(seqNumForMessage uin
 	this.sendAckToNode(nodeIdSender, message)
 	atomic.AddUint32(&this.seqNumToSendTurn, 1)
 
-	this.forEachFollowerExcept(nodeIdSender, func(followerNodeConnection *nodes.NodeConnection) {
+	this.nodesConnectionManager.ForEachConnectionExcept(nodeIdSender, func(followerNodeConnection *nodes.NodeConnection) {
 		if this.messagesDeliveredToFollowers.IsAlreadyDelivered(followerNodeConnection.GetNodeId(), message.SeqNum) {
 			return
 		}
@@ -57,7 +57,7 @@ func (this *ZabBroadcaster) sendNonUrgentMessageToFollowers(seqNumForMessage uin
 }
 
 func (this *ZabBroadcaster) getSeqNumForMessage(message *nodes.Message) uint32 {
-	if message.HasNotFlag(nodes.FLAG_URGENT) {
+	if message.HasNotFlag(nodes.FLAG_BYPASS_ORDERING) {
 		return atomic.AddUint32(&this.seqNum, 1)
 	} else {
 		return message.SeqNum
@@ -67,13 +67,5 @@ func (this *ZabBroadcaster) getSeqNumForMessage(message *nodes.Message) uint32 {
 func (this *ZabBroadcaster) waitBroadcastLeaderTurn(seqNumBroadcastToWait uint32) {
 	for seqNumBroadcastToWait != atomic.LoadUint32(&this.seqNumToSendTurn) {
 		time.Sleep(0) //Deschedule go routine
-	}
-}
-
-func (this *ZabBroadcaster) forEachFollowerExcept(exceptNodeId uint32, consumer func(connection *nodes.NodeConnection)) {
-	for _, followerNodeConnection := range this.nodeConnectionsStore.ToArrayNodeConnections() {
-		if followerNodeConnection.GetNodeId() != exceptNodeId {
-			consumer(followerNodeConnection)
-		}
 	}
 }

@@ -10,24 +10,24 @@ type BroadcasterNode struct {
 
 	canBroadcast bool
 
-	nodeConnectionsStore *nodes.NodeConnectionsStore
-	messageListener      *nodes.MessageListener
-	broadcaster          Broadcaster
+	nodesConnectionManager *nodes.ConnectionManager
+	messageListener        *nodes.MessageListener
+	broadcaster            Broadcaster
 
 	pendingToBroadcast []*nodes.Message
 }
 
-func CreateBroadcasterNode(nodeId uint32, port uint16, broadcaster Broadcaster, store *nodes.NodeConnectionsStore) *BroadcasterNode {
-	broadcaster.SetNodeConnectionsStore(store)
+func CreateBroadcasterNode(nodeId uint32, port uint16, broadcaster Broadcaster, nodesConnectionManager *nodes.ConnectionManager) *BroadcasterNode {
+	broadcaster.SetNodeConnectionsManager(nodesConnectionManager)
 
 	return &BroadcasterNode{
-		selfNodeId:           nodeId,
-		port:                 port,
-		broadcaster:          broadcaster,
-		messageListener:      nodes.CreateMessageListener(nodeId, port),
-		nodeConnectionsStore: store,
-		canBroadcast:         true,
-		pendingToBroadcast:   make([]*nodes.Message, 0),
+		selfNodeId:             nodeId,
+		port:                   port,
+		broadcaster:            broadcaster,
+		messageListener:        nodes.CreateMessageListener(nodeId, port),
+		nodesConnectionManager: nodesConnectionManager,
+		canBroadcast:           true,
+		pendingToBroadcast:     make([]*nodes.Message, 0),
 	}
 }
 
@@ -42,14 +42,6 @@ func (this *BroadcasterNode) Broadcast(message *nodes.Message) {
 
 func (this *BroadcasterNode) GetBroadcaster() Broadcaster {
 	return this.broadcaster
-}
-
-func (this *BroadcasterNode) OpenConnectionsToNodes(nodes []*BroadcasterNode) {
-	for _, node := range nodes {
-		if node.selfNodeId != this.selfNodeId {
-			this.nodeConnectionsStore.Open(node.selfNodeId)
-		}
-	}
 }
 
 func (this *BroadcasterNode) DisableBroadcast() {

@@ -8,26 +8,24 @@ type Node struct {
 	selfNodeId uint32
 	port       uint16
 
-	nodeConnectionsStore *nodes.NodeConnectionsStore
-	messageListener      *nodes.MessageListener
-	broadcasterNode      *BroadcasterNode
-
-	onBroadcastMessageCallback func(message *nodes.Message)
+	connectionManager *nodes.ConnectionManager
+	broadcasterNode   *BroadcasterNode
 
 	messageHandlers map[uint8]func(message []*nodes.Message)
+
+	onBroadcastMessageCallback func(message *nodes.Message)
 }
 
 func CreateNode(nodeId uint32, port uint16, broadcaster Broadcaster) *Node {
-	nodeConnectionsStore := nodes.CreateNodeConnectionStore()
-	broadcaster.SetNodeConnectionsStore(nodeConnectionsStore)
+	nodeConnectionManager := nodes.CreateConnectionManager(nodeId, port)
+	broadcaster.SetNodeConnectionsManager(nodeConnectionManager)
 
 	node := &Node{
-		selfNodeId:           nodeId,
-		port:                 port,
-		nodeConnectionsStore: nodeConnectionsStore,
-		messageListener:      nodes.CreateMessageListener(nodeId, port),
-		broadcasterNode:      CreateBroadcasterNode(nodeId, port, broadcaster, nodeConnectionsStore),
-		messageHandlers:      make(map[uint8]func(message []*nodes.Message)),
+		selfNodeId:        nodeId,
+		port:              port,
+		broadcasterNode:   CreateBroadcasterNode(nodeId, port, broadcaster, nodeConnectionManager),
+		messageHandlers:   make(map[uint8]func(message []*nodes.Message)),
+		connectionManager: nodeConnectionManager,
 	}
 
 	node.AddMessageHandler(nodes.MESSAGE_BROADCAST, node.broadcastMessageHandler)
@@ -35,10 +33,18 @@ func CreateNode(nodeId uint32, port uint16, broadcaster Broadcaster) *Node {
 	return node
 }
 
-func (this *Node) StartListening() {
-	this.messageListener.ListenAsync(func(messages []*nodes.Message) {
-		this.executeHandlerForMessages(messages)
-	})
+func (this *Node) Stop() {
+	this.connectionManager.Stop()
+}
+
+func (this *Node) StartListeningAsync() {
+	go func() {
+		this.connectionManager.StartListeningAsync()
+
+		for message := range this.connectionManager.NewMessage {
+			this.executeHandlerForMessage(message)
+		}
+	}()
 }
 
 func (this *Node) broadcastMessageHandler(messages []*nodes.Message) {
@@ -49,7 +55,7 @@ func (this *Node) broadcastMessageHandler(messages []*nodes.Message) {
 
 func (this *Node) AddOtherNodeConnection(otherNodeId uint32, port uint32) {
 	if otherNodeId != this.selfNodeId {
-		this.nodeConnectionsStore.Add(otherNodeId, port, this.selfNodeId)
+		this.connectionManager.Add(otherNodeId, port)
 	}
 }
 
@@ -66,10 +72,10 @@ func (this *Node) OnBroadcastMessage(callback func(message *nodes.Message)) {
 	this.onBroadcastMessageCallback = callback
 }
 
-func (this *Node) BroadcastString(content string) {
+func (this *Node) BroadcastString(content string, messageType uint8) {
 	this.broadcasterNode.Broadcast(nodes.CreateMessage(
 		nodes.WithNodeId(this.selfNodeId),
-		nodes.WithType(nodes.MESSAGE_DO_BROADCAST),
+		nodes.WithType(messageType),
 		nodes.WithContentString(content)))
 }
 
@@ -85,38 +91,24 @@ func (this *Node) GetNodeId() uint32 {
 	return this.selfNodeId
 }
 
-func (this *Node) OpenConnectionsToNodes(nodes []*Node) {
-	for _, node := range nodes {
-		if node.selfNodeId != this.selfNodeId {
-			this.nodeConnectionsStore.Open(node.selfNodeId)
-		}
-	}
-}
-
 func (this *Node) AddMessageHandler(typeMessage uint8, handler func(message []*nodes.Message)) {
 	this.messageHandlers[typeMessage] = handler
 }
 
-func (this *Node) OpenConnectionToNode(node *Node) {
-	if node.selfNodeId != this.selfNodeId {
-		this.nodeConnectionsStore.Open(node.selfNodeId)
-	}
-}
-
-func (this *Node) GetNodeConnectionsStore() *nodes.NodeConnectionsStore {
-	return this.nodeConnectionsStore
-}
-
 func (this *Node) executeHandlerForMessage(message *nodes.Message) {
-	this.messageHandlers[message.Type]([]*nodes.Message{message})
+	callback, contained := this.messageHandlers[message.Type]
+	if contained {
+		callback([]*nodes.Message{message})
+	}
 }
 
 func (this *Node) executeHandlerForMessages(messages []*nodes.Message) {
-	if len(messages) > 0 {
-		this.messageHandlers[messages[0].Type](messages)
+	callback, contained := this.messageHandlers[messages[0].Type]
+	if len(messages) > 0 && contained {
+		callback(messages)
 	}
 }
 
-func (this *Node) GetNodeConnections() []*nodes.NodeConnection {
-	return this.nodeConnectionsStore.ToArrayNodeConnections()
+func (this *Node) GetConnectionManager() *nodes.ConnectionManager {
+	return this.connectionManager
 }
