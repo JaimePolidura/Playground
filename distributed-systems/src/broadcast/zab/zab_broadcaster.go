@@ -9,7 +9,6 @@ import (
 )
 
 const MESSAGE_ACK = 1
-const MESSAGE_ACK_SUBMIT_RETRANSMISSION = 2
 const MESSAGE_HEARTBEAT = 3
 const MESSAGE_ELECTION_FAILURE_DETECTED = 4
 const MESSAGE_ELECTION_PROPOSAL = 5
@@ -35,20 +34,38 @@ type ZabBroadcaster struct {
 	messagesPendingLeaderAck   *ack.MessagesPendingAck
 }
 
-func CreateZabBroadcaster(selfNodeId uint32, leaderNodeId uint32, onBroadcastMessageCallback func(newMessage *nodes.Message)) *ZabBroadcaster {
-	return &ZabBroadcaster{
+func CreateZabBroadcaster(selfNodeId uint32, leaderNodeId uint32, retransmissionTimeout uint64, onBroadcastMessageCallback func(newMessage *nodes.Message)) *ZabBroadcaster {
+	broadcaster := &ZabBroadcaster{
 		fifoBroadcastDataByNodeId:    map[uint32]*fifo.FifoNodeBroadcastData{},
 		messagesDeliveredToFollowers: ack.CreateMessagesAlreadyDelivered(),
-		messagesPendingFollowersAck:  ack.CreateMessagesPendingAck(),
-		messagesPendingLeaderAck:     ack.CreateMessagesPendingAck(),
+		messagesPendingFollowersAck:  ack.CreateMessagesPendingAck(retransmissionTimeout),
+		messagesPendingLeaderAck:     ack.CreateMessagesPendingAck(retransmissionTimeout),
 		onBroadcastMessageCallback:   onBroadcastMessageCallback,
 		selfNodeId:                   selfNodeId,
 		leaderNodeId:                 leaderNodeId,
 		seqNumToSendTurn:             1,
 	}
+
+	broadcaster.messagesPendingFollowersAck.SetOnRetransmissionCallback(broadcaster.doRetransmission)
+	broadcaster.messagesPendingLeaderAck.SetOnRetransmissionCallback(broadcaster.doRetransmission)
+
+	return broadcaster
+}
+
+func (this *ZabBroadcaster) doRetransmission(nodeIdToRetransmit uint32, message *nodes.Message) {
+	fmt.Printf("[%d] ACK Timeout passed. Starting retransmission to node %d with SeqNum %d Message type %d\n",
+		this.selfNodeId, nodeIdToRetransmit, message.SeqNum, message.Type)
+
+	nodeConnection := this.nodeConnectionsStore.Get(nodeIdToRetransmit)
+	nodeConnection.Write(message)
 }
 
 func (this *ZabBroadcaster) Broadcast(message *nodes.Message) {
+	if message.HasFlag(nodes.FLAG_BYPASS_LEADER) {
+		this.sendMessageToFollowers(message)
+		return
+	}
+
 	if this.isFollower() {
 		this.sendBroadcastMessageToLeader(message)
 	} else {
@@ -80,26 +97,15 @@ func (this *ZabBroadcaster) HandleDoBroadcast(messages []*nodes.Message) {
 
 func (this *ZabBroadcaster) HandleAckMessage(messages []*nodes.Message) {
 	message := messages[0]
-
-	fmt.Printf("[%d] Received ACK message from node %d with SeqNum %d\n", this.selfNodeId, message.NodeIdSender, message.SeqNum)
-
-	if this.isFollower() {
-		this.messagesPendingLeaderAck.Delete(message.NodeIdSender, message.GetContentToUint32())
-	} else {
-		this.messagesPendingFollowersAck.Delete(message.NodeIdSender, message.GetContentToUint32())
-		this.messagesDeliveredToFollowers.Add(message.NodeIdSender, message.GetContentToUint32())
-	}
-}
-
-func (this *ZabBroadcaster) HandleAckSubmitRetransmissionMessage(messages []*nodes.Message) {
-	message := messages[0]
+	seqNumAcked := message.GetContentToUint32()
+	
+	fmt.Printf("[%d] Received ACK message from node %d with SeqNum %d\n", this.selfNodeId, message.NodeIdSender, seqNumAcked)
 
 	if this.isFollower() {
-		messagesToRetransmit := this.messagesPendingLeaderAck.GetAllLessThanSeqNum(this.leaderNodeId, message.GetContentToUint32())
-		this.nodeConnectionsStore.Get(this.leaderNodeId).WriteAll(messagesToRetransmit)
+		this.messagesPendingLeaderAck.Delete(message.NodeIdSender, seqNumAcked)
 	} else {
-		messagesToRetransmit := this.messagesPendingFollowersAck.GetAllLessThanSeqNum(message.NodeIdSender, message.GetContentToUint32())
-		this.nodeConnectionsStore.Get(message.NodeIdSender).WriteAll(messagesToRetransmit)
+		this.messagesPendingFollowersAck.Delete(message.NodeIdSender, seqNumAcked)
+		this.messagesDeliveredToFollowers.Add(message.NodeIdSender, seqNumAcked)
 	}
 }
 

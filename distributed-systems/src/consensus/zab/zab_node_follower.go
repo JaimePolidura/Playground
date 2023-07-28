@@ -13,7 +13,7 @@ func (this *ZabNode) startHeartbeatTimer() {
 			this.node.Broadcast(nodes.CreateMessage(
 				nodes.WithNodeId(this.GetNodeId()),
 				nodes.WithType(zab.MESSAGE_ELECTION_FAILURE_DETECTED),
-				nodes.WithFlags(nodes.FLAG_BYPASS_LEADER)))
+				nodes.WithFlags(nodes.FLAG_BYPASS_LEADER, nodes.FLAG_URGENT)))
 		}
 	}
 }
@@ -28,7 +28,7 @@ func (this *ZabNode) handleNodeFailureMessage(message []*nodes.Message) {
 		this.node.Broadcast(nodes.CreateMessage(
 			nodes.WithNodeId(this.GetNodeId()),
 			nodes.WithType(zab.MESSAGE_ELECTION_PROPOSAL),
-			nodes.WithFlags(nodes.FLAG_BYPASS_LEADER)))
+			nodes.WithFlags(nodes.FLAG_BYPASS_LEADER, nodes.FLAG_URGENT)))
 	}
 }
 
@@ -39,7 +39,7 @@ func (this *ZabNode) handleElectionProposalMessage(messages []*nodes.Message) {
 	nodeConnection.Write(nodes.CreateMessage(
 		nodes.WithNodeId(this.GetNodeId()),
 		nodes.WithType(zab.MESSAGE_ELECTION_PROPOSAL),
-		nodes.WithFlags(nodes.FLAG_BYPASS_LEADER)))
+		nodes.WithFlags(nodes.FLAG_BYPASS_LEADER, nodes.FLAG_URGENT)))
 }
 
 func (this *ZabNode) handleElectionAckProposalMessage(message []*nodes.Message) {
@@ -51,7 +51,7 @@ func (this *ZabNode) handleElectionAckProposalMessage(message []*nodes.Message) 
 		this.node.Broadcast(nodes.CreateMessage(
 			nodes.WithNodeId(this.GetNodeId()),
 			nodes.WithType(zab.MESSAGE_ELECTION_COMMIT),
-			nodes.WithFlags(nodes.FLAG_BYPASS_LEADER)))
+			nodes.WithFlags(nodes.FLAG_BYPASS_LEADER, nodes.FLAG_URGENT)))
 
 		this.saveNewLeader(this.selfNodeIdRingIndex)
 	}

@@ -28,7 +28,7 @@ func startZab() {
 			0,
 			100,
 			1000,
-			zab.CreateZabBroadcaster(nodeId, 0, func(newMessage *nodes.Message) { onMessage(copyOfNodeId, newMessage) }))
+			zab.CreateZabBroadcaster(nodeId, 0, 1500, func(newMessage *nodes.Message) { onMessage(copyOfNodeId, newMessage) }))
 
 		for otherNodeId := uint32(0); otherNodeId < nNodes; otherNodeId++ {
 			zabNodes[nodeId].GetNode().AddOtherNodeConnection(otherNodeId, otherNodeId+1000)

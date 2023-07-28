@@ -47,7 +47,6 @@ func CreateZabNode(selfNodeId uint32, port uint16, leaderNodeId uint32, heartbea
 		go zabNode.startHeartbeatTimer()
 	}
 
-	zabNode.node.AddMessageHandler(zab.MESSAGE_ACK_SUBMIT_RETRANSMISSION, broadcasterNode.HandleAckSubmitRetransmissionMessage)
 	zabNode.node.AddMessageHandler(zab.MESSAGE_DO_BROADCAST, broadcasterNode.HandleDoBroadcast)
 	zabNode.node.AddMessageHandler(zab.MESSAGE_ACK, broadcasterNode.HandleAckMessage)
 
