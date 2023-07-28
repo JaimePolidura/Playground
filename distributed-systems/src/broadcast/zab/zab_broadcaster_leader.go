@@ -23,6 +23,10 @@ func (this *ZabBroadcaster) sendMessageToFollowers(message *nodes.Message) {
 
 func (this *ZabBroadcaster) sendUrgentMessageToFollowers(originalNodeSender uint32, message *nodes.Message) {
 	this.forEachFollowerExcept(originalNodeSender, func(followerNodeConnection *nodes.NodeConnection) {
+		if this.messagesDeliveredToFollowers.IsAlreadyDelivered(followerNodeConnection.GetNodeId(), message.SeqNum) {
+			return
+		}
+
 		if followerNodeConnection.GetNodeId() != this.leaderNodeId {
 			followerNodeConnection.Write(message)
 		}
@@ -38,6 +42,10 @@ func (this *ZabBroadcaster) sendNonUrgentMessageToFollowers(seqNumForMessage uin
 	atomic.AddUint32(&this.seqNumToSendTurn, 1)
 
 	this.forEachFollowerExcept(nodeIdSender, func(followerNodeConnection *nodes.NodeConnection) {
+		if this.messagesDeliveredToFollowers.IsAlreadyDelivered(followerNodeConnection.GetNodeId(), message.SeqNum) {
+			return
+		}
+
 		this.messagesPendingFollowersAck.Add(followerNodeConnection.GetNodeId(), message)
 
 		if followerNodeConnection.GetNodeId() != this.leaderNodeId {

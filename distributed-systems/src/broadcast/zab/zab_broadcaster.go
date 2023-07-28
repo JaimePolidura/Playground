@@ -98,7 +98,7 @@ func (this *ZabBroadcaster) HandleDoBroadcast(messages []*nodes.Message) {
 func (this *ZabBroadcaster) HandleAckMessage(messages []*nodes.Message) {
 	message := messages[0]
 	seqNumAcked := message.GetContentToUint32()
-	
+
 	fmt.Printf("[%d] Received ACK message from node %d with SeqNum %d\n", this.selfNodeId, message.NodeIdSender, seqNumAcked)
 
 	if this.isFollower() {
