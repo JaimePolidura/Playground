@@ -6,7 +6,6 @@ import (
 
 type Node struct {
 	selfNodeId uint32
-	port       uint16
 
 	connectionManager *nodes.ConnectionManager
 	broadcasterNode   *BroadcasterNode
@@ -22,19 +21,23 @@ func CreateNode(nodeId uint32, port uint16, broadcaster Broadcaster) *Node {
 
 	node := &Node{
 		selfNodeId:        nodeId,
-		port:              port,
 		broadcasterNode:   CreateBroadcasterNode(nodeId, port, broadcaster, nodeConnectionManager),
 		messageHandlers:   make(map[uint8]func(message []*nodes.Message)),
 		connectionManager: nodeConnectionManager,
 	}
 
 	node.AddMessageHandler(nodes.MESSAGE_BROADCAST, node.broadcastMessageHandler)
+	node.AddMessageHandler(nodes.MESSAGE_NODE_STOPPED, node.nodeStoppedMessageHandler)
 
 	return node
 }
 
 func (this *Node) Stop() {
 	this.connectionManager.Stop()
+	this.broadcasterNode.Broadcast(nodes.CreateMessage(
+		nodes.WithNodeId(this.selfNodeId),
+		nodes.WithType(nodes.MESSAGE_NODE_STOPPED),
+		nodes.WithFlags(nodes.FLAG_BYPASS_LEADER, nodes.FLAG_BYPASS_ORDERING)))
 }
 
 func (this *Node) StartListeningAsync() {
@@ -111,4 +114,10 @@ func (this *Node) executeHandlerForMessages(messages []*nodes.Message) {
 
 func (this *Node) GetConnectionManager() *nodes.ConnectionManager {
 	return this.connectionManager
+}
+
+func (this *Node) nodeStoppedMessageHandler(messages []*nodes.Message) {
+	message := messages[0]
+	nodeRemovedId := message.NodeIdSender
+	this.connectionManager.StopByNodeId(nodeRemovedId)
 }

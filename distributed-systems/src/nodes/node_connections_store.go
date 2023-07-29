@@ -10,6 +10,15 @@ func CreateNodeConnectionStore() *NodeConnectionsStore {
 	}
 }
 
+func (this *NodeConnectionsStore) StopByNodeId(nodeIdToStop uint32) {
+	for actualNodeId, actualNodeConnection := range this.restNodesConnections {
+		if actualNodeId == nodeIdToStop {
+			actualNodeConnection.Close()
+			delete(this.restNodesConnections, actualNodeId)
+		}
+	}
+}
+
 func (this *NodeConnectionsStore) Size() uint32 {
 	return uint32(len(this.restNodesConnections))
 }

@@ -1,5 +1,9 @@
 package utils
 
+import (
+	"reflect"
+)
+
 func ZeroArray(bytes *[]byte) {
 	for i := 0; i < len(*bytes); i++ {
 		(*bytes)[i] = 0x00
@@ -25,5 +29,18 @@ func MaxUint32(a uint32, b uint32) uint32 {
 		return a
 	} else {
 		return b
+	}
+}
+
+func ClearMap(mapToClearGeneric interface{}) {
+	mapToClear := reflect.ValueOf(mapToClearGeneric)
+
+	if mapToClear.Kind() != reflect.Map {
+		panic("WTF bro?!")
+		return
+	}
+
+	for _, key := range mapToClear.MapKeys() {
+		mapToClear.SetMapIndex(key, reflect.Value{})
 	}
 }

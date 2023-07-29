@@ -34,6 +34,7 @@ func startZab() {
 			250,
 			1000,
 			prevNodeId,
+			[]uint32{0, 1, 2, 3},
 			zab.CreateZabBroadcaster(nodeId, 0, 1500, func(newMessage *nodes.Message) { onMessage(copyOfNodeId, newMessage) }))
 
 		for otherNodeId := uint32(0); otherNodeId < nNodes; otherNodeId++ {
@@ -54,6 +55,7 @@ func startZab() {
 	time.Sleep(time.Second * 2)
 	fmt.Println("    ")
 	zabNodes[0].Stop()
+	zabNodes[1].Stop()
 	time.Sleep(time.Second * 5)
 	fmt.Println("    ")
 	zabNodes[2].GetNode().BroadcastString("Joder!", zab.MESSAGE_DO_BROADCAST)

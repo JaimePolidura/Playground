@@ -14,6 +14,7 @@ const FLAG_BYPASS_ORDERING = 1
 const FLAG_BYPASS_LEADER = 2
 const MESSAGE_BROADCAST = 0
 const MESSAGE_DO_BROADCAST = 8
+const MESSAGE_NODE_STOPPED = 9
 
 type Message struct {
 	Opts

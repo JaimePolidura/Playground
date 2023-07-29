@@ -6,4 +6,5 @@ const (
 	BROADCAST = iota
 	ELECTION
 	STARTING
+	STOPPED
 )

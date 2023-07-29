@@ -25,6 +25,10 @@ func (this *ConnectionManager) Stop() {
 	this.connectionsStore.CloseAll()
 }
 
+func (this *ConnectionManager) StopByNodeId(nodeIdToStop uint32) {
+	this.connectionsStore.StopByNodeId(nodeIdToStop)
+}
+
 func (this *ConnectionManager) OpenAllConnections() {
 	for _, connection := range this.connectionsStore.restNodesConnections {
 		connection.Open()
