@@ -69,7 +69,7 @@ func (this *ZabBroadcaster) OnNewLeader(newLeaderNodeId uint32, newSeqNum uint32
 		this.messagesPendingLeaderAck.RestartRetransmissionTimer()
 	}
 	if this.isLeader() {
-		this.seqNumToSendTurn = newSeqNum
+		this.seqNumToSendTurn = newSeqNum + 1
 	}
 }
 
@@ -78,6 +78,11 @@ func (this *ZabBroadcaster) doRetransmission(nodeIdToRetransmit uint32, message 
 		this.selfNodeId, nodeIdToRetransmit, message.SeqNum, message.Type)
 
 	this.nodesConnectionManager.Send(nodeIdToRetransmit, message)
+}
+
+func (this *ZabBroadcaster) Stop() {
+	this.messagesPendingFollowersAck.StopRetransmissionTimer()
+	this.messagesPendingLeaderAck.StopRetransmissionTimer()
 }
 
 func (this *ZabBroadcaster) Broadcast(message *nodes.Message) {

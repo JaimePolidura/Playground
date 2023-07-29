@@ -32,7 +32,7 @@ func CreateBroadcasterNode(nodeId uint32, port uint16, broadcaster Broadcaster, 
 }
 
 func (this *BroadcasterNode) Broadcast(message *nodes.Message) {
-	if !this.canBroadcast {
+	if !this.canBroadcast && !message.HasFlag(nodes.FLAG_BYPASS_ORDERING) {
 		this.pendingToBroadcast = append(this.pendingToBroadcast, message)
 		return
 	}

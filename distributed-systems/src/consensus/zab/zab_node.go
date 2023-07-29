@@ -4,6 +4,7 @@ import (
 	"distributed-systems/src/broadcast"
 	"distributed-systems/src/broadcast/zab"
 	"distributed-systems/src/nodes"
+	"sync"
 )
 
 import (
@@ -15,18 +16,17 @@ type ZabNode struct {
 
 	state NodeState
 
-	nodesIdRing         []uint32
-	selfNodeIdRingIndex uint32
-	leaderNodeId        uint32
+	prevNodeRing uint32
+	leaderNodeId uint32
 
 	//Follower
 	heartbeatTimerTimeout *time.Timer
 	heartbeatTimeoutMs    uint64
-	firstTimeout          bool
 
 	//Follower Election
 	nNodesThatHaveAckElectionProposal uint32
 	largestSeqNumSeenFromFollowers    uint32
+	electionLock                      sync.Mutex
 
 	//Leader
 	heartbeatSenderTicker *time.Ticker
@@ -34,16 +34,16 @@ type ZabNode struct {
 	epoch uint32
 }
 
-func CreateZabNode(selfNodeId uint32, port uint16, leaderNodeId uint32, heartbeatTimeMs uint64, heartbeatTimeoutMs uint64, broadcasterNode *zab.ZabBroadcaster) *ZabNode {
+func CreateZabNode(selfNodeId uint32, port uint16, leaderNodeId uint32, heartbeatTimeMs uint64, heartbeatTimeoutMs uint64, prevNodeRing uint32, broadcasterNode *zab.ZabBroadcaster) *ZabNode {
 	zabNode := &ZabNode{
 		node:                  broadcast.CreateNode(selfNodeId, port, broadcasterNode),
 		heartbeatSenderTicker: time.NewTicker(time.Duration(heartbeatTimeMs * uint64(time.Millisecond))),
 		heartbeatTimerTimeout: time.NewTimer(time.Duration(heartbeatTimeoutMs * uint64(time.Millisecond))),
+		heartbeatTimeoutMs:    heartbeatTimeoutMs,
 		leaderNodeId:          leaderNodeId,
-		firstTimeout:          true,
+		prevNodeRing:          prevNodeRing,
 		epoch:                 0,
 		state:                 STARTING,
-		nodesIdRing:           make([]uint32, 0),
 	}
 
 	if zabNode.IsLeader() {
@@ -83,6 +83,7 @@ func (this *ZabNode) IsFollower() bool {
 
 func (this *ZabNode) Stop() {
 	this.node.Stop()
+	this.node.GetBroadcaster().(*zab.ZabBroadcaster).Stop()
 }
 
 func (this *ZabNode) GetConnectionManager() *nodes.ConnectionManager {
@@ -91,21 +92,4 @@ func (this *ZabNode) GetConnectionManager() *nodes.ConnectionManager {
 
 func (this *ZabNode) SetStateToBroadcast() {
 	this.state = BROADCAST
-}
-
-func (this *ZabNode) getRingDistanceClockwise(otherNodeId uint32) uint32 {
-	indexOfOtherNode := uint32(0)
-
-	for index, nodeId := range this.nodesIdRing {
-		if nodeId == otherNodeId {
-			indexOfOtherNode = uint32(index)
-			break
-		}
-	}
-
-	if indexOfOtherNode > this.selfNodeIdRingIndex {
-		return indexOfOtherNode - this.selfNodeIdRingIndex
-	} else {
-		return this.selfNodeIdRingIndex + (uint32(len(this.nodesIdRing)) - indexOfOtherNode) + 1
-	}
 }

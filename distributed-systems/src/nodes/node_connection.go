@@ -44,14 +44,14 @@ func (this *NodeConnection) WriteAll(messages []*Message) {
 	}
 
 	serialized := SerializeAll(messages)
-	this.nativeConnection.Write(serialized)
+	go this.nativeConnection.Write(serialized)
 }
 
 func (this *NodeConnection) Write(message *Message) {
 	message.NodeIdSender = this.selfNodeId
 
 	serialized := Serialize(message)
-	this.nativeConnection.Write(serialized)
+	go this.nativeConnection.Write(serialized)
 }
 
 func (this *NodeConnection) GetNodeId() uint32 {
