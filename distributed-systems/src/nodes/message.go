@@ -6,16 +6,6 @@ import (
 	"errors"
 )
 
-// Skips order, ack. Used for heartbeats
-const FLAG_BYPASS_ORDERING = 1
-
-// The follower will communicate to the other followers without pass through the leader
-// Used for when leader has failed
-const FLAG_BYPASS_LEADER = 2
-const MESSAGE_BROADCAST = 0
-const MESSAGE_DO_BROADCAST = 8
-const MESSAGE_NODE_STOPPED = 9
-
 type Message struct {
 	Opts
 }

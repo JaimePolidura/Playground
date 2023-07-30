@@ -57,13 +57,3 @@ func (this *NodeConnection) Write(message *Message) {
 func (this *NodeConnection) GetNodeId() uint32 {
 	return this.nodeId
 }
-
-func ToString(connection []*NodeConnection) string {
-	var toReturn string
-
-	for _, connection := range connection {
-		toReturn += strconv.Itoa(int(connection.nodeId)) + ", "
-	}
-
-	return toReturn
-}

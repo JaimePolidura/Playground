@@ -30,6 +30,9 @@ func CreateFifoBroadcaster(nodesToPickToBroadcast uint32, initialTTL int32, self
 	}
 }
 
+func (this *FifoBroadcaster) OnStop() {
+}
+
 func (this *FifoBroadcaster) Broadcast(message *nodes.Message) {
 	this.doBroadcast(message, true)
 }

@@ -1,14 +1,14 @@
 package zab
 
 import (
-	"distributed-systems/src/broadcast/zab"
 	"distributed-systems/src/nodes"
+	"distributed-systems/src/nodes/types"
 	"distributed-systems/src/utils"
 	"fmt"
 	"time"
 )
 
-func (this *ZabNode) handleHeartbeatMessage(message []*nodes.Message) {
+func (this *ZabNode) handleHeartbeatMessage(message *nodes.Message) {
 	this.heartbeatTimerTimeout.Reset(time.Duration(this.heartbeatTimeoutMs * uint64(time.Millisecond)))
 
 	if this.heartbeatCandidateTimerTimeout != nil {
@@ -29,8 +29,8 @@ func (this *ZabNode) startCandidateHeartbeatTimerTimeout() {
 
 			this.node.Broadcast(nodes.CreateMessage(
 				nodes.WithNodeId(this.GetNodeId()),
-				nodes.WithType(zab.MESSAGE_ELECTION_FAILURE_DETECTED),
-				nodes.WithFlags(nodes.FLAG_BYPASS_LEADER, nodes.FLAG_BYPASS_ORDERING),
+				nodes.WithType(types.MESSAGE_ELECTION_FAILURE_DETECTED),
+				nodes.WithFlags(types.FLAG_BYPASS_LEADER, types.FLAG_BYPASS_ORDERING),
 				nodes.WithContentUInt32(this.prevNodeRing)))
 			this.proposeMySelfAsTheNewLeader()
 		}
@@ -53,8 +53,8 @@ func (this *ZabNode) startLeaderHeartbeatTimerTimeout() {
 
 				this.node.Broadcast(nodes.CreateMessage(
 					nodes.WithNodeId(this.GetNodeId()),
-					nodes.WithType(zab.MESSAGE_ELECTION_FAILURE_DETECTED),
-					nodes.WithFlags(nodes.FLAG_BYPASS_LEADER, nodes.FLAG_BYPASS_ORDERING),
+					nodes.WithType(types.MESSAGE_ELECTION_FAILURE_DETECTED),
+					nodes.WithFlags(types.FLAG_BYPASS_LEADER, types.FLAG_BYPASS_ORDERING),
 					nodes.WithContentUInt32(this.leaderNodeId)))
 
 				if this.leaderNodeId == this.prevNodeRing {
@@ -65,8 +65,7 @@ func (this *ZabNode) startLeaderHeartbeatTimerTimeout() {
 	}
 }
 
-func (this *ZabNode) handleNodeFailureMessage(messages []*nodes.Message) {
-	message := messages[0]
+func (this *ZabNode) handleNodeFailureMessage(message *nodes.Message) {
 	failedNodeId := message.GetContentToUint32()
 
 	if this.isElectionAlreadyOnGoingByFailedNode(failedNodeId) {
@@ -92,25 +91,24 @@ func (this *ZabNode) proposeMySelfAsTheNewLeader() {
 
 	this.node.Broadcast(nodes.CreateMessage(
 		nodes.WithNodeId(this.GetNodeId()),
-		nodes.WithType(zab.MESSAGE_ELECTION_PROPOSAL),
-		nodes.WithFlags(nodes.FLAG_BYPASS_LEADER, nodes.FLAG_BYPASS_ORDERING)))
+		nodes.WithType(types.MESSAGE_ELECTION_PROPOSAL),
+		nodes.WithFlags(types.FLAG_BYPASS_LEADER, types.FLAG_BYPASS_ORDERING)))
 }
 
-func (this *ZabNode) handleElectionProposalMessage(messages []*nodes.Message) {
-	proposerNodeId := messages[0].NodeIdSender
-	largestSeqNum := this.node.GetBroadcaster().(*zab.ZabBroadcaster).GetLargestSeqNumbReachievedLeader()
+func (this *ZabNode) handleElectionProposalMessage(message *nodes.Message) {
+	proposerNodeId := message.NodeIdSender
+	largestSeqNum := this.node.GetBroadcaster().(*ZabBroadcaster).GetLargestSeqNumbReachievedLeader()
 
 	fmt.Printf("[%d] Accepting proposal from node %d to be the new leader\n", this.GetNodeId(), proposerNodeId)
 
 	this.GetNode().GetConnectionManager().Send(proposerNodeId, nodes.CreateMessage(
 		nodes.WithContentUInt32(largestSeqNum),
 		nodes.WithNodeId(this.GetNodeId()),
-		nodes.WithType(zab.MESSAGE_ELECTION_ACK_PROPOSAL),
-		nodes.WithFlags(nodes.FLAG_BYPASS_LEADER, nodes.FLAG_BYPASS_ORDERING)))
+		nodes.WithType(types.MESSAGE_ELECTION_ACK_PROPOSAL),
+		nodes.WithFlags(types.FLAG_BYPASS_LEADER, types.FLAG_BYPASS_ORDERING)))
 }
 
-func (this *ZabNode) handleElectionAckProposalMessage(messages []*nodes.Message) {
-	message := messages[0]
+func (this *ZabNode) handleElectionAckProposalMessage(message *nodes.Message) {
 	nodeIdVoter := message.NodeIdSender
 
 	if this.hasAlreadyVoted(this.GetNodeId(), nodeIdVoter) {
@@ -118,14 +116,14 @@ func (this *ZabNode) handleElectionAckProposalMessage(messages []*nodes.Message)
 	}
 
 	this.nNodesThatHaveAckElectionProposal++
-	largestSeqSumSeenByFollower := messages[0].GetContentToUint32()
+	largestSeqSumSeenByFollower := message.GetContentToUint32()
 	nNodesQuorum := this.GetConnectionManager().GetNumberConnections()/2 + 1
 	isQuorumSatisfied := this.nNodesThatHaveAckElectionProposal+1 >= nNodesQuorum //The candidate votes it self
 	this.largestSeqNumSeenFromFollowers = utils.MaxUint32(this.largestSeqNumSeenFromFollowers, largestSeqSumSeenByFollower)
 	this.registerNodeVote(this.GetNodeId(), nodeIdVoter)
 
 	fmt.Printf("[%d] Received propolsal ACK from node %d Nº Nodes voted for me: %d Min nodes needed: %d Quorum satiesfied: %t\n",
-		this.GetNodeId(), messages[0].NodeIdSender, this.nNodesThatHaveAckElectionProposal, nNodesQuorum, isQuorumSatisfied)
+		this.GetNodeId(), message, this.nNodesThatHaveAckElectionProposal, nNodesQuorum, isQuorumSatisfied)
 
 	if isQuorumSatisfied {
 		fmt.Printf("[%d] Quorum leader proposal satiesfied. New leader elected: %d With new SeqNum %d Sending commit to the rest of the nodes\n",
@@ -133,17 +131,15 @@ func (this *ZabNode) handleElectionAckProposalMessage(messages []*nodes.Message)
 
 		this.node.Broadcast(nodes.CreateMessage(
 			nodes.WithNodeId(this.GetNodeId()),
-			nodes.WithType(zab.MESSAGE_ELECTION_COMMIT),
+			nodes.WithType(types.MESSAGE_ELECTION_COMMIT),
 			nodes.WithContentUInt32(largestSeqSumSeenByFollower),
-			nodes.WithFlags(nodes.FLAG_BYPASS_LEADER, nodes.FLAG_BYPASS_ORDERING)))
+			nodes.WithFlags(types.FLAG_BYPASS_LEADER, types.FLAG_BYPASS_ORDERING)))
 
 		this.changeStateFromElectionToBroadcast(this.GetNodeId(), this.largestSeqNumSeenFromFollowers)
 	}
 }
 
-func (this *ZabNode) handleElectionCommitMessage(messages []*nodes.Message) {
-	message := messages[0]
-
+func (this *ZabNode) handleElectionCommitMessage(message *nodes.Message) {
 	fmt.Printf("[%d] Received commit from node %d New leader established!\n", this.GetNodeId(), message.NodeIdSender)
 
 	this.changeStateFromElectionToBroadcast(message.NodeIdSender, message.GetContentToUint32())
@@ -153,7 +149,7 @@ func (this *ZabNode) changeStateFromElectionToBroadcast(newLeaderNodeId uint32, 
 	this.state = BROADCAST
 	this.leaderNodeId = newLeaderNodeId
 
-	zabBroadcaster := this.node.GetBroadcaster().(*zab.ZabBroadcaster)
+	zabBroadcaster := this.node.GetBroadcaster().(*ZabBroadcaster)
 	zabBroadcaster.OnNewLeader(newLeaderNodeId, newSeqNum)
 
 	this.nNodesThatHaveAckElectionProposal = 0
@@ -172,7 +168,7 @@ func (this *ZabNode) changeStateFromElectionToBroadcast(newLeaderNodeId uint32, 
 func (this *ZabNode) changeStateFromBroadcastToElection(failedNode uint32) {
 	this.state = ELECTION
 	this.node.DisableBroadcast()
-	this.node.GetBroadcaster().(*zab.ZabBroadcaster).OnElectionStarted()
+	this.node.GetBroadcaster().(*ZabBroadcaster).OnElectionStarted()
 	this.heartbeatTimerTimeout.Stop()
 
 	if failedNode != this.GetNodeId() {
@@ -210,4 +206,34 @@ func (this *ZabNode) registerNodeVote(nodeIdCandidateToVote uint32, nodeIdThatVo
 
 	registeredVotes, _ := this.nodesVotesRegistry[nodeIdCandidateToVote]
 	registeredVotes[nodeIdThatVoted] = nodeIdThatVoted
+}
+
+func (this *ZabNode) setupHeartbeatCandidateTimerTimeout(failedNode uint32) { //NodeId <- Self
+	if this.heartbeatCandidateTimerTimeout != nil {
+		this.heartbeatCandidateTimerTimeout.Stop()
+	}
+
+	indexFailedNode := this.getRingIndexByNodeId(failedNode)
+	indexSelfNode := this.getRingIndexByNodeId(this.GetNodeId())
+	indexCandidate := this.getNextIndexInRingByIndex(indexFailedNode)
+	distanceFromFailedCandidate := this.getRingClockwiseDistanceByIndex(indexCandidate, indexSelfNode)
+
+	if distanceFromFailedCandidate == 0 {
+		return
+	}
+	if distanceFromFailedCandidate <= this.nHeartbeatCandidateTimersTimeout {
+		timeout := time.Duration(uint64(distanceFromFailedCandidate) * (this.heartbeatTimeoutMs + 1) * uint64(time.Millisecond))
+		this.heartbeatCandidateTimerTimeout = time.NewTimer(timeout)
+		go this.startCandidateHeartbeatTimerTimeout()
+	}
+}
+
+func (this *ZabNode) restartHeartbeatCandidateTimerTimeout() {
+	indexFailedNode := this.getRingIndexByNodeId(this.lastFailedNodeId)
+	indexSelfNode := this.getRingIndexByNodeId(this.GetNodeId())
+	indexCandidate := this.getNextIndexInRingByIndex(indexFailedNode)
+
+	distanceFromFailedCandidate := this.getRingClockwiseDistanceByIndex(indexCandidate, indexSelfNode)
+	timeout := time.Duration(uint64(distanceFromFailedCandidate) * (this.heartbeatTimeoutMs + 1) * uint64(time.Millisecond))
+	this.heartbeatCandidateTimerTimeout.Reset(timeout)
 }

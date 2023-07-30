@@ -2,6 +2,7 @@ package broadcast
 
 import (
 	"distributed-systems/src/nodes"
+	"distributed-systems/src/nodes/types"
 )
 
 type BroadcasterNode struct {
@@ -32,7 +33,7 @@ func CreateBroadcasterNode(nodeId uint32, port uint16, broadcaster Broadcaster, 
 }
 
 func (this *BroadcasterNode) Broadcast(message *nodes.Message) {
-	if !this.canBroadcast && !message.HasFlag(nodes.FLAG_BYPASS_ORDERING) {
+	if !this.canBroadcast && !message.HasFlag(types.FLAG_BYPASS_ORDERING) {
 		this.pendingToBroadcast = append(this.pendingToBroadcast, message)
 		return
 	}
@@ -55,4 +56,8 @@ func (this *BroadcasterNode) EnableBroadcast() {
 	}
 
 	this.pendingToBroadcast = []*nodes.Message{}
+}
+
+func (this *BroadcasterNode) Stop() {
+	this.broadcaster.OnStop()
 }

@@ -1,8 +1,8 @@
 package zab
 
 import (
-	"distributed-systems/src/broadcast/zab"
 	"distributed-systems/src/nodes"
+	"distributed-systems/src/nodes/types"
 )
 
 func (this *ZabNode) startSendingHeartbeats() {
@@ -13,8 +13,8 @@ func (this *ZabNode) startSendingHeartbeats() {
 		case <-this.heartbeatSenderTicker.C:
 			message := nodes.CreateMessage(
 				nodes.WithNodeId(this.GetNodeId()),
-				nodes.WithType(zab.MESSAGE_HEARTBEAT),
-				nodes.WithFlags(nodes.FLAG_BYPASS_ORDERING, nodes.FLAG_BYPASS_LEADER))
+				nodes.WithType(types.MESSAGE_HEARTBEAT),
+				nodes.WithFlags(types.FLAG_BYPASS_ORDERING, types.FLAG_BYPASS_LEADER))
 
 			this.node.Broadcast(message)
 		}

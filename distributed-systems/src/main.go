@@ -4,8 +4,8 @@ import (
 	"distributed-systems/src/broadcast"
 	"distributed-systems/src/broadcast/fifo"
 	"distributed-systems/src/broadcast/zab"
-	zab2 "distributed-systems/src/consensus/zab"
 	"distributed-systems/src/nodes"
+	"distributed-systems/src/nodes/types"
 	"fmt"
 	"time"
 )
@@ -18,7 +18,7 @@ func main() {
 func startZab() {
 	nNodes := uint32(4)
 	initPort := uint16(1000)
-	zabNodes := make([]*zab2.ZabNode, nNodes)
+	zabNodes := make([]*zab.ZabNode, nNodes)
 
 	for nodeId := uint32(0); nodeId < nNodes; nodeId++ {
 		copyOfNodeId := nodeId
@@ -28,7 +28,7 @@ func startZab() {
 			prevNodeId = nNodes - 1
 		}
 
-		zabNodes[nodeId] = zab2.CreateZabNode(nodeId,
+		zabNodes[nodeId] = zab.CreateZabNode(nodeId,
 			initPort+uint16(nodeId),
 			0,
 			250,
@@ -51,14 +51,14 @@ func startZab() {
 		zabNode.SetStateToBroadcast()
 	}
 
-	zabNodes[1].GetNode().BroadcastString("Running on zab 1º!", zab.MESSAGE_DO_BROADCAST)
+	zabNodes[1].GetNode().BroadcastString("Running on zab 1º!", types.MESSAGE_DO_BROADCAST)
 	time.Sleep(time.Second * 2)
 	fmt.Println("    ")
 	zabNodes[0].Stop()
 	zabNodes[1].Stop()
 	time.Sleep(time.Second * 5)
 	fmt.Println("    ")
-	zabNodes[2].GetNode().BroadcastString("Joder!", zab.MESSAGE_DO_BROADCAST)
+	zabNodes[2].GetNode().BroadcastString("Joder!", types.MESSAGE_DO_BROADCAST)
 	time.Sleep(time.Second * 500)
 }
 
@@ -88,7 +88,7 @@ func startFifo() {
 		broadcasterNodes[i].GetConnectionManager().OpenAllConnections()
 	}
 
-	broadcasterNodes[1].BroadcastString("Running on fifo :D", zab2.BROADCAST)
+	broadcasterNodes[1].BroadcastString("Running on fifo :D", zab.BROADCAST)
 	time.Sleep(time.Second * 5000)
 }
 

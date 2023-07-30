@@ -5,16 +5,9 @@ import (
 	"distributed-systems/src/broadcast/fifo"
 	"distributed-systems/src/broadcast/zab/ack"
 	"distributed-systems/src/nodes"
+	"distributed-systems/src/nodes/types"
 	"fmt"
 )
-
-const MESSAGE_ACK = 1
-const MESSAGE_HEARTBEAT = 3
-const MESSAGE_ELECTION_FAILURE_DETECTED = 4
-const MESSAGE_ELECTION_PROPOSAL = 5
-const MESSAGE_ELECTION_ACK_PROPOSAL = 6
-const MESSAGE_ELECTION_COMMIT = 7
-const MESSAGE_DO_BROADCAST = 8
 
 type ZabBroadcaster struct {
 	selfNodeId             uint32
@@ -80,13 +73,13 @@ func (this *ZabBroadcaster) doRetransmission(nodeIdToRetransmit uint32, message 
 	this.nodesConnectionManager.Send(nodeIdToRetransmit, message)
 }
 
-func (this *ZabBroadcaster) Stop() {
+func (this *ZabBroadcaster) OnStop() {
 	this.messagesPendingFollowersAck.StopRetransmissionTimer()
 	this.messagesPendingLeaderAck.StopRetransmissionTimer()
 }
 
 func (this *ZabBroadcaster) Broadcast(message *nodes.Message) {
-	if message.HasFlag(nodes.FLAG_BYPASS_LEADER) {
+	if message.HasFlag(types.FLAG_BYPASS_LEADER) {
 		this.sendMessageToFollowers(message)
 		return
 	}
@@ -114,14 +107,11 @@ func (this *ZabBroadcaster) SetOnBroadcastMessageCallback(callback func(newMessa
 	return this
 }
 
-func (this *ZabBroadcaster) HandleDoBroadcast(messages []*nodes.Message) {
-	for _, message := range messages {
-		this.sendMessageToFollowers(message.WithType(nodes.MESSAGE_BROADCAST))
-	}
+func (this *ZabBroadcaster) HandleDoBroadcast(message *nodes.Message) {
+	this.sendMessageToFollowers(message.WithType(types.MESSAGE_BROADCAST))
 }
 
-func (this *ZabBroadcaster) HandleAckMessage(messages []*nodes.Message) {
-	message := messages[0]
+func (this *ZabBroadcaster) HandleAckMessage(message *nodes.Message) {
 	seqNumAcked := message.GetContentToUint32()
 
 	fmt.Printf("[%d] Received ACK message from node %d with SeqNum %d\n", this.selfNodeId, message.NodeIdSender, seqNumAcked)
@@ -151,12 +141,12 @@ func (this *ZabBroadcaster) isLeader() bool {
 }
 
 func (this *ZabBroadcaster) sendAckToNode(nodeIdToSendAck uint32, messageToAck *nodes.Message) {
-	if this.selfNodeId != nodeIdToSendAck && messageToAck.HasNotFlag(nodes.FLAG_BYPASS_ORDERING) {
+	if this.selfNodeId != nodeIdToSendAck && messageToAck.HasNotFlag(types.FLAG_BYPASS_ORDERING) {
 		ackMessage := nodes.CreateMessage(
 			nodes.WithContentUInt32(messageToAck.SeqNum),
 			nodes.WithOrigin(messageToAck.NodeIdOrigin),
 			nodes.WithSenderNodeId(this.selfNodeId),
-			nodes.WithType(MESSAGE_ACK))
+			nodes.WithType(types.MESSAGE_ACK))
 
 		fmt.Printf("[%d] Sending ACK to node %d with SeqNum %d\n", this.selfNodeId, nodeIdToSendAck, messageToAck.SeqNum)
 

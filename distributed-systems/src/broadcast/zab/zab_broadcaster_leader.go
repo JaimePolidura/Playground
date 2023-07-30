@@ -2,6 +2,7 @@ package zab
 
 import (
 	"distributed-systems/src/nodes"
+	"distributed-systems/src/nodes/types"
 	"fmt"
 	"sync/atomic"
 	"time"
@@ -14,7 +15,7 @@ func (this *ZabBroadcaster) sendMessageToFollowers(message *nodes.Message) {
 	messageToBroadcast.NodeIdSender = this.selfNodeId
 	messageToBroadcast.NodeIdOrigin = message.NodeIdSender
 
-	if message.HasFlag(nodes.FLAG_BYPASS_ORDERING) {
+	if message.HasFlag(types.FLAG_BYPASS_ORDERING) {
 		this.sendNonOrderedMessageToFollowers(message.NodeIdSender, messageToBroadcast)
 	} else {
 		this.orderAndSendMessageToFollowers(seqNumForMessage, message.NodeIdSender, messageToBroadcast)
@@ -57,7 +58,7 @@ func (this *ZabBroadcaster) orderAndSendMessageToFollowers(seqNumForMessage uint
 }
 
 func (this *ZabBroadcaster) getSeqNumForMessage(message *nodes.Message) uint32 {
-	if message.HasNotFlag(nodes.FLAG_BYPASS_ORDERING) {
+	if message.HasNotFlag(types.FLAG_BYPASS_ORDERING) {
 		return atomic.AddUint32(&this.seqNum, 1)
 	} else {
 		return message.SeqNum

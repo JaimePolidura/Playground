@@ -2,8 +2,8 @@ package zab
 
 import (
 	"distributed-systems/src/broadcast"
-	"distributed-systems/src/broadcast/zab"
 	"distributed-systems/src/nodes"
+	"distributed-systems/src/nodes/types"
 	"sync"
 )
 
@@ -20,6 +20,9 @@ type ZabNode struct {
 	leaderNodeId uint32
 	nodesIdRing  []uint32
 
+	//Leader
+	heartbeatSenderTicker *time.Ticker
+
 	//Follower
 	heartbeatTimerTimeout *time.Timer
 	heartbeatTimeoutMs    uint64
@@ -30,17 +33,11 @@ type ZabNode struct {
 	heartbeatCandidateTimerTimeout    *time.Timer
 	nHeartbeatCandidateTimersTimeout  uint32
 	nodesVotesRegistry                map[uint32]map[uint32]uint32 //Node id to vote -> nodeId voted
-
-	lastFailedNodeId   uint32
-	lastFailedNodeLock sync.Mutex
-
-	//Leader
-	heartbeatSenderTicker *time.Ticker
-
-	epoch uint32
+	lastFailedNodeId                  uint32
+	lastFailedNodeLock                sync.Mutex
 }
 
-func CreateZabNode(selfNodeId uint32, port uint16, leaderNodeId uint32, heartbeatTimeMs uint64, heartbeatTimeoutMs uint64, prevNodeRing uint32, nodesIdRing []uint32, broadcasterNode *zab.ZabBroadcaster) *ZabNode {
+func CreateZabNode(selfNodeId uint32, port uint16, leaderNodeId uint32, heartbeatTimeMs uint64, heartbeatTimeoutMs uint64, prevNodeRing uint32, nodesIdRing []uint32, broadcasterNode *ZabBroadcaster) *ZabNode {
 	zabNode := &ZabNode{
 		node:                             broadcast.CreateNode(selfNodeId, port, broadcasterNode),
 		heartbeatSenderTicker:            time.NewTicker(time.Duration(heartbeatTimeMs * uint64(time.Millisecond))),
@@ -51,7 +48,6 @@ func CreateZabNode(selfNodeId uint32, port uint16, leaderNodeId uint32, heartbea
 		nodesIdRing:                      nodesIdRing,
 		prevNodeRing:                     prevNodeRing,
 		nHeartbeatCandidateTimersTimeout: 2,
-		epoch:                            0,
 		lastFailedNodeId:                 0xFFFFFFFF,
 		state:                            STARTING,
 	}
@@ -63,14 +59,14 @@ func CreateZabNode(selfNodeId uint32, port uint16, leaderNodeId uint32, heartbea
 		go zabNode.startLeaderHeartbeatTimerTimeout()
 	}
 
-	zabNode.node.AddMessageHandler(zab.MESSAGE_DO_BROADCAST, broadcasterNode.HandleDoBroadcast)
-	zabNode.node.AddMessageHandler(zab.MESSAGE_ACK, broadcasterNode.HandleAckMessage)
+	zabNode.node.AddMessageHandler(types.MESSAGE_DO_BROADCAST, broadcasterNode.HandleDoBroadcast)
+	zabNode.node.AddMessageHandler(types.MESSAGE_ACK, broadcasterNode.HandleAckMessage)
 
-	zabNode.node.AddMessageHandler(zab.MESSAGE_ELECTION_FAILURE_DETECTED, zabNode.handleNodeFailureMessage)
-	zabNode.node.AddMessageHandler(zab.MESSAGE_HEARTBEAT, zabNode.handleHeartbeatMessage)
-	zabNode.node.AddMessageHandler(zab.MESSAGE_ELECTION_COMMIT, zabNode.handleElectionCommitMessage)
-	zabNode.node.AddMessageHandler(zab.MESSAGE_ELECTION_ACK_PROPOSAL, zabNode.handleElectionAckProposalMessage)
-	zabNode.node.AddMessageHandler(zab.MESSAGE_ELECTION_PROPOSAL, zabNode.handleElectionProposalMessage)
+	zabNode.node.AddMessageHandler(types.MESSAGE_ELECTION_FAILURE_DETECTED, zabNode.handleNodeFailureMessage)
+	zabNode.node.AddMessageHandler(types.MESSAGE_HEARTBEAT, zabNode.handleHeartbeatMessage)
+	zabNode.node.AddMessageHandler(types.MESSAGE_ELECTION_COMMIT, zabNode.handleElectionCommitMessage)
+	zabNode.node.AddMessageHandler(types.MESSAGE_ELECTION_ACK_PROPOSAL, zabNode.handleElectionAckProposalMessage)
+	zabNode.node.AddMessageHandler(types.MESSAGE_ELECTION_PROPOSAL, zabNode.handleElectionProposalMessage)
 
 	return zabNode
 }
@@ -100,7 +96,6 @@ func (this *ZabNode) Stop() {
 		this.heartbeatTimerTimeout.Stop()
 	}
 	this.node.Stop()
-	this.node.GetBroadcaster().(*zab.ZabBroadcaster).Stop()
 }
 
 func (this *ZabNode) GetConnectionManager() *nodes.ConnectionManager {
@@ -109,36 +104,6 @@ func (this *ZabNode) GetConnectionManager() *nodes.ConnectionManager {
 
 func (this *ZabNode) SetStateToBroadcast() {
 	this.state = BROADCAST
-}
-
-func (this *ZabNode) setupHeartbeatCandidateTimerTimeout(failedNode uint32) { //NodeId <- Self
-	if this.heartbeatCandidateTimerTimeout != nil {
-		this.heartbeatCandidateTimerTimeout.Stop()
-	}
-
-	indexFailedNode := this.getRingIndexByNodeId(failedNode)
-	indexSelfNode := this.getRingIndexByNodeId(this.GetNodeId())
-	indexCandidate := this.getNextIndexInRingByIndex(indexFailedNode)
-	distanceFromFailedCandidate := this.getRingClockwiseDistanceByIndex(indexCandidate, indexSelfNode)
-
-	if distanceFromFailedCandidate == 0 {
-		return
-	}
-	if distanceFromFailedCandidate <= this.nHeartbeatCandidateTimersTimeout {
-		timeout := time.Duration(uint64(distanceFromFailedCandidate) * (this.heartbeatTimeoutMs + 1) * uint64(time.Millisecond))
-		this.heartbeatCandidateTimerTimeout = time.NewTimer(timeout)
-		go this.startCandidateHeartbeatTimerTimeout()
-	}
-}
-
-func (this *ZabNode) restartHeartbeatCandidateTimerTimeout() {
-	indexFailedNode := this.getRingIndexByNodeId(this.lastFailedNodeId)
-	indexSelfNode := this.getRingIndexByNodeId(this.GetNodeId())
-	indexCandidate := this.getNextIndexInRingByIndex(indexFailedNode)
-
-	distanceFromFailedCandidate := this.getRingClockwiseDistanceByIndex(indexCandidate, indexSelfNode)
-	timeout := time.Duration(uint64(distanceFromFailedCandidate) * (this.heartbeatTimeoutMs + 1) * uint64(time.Millisecond))
-	this.heartbeatCandidateTimerTimeout.Reset(timeout)
 }
 
 func (this *ZabNode) getNextIndexInRingByIndex(prevIndex uint32) uint32 { //NodeId <- Self

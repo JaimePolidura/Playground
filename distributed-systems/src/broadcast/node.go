@@ -2,6 +2,7 @@ package broadcast
 
 import (
 	"distributed-systems/src/nodes"
+	"distributed-systems/src/nodes/types"
 )
 
 type Node struct {
@@ -10,7 +11,7 @@ type Node struct {
 	connectionManager *nodes.ConnectionManager
 	broadcasterNode   *BroadcasterNode
 
-	messageHandlers map[uint8]func(message []*nodes.Message)
+	messageHandlers map[uint8]func(message *nodes.Message)
 
 	onBroadcastMessageCallback func(message *nodes.Message)
 }
@@ -22,22 +23,23 @@ func CreateNode(nodeId uint32, port uint16, broadcaster Broadcaster) *Node {
 	node := &Node{
 		selfNodeId:        nodeId,
 		broadcasterNode:   CreateBroadcasterNode(nodeId, port, broadcaster, nodeConnectionManager),
-		messageHandlers:   make(map[uint8]func(message []*nodes.Message)),
+		messageHandlers:   make(map[uint8]func(message *nodes.Message)),
 		connectionManager: nodeConnectionManager,
 	}
 
-	node.AddMessageHandler(nodes.MESSAGE_BROADCAST, node.broadcastMessageHandler)
-	node.AddMessageHandler(nodes.MESSAGE_NODE_STOPPED, node.nodeStoppedMessageHandler)
+	node.AddMessageHandler(types.MESSAGE_DO_BROADCAST, node.broadcastMessageHandler)
+	node.AddMessageHandler(types.MESSAGE_NODE_STOPPED, node.nodeStoppedMessageHandler)
 
 	return node
 }
 
 func (this *Node) Stop() {
 	this.connectionManager.Stop()
+	this.broadcasterNode.Stop()
 	this.broadcasterNode.Broadcast(nodes.CreateMessage(
 		nodes.WithNodeId(this.selfNodeId),
-		nodes.WithType(nodes.MESSAGE_NODE_STOPPED),
-		nodes.WithFlags(nodes.FLAG_BYPASS_LEADER, nodes.FLAG_BYPASS_ORDERING)))
+		nodes.WithType(types.MESSAGE_NODE_STOPPED),
+		nodes.WithFlags(types.FLAG_BYPASS_LEADER, types.FLAG_BYPASS_ORDERING)))
 }
 
 func (this *Node) StartListeningAsync() {
@@ -50,10 +52,8 @@ func (this *Node) StartListeningAsync() {
 	}()
 }
 
-func (this *Node) broadcastMessageHandler(messages []*nodes.Message) {
-	for _, message := range messages {
-		this.broadcasterNode.GetBroadcaster().OnBroadcastMessage(message)
-	}
+func (this *Node) broadcastMessageHandler(message *nodes.Message) {
+	this.broadcasterNode.GetBroadcaster().OnBroadcastMessage(message)
 }
 
 func (this *Node) AddOtherNodeConnection(otherNodeId uint32, port uint32) {
@@ -71,7 +71,7 @@ func (this *Node) EnableBroadcast() {
 }
 
 func (this *Node) OnBroadcastMessage(callback func(message *nodes.Message)) {
-	this.broadcasterNode.broadcaster.SetOnBroadcastMessageCallback(callback)
+	this.broadcasterNode.GetBroadcaster().SetOnBroadcastMessageCallback(callback)
 	this.onBroadcastMessageCallback = callback
 }
 
@@ -94,21 +94,14 @@ func (this *Node) GetNodeId() uint32 {
 	return this.selfNodeId
 }
 
-func (this *Node) AddMessageHandler(typeMessage uint8, handler func(message []*nodes.Message)) {
+func (this *Node) AddMessageHandler(typeMessage uint8, handler func(message *nodes.Message)) {
 	this.messageHandlers[typeMessage] = handler
 }
 
 func (this *Node) executeHandlerForMessage(message *nodes.Message) {
 	callback, contained := this.messageHandlers[message.Type]
 	if contained {
-		callback([]*nodes.Message{message})
-	}
-}
-
-func (this *Node) executeHandlerForMessages(messages []*nodes.Message) {
-	callback, contained := this.messageHandlers[messages[0].Type]
-	if len(messages) > 0 && contained {
-		callback(messages)
+		callback(message)
 	}
 }
 
@@ -116,8 +109,7 @@ func (this *Node) GetConnectionManager() *nodes.ConnectionManager {
 	return this.connectionManager
 }
 
-func (this *Node) nodeStoppedMessageHandler(messages []*nodes.Message) {
-	message := messages[0]
+func (this *Node) nodeStoppedMessageHandler(message *nodes.Message) {
 	nodeRemovedId := message.NodeIdSender
 	this.connectionManager.StopByNodeId(nodeRemovedId)
 }
