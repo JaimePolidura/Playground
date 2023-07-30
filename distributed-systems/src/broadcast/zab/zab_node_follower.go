@@ -122,11 +122,11 @@ func (this *ZabNode) handleElectionAckProposalMessage(message *nodes.Message) {
 	this.largestSeqNumSeenFromFollowers = utils.MaxUint32(this.largestSeqNumSeenFromFollowers, largestSeqSumSeenByFollower)
 	this.registerNodeVote(this.GetNodeId(), nodeIdVoter)
 
-	fmt.Printf("[%d] Received propolsal ACK from node %d Nº Nodes voted for me: %d Min nodes needed: %d Quorum satiesfied: %t\n",
+	fmt.Printf("[%d] Received propolsal ACK from node %d Nº Nodes voted for me: %d Min nodes needed: %d Quorum satisfied: %t\n",
 		this.GetNodeId(), message, this.nNodesThatHaveAckElectionProposal, nNodesQuorum, isQuorumSatisfied)
 
 	if isQuorumSatisfied {
-		fmt.Printf("[%d] Quorum leader proposal satiesfied. New leader elected: %d With new SeqNum %d Sending commit to the rest of the nodes\n",
+		fmt.Printf("[%d] Quorum leader proposal satisfied. New leader elected: %d With new SeqNum %d Sending commit to the rest of the nodes\n",
 			this.GetNodeId(), this.GetNodeId(), largestSeqSumSeenByFollower)
 
 		this.node.Broadcast(nodes.CreateMessage(

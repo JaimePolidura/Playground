@@ -1,18 +1,52 @@
 package main
 
 import (
+	"bufio"
 	"distributed-systems/src/broadcast"
 	"distributed-systems/src/broadcast/fifo"
 	"distributed-systems/src/broadcast/zab"
 	"distributed-systems/src/nodes"
 	"distributed-systems/src/nodes/types"
+	"distributed-systems/src/paxos"
 	"fmt"
+	"os"
 	"time"
 )
 
 func main() {
-	startZab()
 	//startFifo()
+	//startZab()
+	startPaxos()
+}
+
+func startPaxos() {
+	nNodes := uint32(6)
+	paxosNodes := make([]*paxos.PaxosNode, nNodes)
+
+	for nodeId := uint32(0); nodeId < nNodes; nodeId++ {
+		paxosNodes[nodeId] = paxos.CreatePaxosNode(nodeId, uint16(nodeId)+1000, 2000, onPaxosConsensus)
+
+		for otherNodeId := uint32(0); otherNodeId < nNodes; otherNodeId++ {
+			paxosNodes[nodeId].AddOtherNodeConnection(otherNodeId, otherNodeId+1000)
+		}
+	}
+	for nodeId := uint32(0); nodeId < nNodes; nodeId++ {
+		paxosNodes[nodeId].StartListeningAsync()
+	}
+	for nodeId := uint32(0); nodeId < nNodes; nodeId++ {
+		paxosNodes[nodeId].GetConnectionManager().OpenAllConnections()
+	}
+
+	paxosNodes[0].Propose(11)
+	paxosNodes[1].Propose(12)
+	paxosNodes[2].Propose(13)
+	paxosNodes[3].Propose(14)
+
+	blockMainThread()
+}
+
+func onPaxosConsensus(value uint32) {
+	fmt.Println("REACHED CONSENSUS ON VALUE ", value)
 }
 
 func startZab() {
@@ -94,4 +128,11 @@ func startFifo() {
 
 func onMessage(receivedNodeId uint32, message *nodes.Message) {
 	fmt.Printf("[%d] %s\n", receivedNodeId, message.Content)
+}
+
+func blockMainThread() {
+	scanner := bufio.NewScanner(os.Stdin)
+	for scanner.Scan() {
+		scanner.Text()
+	}
 }

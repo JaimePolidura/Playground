@@ -1,0 +1,19 @@
+[0] Sending PREPARE(4294967296) to acceptors with value 12
+    [1] Received PREPARE(4294967296) from proposer node 0 of value 12 Sending back PROMISE(4294967296)
+        [0] Received PROMISE(4294967296) from acceptor node 1 Nº Acceptor nodes promised: 1 Is quorum satisfied? false
+    [2] Received PREPARE(4294967296) from proposer node 0 of value 12 Sending back PROMISE(4294967296)
+        [0] Received PROMISE(4294967296) from acceptor node 2 Nº Acceptor nodes promised: 2 Is quorum satisfied? false
+    [3] Received PREPARE(4294967296) from proposer node 0 of value 12 Sending back PROMISE(4294967296)
+    [4] Received PREPARE(4294967296) from proposer node 0 of value 12 Sending back PROMISE(4294967296)
+    [5] Received PREPARE(4294967296) from proposer node 0 of value 12 Sending back PROMISE(4294967296)
+        [0] Received PROMISE(4294967296) from acceptor node 5 Nº Acceptor nodes promised: 3 Is quorum satisfied? true
+        [0] Promise quorum satisfied. Sending to proposers ACCEPT(4294967296)
+            [1] Received ACCEPT(0) from proposer node 0 of value 0. Sending back ACCEPTED(4294967296)
+            [5] Received ACCEPT(0) from proposer node 0 of value 0. Sending back ACCEPTED(4294967296)
+            [4] Received ACCEPT(0) from proposer node 0 of value 0. Sending back ACCEPTED(4294967296)
+            [3] Received ACCEPT(0) from proposer node 0 of value 0. Sending back ACCEPTED(4294967296)
+            [2] Received ACCEPT(0) from proposer node 0 of value 0. Sending back ACCEPTED(4294967296)
+                [0] Received ACCEPTED(4294967296) from acceptor node 1 Nº Acceptor nodes accepted: 1 Is quorum satisfied? false
+                [0] Received ACCEPTED(4294967296) from acceptor node 5 Nº Acceptor nodes accepted: 2 Is quorum satisfied? false
+                [0] Received ACCEPTED(4294967296) from acceptor node 4 Nº Acceptor nodes accepted: 3 Is quorum satisfied? true
+                    REACHED CONSENSUS ON VALUE  0

@@ -2,6 +2,7 @@ package paxos
 
 import (
 	"distributed-systems/src/broadcast"
+	"distributed-systems/src/broadcast/fifo"
 	"distributed-systems/src/nodes"
 	"distributed-systems/src/nodes/types"
 	"sync/atomic"
@@ -19,9 +20,11 @@ type PaxosNode struct {
 	numberAcceptorsPromised      uint32
 	numberAcceptorsAccepted      uint32
 	timeoutRequest               *time.Timer
-	timeoutPrepareMs             uint64
+	timeoutRequestMs             uint64
 	valueBeingProposed           uint32
 	proposalIdValueBeingProposed uint64
+	promiseQuorumSatisfied       bool
+	acceptQuorumSatisfied        bool
 
 	//Acceptor
 	proposalIdPromised   uint64
@@ -32,10 +35,11 @@ type PaxosNode struct {
 	onConsensusReachedCallback func(value uint32)
 }
 
-func CreatePaxosNode(nodeId uint32, port uint16, broadcaster broadcast.Broadcaster, onConsensusReachedCallback func(value uint32)) *PaxosNode {
+func CreatePaxosNode(nodeId uint32, port uint16, timeoutRequestMs uint64, onConsensusReachedCallback func(value uint32)) *PaxosNode {
 	paxosNode := &PaxosNode{
-		Node:                       *broadcast.CreateNode(nodeId, port, broadcaster),
+		Node:                       *broadcast.CreateNode(nodeId, port, fifo.CreateFifoBroadcaster(3, 6, nodeId)),
 		onConsensusReachedCallback: onConsensusReachedCallback,
+		timeoutRequestMs:           timeoutRequestMs,
 	}
 
 	paxosNode.AddMessageHandler(types.MESSAGE_PAXOS_PROMISE_ACCEPT, paxosNode.handlePromiseAcceptMessage)
