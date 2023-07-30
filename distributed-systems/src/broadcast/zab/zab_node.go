@@ -62,11 +62,11 @@ func CreateZabNode(selfNodeId uint32, port uint16, leaderNodeId uint32, heartbea
 	zabNode.node.AddMessageHandler(types.MESSAGE_DO_BROADCAST, broadcasterNode.HandleDoBroadcast)
 	zabNode.node.AddMessageHandler(types.MESSAGE_ACK, broadcasterNode.HandleAckMessage)
 
-	zabNode.node.AddMessageHandler(types.MESSAGE_ELECTION_FAILURE_DETECTED, zabNode.handleNodeFailureMessage)
+	zabNode.node.AddMessageHandler(types.MESSAGE_ZAB_ELECTION_FAILURE_DETECTED, zabNode.handleNodeFailureMessage)
 	zabNode.node.AddMessageHandler(types.MESSAGE_HEARTBEAT, zabNode.handleHeartbeatMessage)
-	zabNode.node.AddMessageHandler(types.MESSAGE_ELECTION_COMMIT, zabNode.handleElectionCommitMessage)
-	zabNode.node.AddMessageHandler(types.MESSAGE_ELECTION_ACK_PROPOSAL, zabNode.handleElectionAckProposalMessage)
-	zabNode.node.AddMessageHandler(types.MESSAGE_ELECTION_PROPOSAL, zabNode.handleElectionProposalMessage)
+	zabNode.node.AddMessageHandler(types.MESSAGE_ZAB_ELECTION_COMMIT, zabNode.handleElectionCommitMessage)
+	zabNode.node.AddMessageHandler(types.MESSAGE_ZAB_ELECTION_ACK_PROPOSAL, zabNode.handleElectionAckProposalMessage)
+	zabNode.node.AddMessageHandler(types.MESSAGE_ZAB_ELECTION_PROPOSAL, zabNode.handleElectionProposalMessage)
 
 	return zabNode
 }

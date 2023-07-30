@@ -24,12 +24,12 @@ func (this *ZabNode) startCandidateHeartbeatTimerTimeout() {
 				return
 			}
 
-			fmt.Printf("[%d] Detected cantidate %d failure. Broadcasting MESSAGE_ELECTION_FAILURE_DETECTED\n",
+			fmt.Printf("[%d] Detected cantidate %d failure. Broadcasting MESSAGE_ZAB_ELECTION_FAILURE_DETECTED\n",
 				this.GetNodeId(), this.nodesIdRing[this.getBackIndexInRingByIndex(this.getRingIndexByNodeId(this.GetNodeId()))])
 
 			this.node.Broadcast(nodes.CreateMessage(
 				nodes.WithNodeId(this.GetNodeId()),
-				nodes.WithType(types.MESSAGE_ELECTION_FAILURE_DETECTED),
+				nodes.WithType(types.MESSAGE_ZAB_ELECTION_FAILURE_DETECTED),
 				nodes.WithFlags(types.FLAG_BYPASS_LEADER, types.FLAG_BYPASS_ORDERING),
 				nodes.WithContentUInt32(this.prevNodeRing)))
 			this.proposeMySelfAsTheNewLeader()
@@ -46,14 +46,14 @@ func (this *ZabNode) startLeaderHeartbeatTimerTimeout() {
 			}
 
 			if this.IsFollower() && this.state == BROADCAST && !this.isElectionAlreadyOnGoingByFailedNode(this.leaderNodeId) {
-				fmt.Printf("[%d] Detected leader %d failure. Broadcasting MESSAGE_ELECTION_FAILURE_DETECTED\n",
+				fmt.Printf("[%d] Detected leader %d failure. Broadcasting MESSAGE_ZAB_ELECTION_FAILURE_DETECTED\n",
 					this.GetNodeId(), this.leaderNodeId)
 
 				this.changeStateFromBroadcastToElection(this.leaderNodeId)
 
 				this.node.Broadcast(nodes.CreateMessage(
 					nodes.WithNodeId(this.GetNodeId()),
-					nodes.WithType(types.MESSAGE_ELECTION_FAILURE_DETECTED),
+					nodes.WithType(types.MESSAGE_ZAB_ELECTION_FAILURE_DETECTED),
 					nodes.WithFlags(types.FLAG_BYPASS_LEADER, types.FLAG_BYPASS_ORDERING),
 					nodes.WithContentUInt32(this.leaderNodeId)))
 
@@ -76,7 +76,7 @@ func (this *ZabNode) handleNodeFailureMessage(message *nodes.Message) {
 
 	failureNodeIsPrev := this.prevNodeRing == failedNodeId
 
-	fmt.Printf("[%d] Receieved MESSAGE_ELECTION_FAILURE_DETECTED from node %d of failed node %d. Is prev node? %t\n",
+	fmt.Printf("[%d] Receieved MESSAGE_ZAB_ELECTION_FAILURE_DETECTED from node %d of failed node %d. Is prev node? %t\n",
 		this.GetNodeId(), failedNodeId, message.NodeIdSender, failureNodeIsPrev)
 
 	if failureNodeIsPrev {
@@ -91,7 +91,7 @@ func (this *ZabNode) proposeMySelfAsTheNewLeader() {
 
 	this.node.Broadcast(nodes.CreateMessage(
 		nodes.WithNodeId(this.GetNodeId()),
-		nodes.WithType(types.MESSAGE_ELECTION_PROPOSAL),
+		nodes.WithType(types.MESSAGE_ZAB_ELECTION_PROPOSAL),
 		nodes.WithFlags(types.FLAG_BYPASS_LEADER, types.FLAG_BYPASS_ORDERING)))
 }
 
@@ -104,7 +104,7 @@ func (this *ZabNode) handleElectionProposalMessage(message *nodes.Message) {
 	this.GetNode().GetConnectionManager().Send(proposerNodeId, nodes.CreateMessage(
 		nodes.WithContentUInt32(largestSeqNum),
 		nodes.WithNodeId(this.GetNodeId()),
-		nodes.WithType(types.MESSAGE_ELECTION_ACK_PROPOSAL),
+		nodes.WithType(types.MESSAGE_ZAB_ELECTION_ACK_PROPOSAL),
 		nodes.WithFlags(types.FLAG_BYPASS_LEADER, types.FLAG_BYPASS_ORDERING)))
 }
 
@@ -131,7 +131,7 @@ func (this *ZabNode) handleElectionAckProposalMessage(message *nodes.Message) {
 
 		this.node.Broadcast(nodes.CreateMessage(
 			nodes.WithNodeId(this.GetNodeId()),
-			nodes.WithType(types.MESSAGE_ELECTION_COMMIT),
+			nodes.WithType(types.MESSAGE_ZAB_ELECTION_COMMIT),
 			nodes.WithContentUInt32(largestSeqSumSeenByFollower),
 			nodes.WithFlags(types.FLAG_BYPASS_LEADER, types.FLAG_BYPASS_ORDERING)))
 

@@ -52,14 +52,16 @@ func (this *Message) IsType(Type uint8) bool {
 	return this.Type&Type != 0
 }
 
-func (this *Message) SetContentUin32(newContent uint32) {
-	var buf bytes.Buffer
-	binary.Write(&buf, binary.BigEndian, newContent)
-	this.Content = buf.Bytes()
-}
-
 func (this *Message) GetContentToUint32() uint32 {
 	return binary.BigEndian.Uint32(this.Content)
+}
+
+func (this *Message) GetContentToUint64() uint64 {
+	return binary.BigEndian.Uint64(this.Content)
+}
+
+func (this *Message) GetContentToUint64WithOffset(offset uint64) uint64 {
+	return binary.BigEndian.Uint64(this.Content[offset:])
 }
 
 func SerializeAll(messages []*Message) []byte {
@@ -143,6 +145,25 @@ func WithSeqNum(seqNum uint32) OptFunc {
 func WithOrigin(nodeId uint32) OptFunc {
 	return func(opts *Opts) {
 		opts.NodeIdSender = nodeId
+	}
+}
+
+func WithContentUInt64(content uint64) OptFunc {
+	return func(opts *Opts) {
+		var buf bytes.Buffer
+		binary.Write(&buf, binary.BigEndian, content)
+		opts.Content = buf.Bytes()
+	}
+}
+
+func WithContentsUInt64(content ...uint64) OptFunc {
+	return func(opts *Opts) {
+		var buf bytes.Buffer
+		for _, content := range content {
+			binary.Write(&buf, binary.BigEndian, content)
+		}
+
+		opts.Content = buf.Bytes()
 	}
 }
 

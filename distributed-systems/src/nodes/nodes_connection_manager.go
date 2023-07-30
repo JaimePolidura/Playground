@@ -51,6 +51,12 @@ func (this *ConnectionManager) Open(nodeId uint32) {
 	}
 }
 
+func (this *ConnectionManager) SendAll(message *Message) {
+	for _, connection := range this.connectionsStore.ToArrayNodeConnections() {
+		connection.Write(message)
+	}
+}
+
 func (this *ConnectionManager) SendAllExcept(nodeIdExcept uint32, message *Message) {
 	for _, connection := range this.connectionsStore.ToArrayNodeConnections() {
 		if connection.nodeId != nodeIdExcept {
