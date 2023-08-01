@@ -5,6 +5,7 @@ import (
 	"distributed-systems/src/broadcast"
 	"distributed-systems/src/broadcast/fifo"
 	"distributed-systems/src/broadcast/zab"
+	"distributed-systems/src/multipaxos"
 	"distributed-systems/src/nodes"
 	"distributed-systems/src/nodes/types"
 	"distributed-systems/src/paxos"
@@ -16,7 +17,34 @@ import (
 func main() {
 	//startFifo()
 	//startZab()
-	startPaxos()
+	//startPaxos()
+	startMultipaxos()
+}
+
+func startMultipaxos() {
+	nNodes := uint32(6)
+	multiPaxosNodes := make([]*multipaxos.MultiPaxosNode, nNodes)
+
+	for nodeId := uint32(0); nodeId < nNodes; nodeId++ {
+		multiPaxosNodes[nodeId] = multipaxos.CreateMultiPaxosNode(nodeId, uint16(nodeId)+1000, 2000)
+
+		for otherNodeId := uint32(0); otherNodeId < nNodes; otherNodeId++ {
+			multiPaxosNodes[nodeId].Paxos.AddOtherNodeConnection(otherNodeId, otherNodeId+1000)
+		}
+	}
+	for nodeId := uint32(0); nodeId < nNodes; nodeId++ {
+		multiPaxosNodes[nodeId].Paxos.StartListeningAsync()
+	}
+	for nodeId := uint32(0); nodeId < nNodes; nodeId++ {
+		multiPaxosNodes[nodeId].Paxos.GetConnectionManager().OpenAllConnections()
+	}
+
+	multiPaxosNodes[0].SetLeader()
+	time.Sleep(1 * time.Second)
+	multiPaxosNodes[1].AppendLog(1)
+	multiPaxosNodes[2].AppendLog(13)
+
+	blockMainThread()
 }
 
 func startPaxos() {
@@ -37,10 +65,10 @@ func startPaxos() {
 		paxosNodes[nodeId].GetConnectionManager().OpenAllConnections()
 	}
 
-	paxosNodes[0].Propose(11)
-	paxosNodes[1].Propose(12)
-	paxosNodes[2].Propose(13)
-	paxosNodes[3].Propose(14)
+	paxosNodes[0].Prepare(11)
+	paxosNodes[1].Prepare(12)
+	paxosNodes[2].Prepare(13)
+	paxosNodes[3].Prepare(14)
 
 	blockMainThread()
 }

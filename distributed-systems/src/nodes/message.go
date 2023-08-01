@@ -56,12 +56,30 @@ func (this *Message) GetContentToUint32() uint32 {
 	return binary.BigEndian.Uint32(this.Content)
 }
 
+func (this *Message) GetContentToInt32WithOffset(offset uint32) int32 {
+	var toReturn int32
+	binary.Read(bytes.NewReader(this.Content[offset:]), binary.BigEndian, &toReturn)
+
+	return toReturn
+}
+
+func (this *Message) GetContentToInt32() int32 {
+	var toReturn int32
+	binary.Read(bytes.NewReader(this.Content), binary.BigEndian, &toReturn)
+
+	return toReturn
+}
+
 func (this *Message) GetContentToUint64() uint64 {
 	return binary.BigEndian.Uint64(this.Content)
 }
 
 func (this *Message) GetContentToUint64WithOffset(offset uint64) uint64 {
 	return binary.BigEndian.Uint64(this.Content[offset:])
+}
+
+func (this *Message) GetContentToUint32WithOffset(offset uint32) uint32 {
+	return binary.BigEndian.Uint32(this.Content[offset:])
 }
 
 func SerializeAll(messages []*Message) []byte {
@@ -163,6 +181,36 @@ func WithContentsUInt64(content ...uint64) OptFunc {
 			binary.Write(&buf, binary.BigEndian, content)
 		}
 
+		opts.Content = buf.Bytes()
+	}
+}
+
+func WithContentsUInt32(contents ...uint32) OptFunc {
+	return func(opts *Opts) {
+		var buf bytes.Buffer
+		for _, content := range contents {
+			binary.Write(&buf, binary.BigEndian, content)
+		}
+
+		opts.Content = buf.Bytes()
+	}
+}
+
+func WithContentsInt32(contents ...int32) OptFunc {
+	return func(opts *Opts) {
+		var buf bytes.Buffer
+		for _, content := range contents {
+			binary.Write(&buf, binary.BigEndian, content)
+		}
+
+		opts.Content = buf.Bytes()
+	}
+}
+
+func WithContentInt32(content int32) OptFunc {
+	return func(opts *Opts) {
+		var buf bytes.Buffer
+		binary.Write(&buf, binary.BigEndian, content)
 		opts.Content = buf.Bytes()
 	}
 }

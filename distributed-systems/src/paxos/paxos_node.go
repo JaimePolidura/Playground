@@ -51,7 +51,11 @@ func CreatePaxosNode(nodeId uint32, port uint16, timeoutRequestMs uint64, onCons
 	return paxosNode
 }
 
-func (this *PaxosNode) Propose(value uint32) {
+func (this *PaxosNode) SetOnConsensusReachedCallback(callback func(value uint32)) {
+	this.onConsensusReachedCallback = callback
+}
+
+func (this *PaxosNode) Prepare(value uint32) {
 	this.prepare(value)
 }
 

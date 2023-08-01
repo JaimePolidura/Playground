@@ -30,7 +30,7 @@ func (this *PaxosNode) handlePrepareMessage(message *nodes.Message) {
 			nodes.WithSeqNum(valuePrepared)))
 	} else {
 		fmt.Printf("[%d] Received PREPARE(%d) from proposer node %d of valuePrepared %d But already accepted proposal id with %d and valuePrepared %d. Sending back PROMISE_ACCPET(%d, %d)\n",
-			this.GetNodeId(), proposalId, message.NodeIdSender, this.proposalIdAccepted, this.lastValueAccepted, proposalId, this.proposalIdAccepted, proposalId, this.proposalIdAccepted)
+			this.GetNodeId(), proposalId, message.NodeIdSender, this.proposalIdAccepted, this.lastValueAccepted, this.proposalIdAccepted, proposalId, this.proposalIdAccepted)
 
 		this.GetConnectionManager().Send(proposerNodeId, nodes.CreateMessage(
 			nodes.WithNodeId(this.GetNodeId()),
