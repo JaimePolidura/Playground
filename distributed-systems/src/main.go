@@ -9,6 +9,7 @@ import (
 	"distributed-systems/src/nodes"
 	"distributed-systems/src/nodes/types"
 	"distributed-systems/src/paxos"
+	"distributed-systems/src/raft"
 	"fmt"
 	"os"
 	"time"
@@ -18,7 +19,33 @@ func main() {
 	//startFifo()
 	//startZab()
 	//startPaxos()
-	startMultipaxos()
+	//startMultipaxos()
+	startRaft()
+}
+
+func startRaft() {
+	nNodes := uint32(6)
+	raftNodes := make([]*raft.RaftNode, nNodes)
+
+	for nodeId := uint32(0); nodeId < nNodes; nodeId++ {
+		raftNodes[nodeId] = raft.CreateRaftNode(1000, 1000, 1000, 0, nodeId, uint16(nodeId)+1000)
+
+		for otherNodeId := uint32(0); otherNodeId < nNodes; otherNodeId++ {
+			raftNodes[nodeId].Node.AddOtherNodeConnection(otherNodeId, otherNodeId+1000)
+		}
+	}
+
+	for nodeId := uint32(0); nodeId < nNodes; nodeId++ {
+		raftNodes[nodeId].Node.StartListeningAsync()
+	}
+	for nodeId := uint32(0); nodeId < nNodes; nodeId++ {
+		raftNodes[nodeId].Node.GetConnectionManager().OpenAllConnections()
+	}
+	for nodeId := uint32(0); nodeId < nNodes; nodeId++ {
+		raftNodes[nodeId].Start()
+	}
+
+	blockMainThread()
 }
 
 func startMultipaxos() {
