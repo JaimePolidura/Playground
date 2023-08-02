@@ -26,15 +26,16 @@ type ZabBroadcaster struct {
 	onBroadcastMessageCallback func(newMessage *nodes.Message)
 	messagesPendingLeaderAck   *ack.MessagesPendingAck
 	largestSeqNumReceived      uint32
+
+	onBroadcastMessage func(newMessage *nodes.Message)
 }
 
-func CreateZabBroadcaster(selfNodeId uint32, leaderNodeId uint32, retransmissionTimeout uint64, onBroadcastMessageCallback func(newMessage *nodes.Message)) *ZabBroadcaster {
+func CreateZabBroadcaster(selfNodeId uint32, leaderNodeId uint32, retransmissionTimeout uint64) *ZabBroadcaster {
 	broadcaster := &ZabBroadcaster{
 		fifoBroadcastDataByNodeId:    map[uint32]*fifo.FifoNodeBroadcastData{},
 		messagesDeliveredToFollowers: ack.CreateMessagesAlreadyDelivered(),
 		messagesPendingFollowersAck:  ack.CreateMessagesPendingAck(retransmissionTimeout),
 		messagesPendingLeaderAck:     ack.CreateMessagesPendingAck(retransmissionTimeout),
-		onBroadcastMessageCallback:   onBroadcastMessageCallback,
 		selfNodeId:                   selfNodeId,
 		leaderNodeId:                 leaderNodeId,
 		seqNumToSendTurn:             1,
@@ -44,6 +45,11 @@ func CreateZabBroadcaster(selfNodeId uint32, leaderNodeId uint32, retransmission
 	broadcaster.messagesPendingLeaderAck.SetOnRetransmissionCallback(broadcaster.doRetransmission)
 
 	return broadcaster
+}
+
+func (this *ZabBroadcaster) SetOnBroadcastMessage(callback func(newMessage *nodes.Message)) *ZabBroadcaster {
+	this.onBroadcastMessageCallback = callback
+	return this
 }
 
 func (this *ZabBroadcaster) GetLargestSeqNumbReachievedLeader() uint32 {

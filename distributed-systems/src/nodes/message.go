@@ -35,6 +35,11 @@ func (this *Message) AddFlag(flag uint8) *Message {
 	return this
 }
 
+func (this *Message) RemoveFlag(flag uint8) *Message {
+	this.Flags ^= flag
+	return this
+}
+
 func (this *Message) WithType(typeToSet uint8) *Message {
 	this.Type = typeToSet
 	return this
@@ -80,6 +85,24 @@ func (this *Message) GetContentToUint64WithOffset(offset uint64) uint64 {
 
 func (this *Message) GetContentToUint32WithOffset(offset uint32) uint32 {
 	return binary.BigEndian.Uint32(this.Content[offset:])
+}
+
+func (this *Message) ToArrayUInt32(offset uint32) []uint32 {
+	length := this.GetContentToInt32WithOffset(offset)
+	array := make([]uint32, length)
+
+	if length == 0 {
+		return array
+	}
+
+	currentOffset := offset + 4
+
+	for i := 0; i < int(length); i++ {
+		array[i] = this.GetContentToUint32WithOffset(currentOffset)
+		currentOffset += 4
+	}
+
+	return array
 }
 
 func SerializeAll(messages []*Message) []byte {

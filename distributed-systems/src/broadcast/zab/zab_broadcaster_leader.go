@@ -58,11 +58,7 @@ func (this *ZabBroadcaster) orderAndSendMessageToFollowers(seqNumForMessage uint
 }
 
 func (this *ZabBroadcaster) getSeqNumForMessage(message *nodes.Message) uint32 {
-	if message.HasNotFlag(types.FLAG_BYPASS_ORDERING) {
-		return atomic.AddUint32(&this.seqNum, 1)
-	} else {
-		return message.SeqNum
-	}
+	return atomic.AddUint32(&this.seqNum, 1)
 }
 
 func (this *ZabBroadcaster) waitBroadcastLeaderTurn(seqNumBroadcastToWait uint32) {

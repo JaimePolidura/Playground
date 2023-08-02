@@ -3,6 +3,7 @@ package fifo
 import (
 	"distributed-systems/src/broadcast"
 	"distributed-systems/src/nodes"
+	"distributed-systems/src/nodes/types"
 	"fmt"
 	"sync/atomic"
 )
@@ -12,6 +13,9 @@ type FifoBroadcaster struct {
 	nodesToPickToBroadcast uint32
 	initialTTL             int32
 	seqNum                 uint32
+
+	doLogging   bool
+	doGossiping bool
 
 	nodeConnectionManager *nodes.ConnectionManager
 
@@ -26,8 +30,26 @@ func CreateFifoBroadcaster(nodesToPickToBroadcast uint32, initialTTL int32, self
 		initialTTL:             initialTTL,
 		selfNodeId:             selfNodeId,
 		seqNum:                 0,
+		doLogging:              true,
+		doGossiping:            true,
 		broadcastDataByNodeId:  make(map[uint32]*FifoNodeBroadcastData),
 	}
+}
+
+func (this *FifoBroadcaster) EnableLogging() {
+	this.doLogging = true
+}
+
+func (this *FifoBroadcaster) DisableLogging() {
+	this.doLogging = false
+}
+
+func (this *FifoBroadcaster) EnableGossiping() {
+	this.doGossiping = true
+}
+
+func (this *FifoBroadcaster) DisableGossiping() {
+	this.doGossiping = false
 }
 
 func (this *FifoBroadcaster) OnStop() {
@@ -42,17 +64,19 @@ func (this *FifoBroadcaster) OnBroadcastMessage(message *nodes.Message) {
 	broadcastData := this.broadcastDataByNodeId[message.NodeIdOrigin]
 	msgSeqNumbReceived := message.SeqNum
 
-	fmt.Printf("[%d] Received broadcast message from node %d with TTL %d and SeqNum %d (Prev: %d). Content: \"%s\"\n",
+	this.log("[%d] Received broadcast message from node %d with TTL %d and SeqNum %d (Prev: %d). Content: \"%s\"\n",
 		this.selfNodeId, message.NodeIdOrigin, message.TTL, message.SeqNum, lastSeqNumDelivered, message.Content)
 
 	if msgSeqNumbReceived > lastSeqNumDelivered && message.NodeIdOrigin != this.selfNodeId {
 		broadcastData.AddToBuffer(message)
 
 		for _, messageInBuffer := range broadcastData.RetrieveDeliverableMessages(msgSeqNumbReceived) {
+			messageInBuffer = messageInBuffer.RemoveFlag(types.FLAG_BROADCAST)
+
 			this.onBroadcastMessageCallback(messageInBuffer)
 		}
 	}
-	if message.TTL != 0 {
+	if message.TTL != 0 && this.doGossiping {
 		this.doBroadcast(message, false)
 	}
 }
@@ -79,16 +103,18 @@ func (this *FifoBroadcaster) getLastSeqNumDelivered(nodeId uint32) uint32 {
 func (this *FifoBroadcaster) doBroadcast(message *nodes.Message, firstTime bool) {
 	atomic.AddUint32(&this.seqNum, 1)
 
+	message = message.AddFlag(types.FLAG_BROADCAST)
+
 	if firstTime {
 		message.SeqNum = this.seqNum
 		message.TTL = this.initialTTL
-	} else {
+	} else if this.doGossiping {
 		message.TTL = message.TTL - 1
 	}
 
 	randomNodesId := this.pickRandomNodesId()
 
-	fmt.Printf("[%d] Broadcasting \"%s\" with TTL %d and SeqNum %d to %v\n", this.selfNodeId, message.Content,
+	this.log("[%d] Broadcasting \"%s\" with TTL %d and SeqNum %d to %v\n", this.selfNodeId, message.Content,
 		message.TTL, message.SeqNum, randomNodesId)
 
 	for _, nodeId := range randomNodesId {
@@ -97,5 +123,16 @@ func (this *FifoBroadcaster) doBroadcast(message *nodes.Message, firstTime bool)
 }
 
 func (this *FifoBroadcaster) pickRandomNodesId() []uint32 {
-	return broadcast.PickRandomNodesId(this.selfNodeId, this.nodesToPickToBroadcast, this.nodeConnectionManager.GetNumberConnections())
+	if this.doGossiping {
+		return broadcast.PickRandomNodesId(this.selfNodeId, this.nodesToPickToBroadcast, this.nodeConnectionManager.GetNumberConnections())
+	} else {
+		return this.nodeConnectionManager.GetNodesId()
+	}
+
+}
+
+func (this *FifoBroadcaster) log(format string, other ...any) {
+	if this.doLogging {
+		fmt.Printf(format, other...)
+	}
 }

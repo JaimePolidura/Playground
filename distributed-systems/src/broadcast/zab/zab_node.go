@@ -71,6 +71,14 @@ func CreateZabNode(selfNodeId uint32, port uint16, leaderNodeId uint32, heartbea
 	return zabNode
 }
 
+func (this *ZabNode) BroadcastString(toBroadcast string) {
+	this.node.Broadcast(nodes.CreateMessage(
+		nodes.WithNodeId(this.GetNodeId()),
+		nodes.WithContentString(toBroadcast),
+		nodes.WithType(types.MESSAGE_DO_BROADCAST),
+		nodes.WithFlags(types.FLAG_BROADCAST)))
+}
+
 func (this *ZabNode) GetNodeId() uint32 {
 	return this.node.GetNodeId()
 }

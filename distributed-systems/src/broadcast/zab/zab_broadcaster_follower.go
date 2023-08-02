@@ -3,6 +3,7 @@ package zab
 import (
 	"distributed-systems/src/broadcast/fifo"
 	"distributed-systems/src/nodes"
+	"distributed-systems/src/nodes/types"
 	"distributed-systems/src/utils"
 	"sync/atomic"
 )
@@ -28,6 +29,8 @@ func (this *ZabBroadcaster) autoDeliverMessage(message *nodes.Message) {
 		broadcastData.AddToBuffer(message)
 
 		for _, messageInBuffer := range broadcastData.RetrieveDeliverableMessages(msgSeqNumbReceived) {
+			messageInBuffer = messageInBuffer.RemoveFlag(types.FLAG_BROADCAST)
+
 			this.onBroadcastMessageCallback(messageInBuffer)
 		}
 	}

@@ -17,10 +17,12 @@ import (
 
 func main() {
 	//startFifo()
-	//startZab()
+	startZab()
 	//startPaxos()
 	//startMultipaxos()
-	startRaft()
+	//startRaft()
+
+	//startRaftLeaderElection()
 }
 
 func startRaft() {
@@ -48,10 +50,40 @@ func startRaft() {
 	}
 
 	time.Sleep(1 * time.Second)
+	raftNodes[0].AppendEntries(10)
+
+	blockMainThread()
+}
+
+func startRaftLeaderElection() {
+	nNodes := uint32(6)
+	raftNodes := make([]*raft.RaftNode, nNodes)
+
+	for nodeId := uint32(0); nodeId < nNodes; nodeId++ {
+		timeout := uint64(1500 + (nodeId * 500))
+
+		raftNodes[nodeId] = raft.CreateRaftNode(timeout, 250, timeout, 0, nodeId, uint16(nodeId)+1000)
+
+		for otherNodeId := uint32(0); otherNodeId < nNodes; otherNodeId++ {
+			raftNodes[nodeId].Node.AddOtherNodeConnection(otherNodeId, otherNodeId+1000)
+		}
+	}
+
+	for nodeId := uint32(0); nodeId < nNodes; nodeId++ {
+		raftNodes[nodeId].Node.StartListeningAsync()
+	}
+	for nodeId := uint32(0); nodeId < nNodes; nodeId++ {
+		raftNodes[nodeId].Node.GetConnectionManager().OpenAllConnections()
+	}
+	for nodeId := uint32(0); nodeId < nNodes; nodeId++ {
+		raftNodes[nodeId].Start()
+	}
+
+	time.Sleep(1 * time.Second)
 
 	raftNodes[0].Stop()
 	time.Sleep(2 * time.Second)
-	raftNodes[1].Stop()
+	//raftNodes[1].Stop()
 
 	blockMainThread()
 }
@@ -118,7 +150,6 @@ func startZab() {
 	zabNodes := make([]*zab.ZabNode, nNodes)
 
 	for nodeId := uint32(0); nodeId < nNodes; nodeId++ {
-		copyOfNodeId := nodeId
 		prevNodeId := nodeId - 1
 
 		if prevNodeId < 0 {
@@ -132,7 +163,7 @@ func startZab() {
 			1000,
 			prevNodeId,
 			[]uint32{0, 1, 2, 3},
-			zab.CreateZabBroadcaster(nodeId, 0, 1500, func(newMessage *nodes.Message) { onMessage(copyOfNodeId, newMessage) }))
+			zab.CreateZabBroadcaster(nodeId, 0, 1500))
 
 		for otherNodeId := uint32(0); otherNodeId < nNodes; otherNodeId++ {
 			zabNodes[nodeId].GetNode().AddOtherNodeConnection(otherNodeId, otherNodeId+1000)
@@ -148,14 +179,14 @@ func startZab() {
 		zabNode.SetStateToBroadcast()
 	}
 
-	zabNodes[1].GetNode().BroadcastString("Running on zab 1º!", types.MESSAGE_DO_BROADCAST)
+	zabNodes[1].BroadcastString("Running on zab 1º!")
 	time.Sleep(time.Second * 2)
 	fmt.Println("    ")
 	zabNodes[0].Stop()
 	zabNodes[1].Stop()
 	time.Sleep(time.Second * 5)
 	fmt.Println("    ")
-	zabNodes[2].GetNode().BroadcastString("Joder!", types.MESSAGE_DO_BROADCAST)
+	zabNodes[2].BroadcastString("Joder!")
 	time.Sleep(time.Second * 500)
 }
 
@@ -185,7 +216,11 @@ func startFifo() {
 		broadcasterNodes[i].GetConnectionManager().OpenAllConnections()
 	}
 
-	broadcasterNodes[1].BroadcastString("Running on fifo :D", zab.BROADCAST)
+	broadcasterNodes[1].Broadcast(nodes.CreateMessage(
+		nodes.WithNodeId(1),
+		nodes.WithContentString("Running on fifo :D"),
+		nodes.WithFlags(types.FLAG_BROADCAST),
+		nodes.WithType(types.MESSAGE_BROADCAST)))
 	time.Sleep(time.Second * 5000)
 }
 

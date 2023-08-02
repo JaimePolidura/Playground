@@ -12,8 +12,6 @@ type Node struct {
 	broadcasterNode   *BroadcasterNode
 
 	messageHandlers map[uint8]func(message *nodes.Message)
-
-	onBroadcastMessageCallback func(message *nodes.Message)
 }
 
 func CreateNode(nodeId uint32, port uint16, broadcaster Broadcaster) *Node {
@@ -27,10 +25,16 @@ func CreateNode(nodeId uint32, port uint16, broadcaster Broadcaster) *Node {
 		connectionManager: nodeConnectionManager,
 	}
 
-	node.AddMessageHandler(types.MESSAGE_DO_BROADCAST, node.broadcastMessageHandler)
+	node.broadcasterNode.GetBroadcaster().SetOnBroadcastMessageCallback(node.executeHandlerForMessage)
 	node.AddMessageHandler(types.MESSAGE_NODE_STOPPED, node.nodeStoppedMessageHandler)
 
 	return node
+}
+
+func (this *Node) AddMessagesTypesToListenBroadcast(messageTypes ...uint8) {
+	for _, messageType := range messageTypes {
+		this.AddMessageHandler(messageType, this.broadcastMessageHandler)
+	}
 }
 
 func (this *Node) Stop() {
@@ -47,7 +51,11 @@ func (this *Node) StartListeningAsync() {
 		this.connectionManager.StartListeningAsync()
 
 		for message := range this.connectionManager.NewMessage {
-			this.executeHandlerForMessage(message)
+			if message.HasFlag(types.FLAG_BROADCAST) {
+				this.broadcasterNode.GetBroadcaster().OnBroadcastMessage(message)
+			} else {
+				this.executeHandlerForMessage(message)
+			}
 		}
 	}()
 }
@@ -71,14 +79,14 @@ func (this *Node) EnableBroadcast() {
 }
 
 func (this *Node) OnBroadcastMessage(callback func(message *nodes.Message)) {
-	this.broadcasterNode.GetBroadcaster().SetOnBroadcastMessageCallback(callback)
-	this.onBroadcastMessageCallback = callback
+	this.AddMessageHandler(types.MESSAGE_BROADCAST, callback)
 }
 
 func (this *Node) BroadcastString(content string, messageType uint8) {
 	this.broadcasterNode.Broadcast(nodes.CreateMessage(
 		nodes.WithNodeId(this.selfNodeId),
 		nodes.WithType(messageType),
+		nodes.WithFlags(types.FLAG_BROADCAST),
 		nodes.WithContentString(content)))
 }
 

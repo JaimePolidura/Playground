@@ -81,9 +81,11 @@ func (this *ConnectionManager) ForEachConnectionExcept(exceptNodeId uint32, cons
 
 func (this *ConnectionManager) GetNodesId() []uint32 {
 	nodesId := make([]uint32, this.connectionsStore.Size())
+	index := 0
 
-	for index, node := range this.connectionsStore.restNodesConnections {
+	for _, node := range this.connectionsStore.restNodesConnections {
 		nodesId[index] = node.nodeId
+		index = index + 1
 	}
 
 	return nodesId
