@@ -47,9 +47,10 @@ func CreateRaftNode(heartbeatTimeoutMs uint64, heartbeatTickerMs uint64, electio
 	}
 
 	raftNode.AddMessageHandler(types.MESSAGE_RAFT_REQUEST_ELECTION, raftNode.handleRequestElection)
-	raftNode.AddMessageHandler(types.MESSAGE_RAFT_REQUEST_ELECTION_REJECTED_OUTDATED_TERM, raftNode.handleRequestElectionOutdatedTerm)
+	raftNode.AddMessageHandler(types.MESSAGE_RAFT_OUTDATED_TERM, raftNode.handleRequestElectionOutdatedTerm)
 	raftNode.AddMessageHandler(types.MESSAGE_RAFT_REQUEST_ELECTION_VOTED, raftNode.handleRequestElectionVoted)
 	raftNode.AddMessageHandler(types.MESSAGE_RAFT_REQUEST_ELECTION_NODE_ELECTED, raftNode.handleElectionNodeElected)
+	raftNode.AddMessageHandler(types.MESSAGE_HEARTBEAT, raftNode.handleHeartbeatMessage)
 
 	return raftNode
 }

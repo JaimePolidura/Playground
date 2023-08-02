@@ -6,6 +6,19 @@ import (
 	"time"
 )
 
+func (this *RaftNode) startSendingHeartbeats() {
+	for {
+		select {
+		case <-this.heartbeatsTicker.C:
+			if this.state == LEADER {
+				this.GetConnectionManager().SendAll(nodes.CreateMessage(
+					nodes.WithNodeId(this.GetNodeId()),
+					nodes.WithType(types.MESSAGE_HEARTBEAT)))
+			}
+		}
+	}
+}
+
 func (this *RaftNode) startLeader() {
 	this.state = LEADER
 
@@ -24,18 +37,5 @@ func (this *RaftNode) setupHeartbeatsTickerLeader() {
 		go this.startSendingHeartbeats()
 	} else {
 		this.heartbeatsTicker.Reset(this.heartbeatTickerMs)
-	}
-}
-
-func (this *RaftNode) startSendingHeartbeats() {
-	for {
-		select {
-		case <-this.heartbeatsTicker.C:
-			if this.state == LEADER {
-				this.GetConnectionManager().SendAllExcept(this.GetNodeId(), nodes.CreateMessage(
-					nodes.WithNodeId(this.GetNodeId()),
-					nodes.WithType(types.MESSAGE_HEARTBEAT)))
-			}
-		}
 	}
 }

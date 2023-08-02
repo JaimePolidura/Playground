@@ -28,7 +28,9 @@ func startRaft() {
 	raftNodes := make([]*raft.RaftNode, nNodes)
 
 	for nodeId := uint32(0); nodeId < nNodes; nodeId++ {
-		raftNodes[nodeId] = raft.CreateRaftNode(1000, 1000, 1000, 0, nodeId, uint16(nodeId)+1000)
+		timeout := uint64(1500 + (nodeId * 500))
+
+		raftNodes[nodeId] = raft.CreateRaftNode(timeout, 250, timeout, 0, nodeId, uint16(nodeId)+1000)
 
 		for otherNodeId := uint32(0); otherNodeId < nNodes; otherNodeId++ {
 			raftNodes[nodeId].Node.AddOtherNodeConnection(otherNodeId, otherNodeId+1000)
@@ -44,6 +46,12 @@ func startRaft() {
 	for nodeId := uint32(0); nodeId < nNodes; nodeId++ {
 		raftNodes[nodeId].Start()
 	}
+
+	time.Sleep(1 * time.Second)
+
+	raftNodes[0].Stop()
+	time.Sleep(2 * time.Second)
+	raftNodes[1].Stop()
 
 	blockMainThread()
 }
