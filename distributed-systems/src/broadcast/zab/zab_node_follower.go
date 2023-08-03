@@ -27,7 +27,7 @@ func (this *ZabNode) startCandidateHeartbeatTimerTimeout() {
 			fmt.Printf("[%d] Detected cantidate %d failure. Broadcasting MESSAGE_ZAB_ELECTION_FAILURE_DETECTED\n",
 				this.GetNodeId(), this.nodesIdRing[this.getBackIndexInRingByIndex(this.getRingIndexByNodeId(this.GetNodeId()))])
 
-			this.node.Broadcast(nodes.CreateMessage(
+			this.Broadcast(nodes.CreateMessage(
 				nodes.WithNodeId(this.GetNodeId()),
 				nodes.WithType(types.MESSAGE_ZAB_ELECTION_FAILURE_DETECTED),
 				nodes.WithFlags(types.FLAG_BYPASS_LEADER, types.FLAG_BYPASS_ORDERING, types.FLAG_BROADCAST),
@@ -51,7 +51,7 @@ func (this *ZabNode) startLeaderHeartbeatTimerTimeout() {
 
 				this.changeStateFromBroadcastToElection(this.leaderNodeId)
 
-				this.node.Broadcast(nodes.CreateMessage(
+				this.Broadcast(nodes.CreateMessage(
 					nodes.WithNodeId(this.GetNodeId()),
 					nodes.WithType(types.MESSAGE_ZAB_ELECTION_FAILURE_DETECTED),
 					nodes.WithFlags(types.FLAG_BYPASS_LEADER, types.FLAG_BYPASS_ORDERING, types.FLAG_BROADCAST),
@@ -89,7 +89,7 @@ func (this *ZabNode) proposeMySelfAsTheNewLeader() {
 
 	go this.startSendingHeartbeats()
 
-	this.node.Broadcast(nodes.CreateMessage(
+	this.Broadcast(nodes.CreateMessage(
 		nodes.WithNodeId(this.GetNodeId()),
 		nodes.WithType(types.MESSAGE_ZAB_ELECTION_PROPOSAL),
 		nodes.WithFlags(types.FLAG_BYPASS_LEADER, types.FLAG_BYPASS_ORDERING, types.FLAG_BROADCAST)))
@@ -97,11 +97,11 @@ func (this *ZabNode) proposeMySelfAsTheNewLeader() {
 
 func (this *ZabNode) handleElectionProposalMessage(message *nodes.Message) {
 	proposerNodeId := message.NodeIdSender
-	largestSeqNum := this.node.GetBroadcaster().(*ZabBroadcaster).GetLargestSeqNumbReachievedLeader()
+	largestSeqNum := this.GetBroadcaster().(*ZabBroadcaster).GetLargestSeqNumbReachievedLeader()
 
 	fmt.Printf("[%d] Accepting proposal from node %d to be the new leader\n", this.GetNodeId(), proposerNodeId)
 
-	this.GetNode().GetConnectionManager().Send(proposerNodeId, nodes.CreateMessage(
+	this.GetConnectionManager().Send(proposerNodeId, nodes.CreateMessage(
 		nodes.WithContentUInt32(largestSeqNum),
 		nodes.WithNodeId(this.GetNodeId()),
 		nodes.WithType(types.MESSAGE_ZAB_ELECTION_ACK_PROPOSAL),
@@ -123,13 +123,13 @@ func (this *ZabNode) handleElectionAckProposalMessage(message *nodes.Message) {
 	this.registerNodeVote(this.GetNodeId(), nodeIdVoter)
 
 	fmt.Printf("[%d] Received propolsal ACK from node %d Nº Nodes voted for me: %d Min nodes needed: %d Quorum satisfied: %t\n",
-		this.GetNodeId(), message, this.nNodesThatHaveAckElectionProposal, nNodesQuorum, isQuorumSatisfied)
+		this.GetNodeId(), message.NodeIdSender, this.nNodesThatHaveAckElectionProposal, nNodesQuorum, isQuorumSatisfied)
 
 	if isQuorumSatisfied {
 		fmt.Printf("[%d] Quorum leader proposal satisfied. New leader elected: %d With new SeqNum %d Sending commit to the rest of the nodes\n",
 			this.GetNodeId(), this.GetNodeId(), largestSeqSumSeenByFollower)
 
-		this.node.Broadcast(nodes.CreateMessage(
+		this.Broadcast(nodes.CreateMessage(
 			nodes.WithNodeId(this.GetNodeId()),
 			nodes.WithType(types.MESSAGE_ZAB_ELECTION_COMMIT),
 			nodes.WithContentUInt32(largestSeqSumSeenByFollower),
@@ -149,7 +149,7 @@ func (this *ZabNode) changeStateFromElectionToBroadcast(newLeaderNodeId uint32, 
 	this.state = BROADCAST
 	this.leaderNodeId = newLeaderNodeId
 
-	zabBroadcaster := this.node.GetBroadcaster().(*ZabBroadcaster)
+	zabBroadcaster := this.GetBroadcaster().(*ZabBroadcaster)
 	zabBroadcaster.OnNewLeader(newLeaderNodeId, newSeqNum)
 
 	this.nNodesThatHaveAckElectionProposal = 0
@@ -162,13 +162,13 @@ func (this *ZabNode) changeStateFromElectionToBroadcast(newLeaderNodeId uint32, 
 
 	utils.ClearMap(this.nodesVotesRegistry[newLeaderNodeId])
 
-	this.node.EnableBroadcast()
+	this.EnableBroadcast()
 }
 
 func (this *ZabNode) changeStateFromBroadcastToElection(failedNode uint32) {
 	this.state = ELECTION
-	this.node.DisableBroadcast()
-	this.node.GetBroadcaster().(*ZabBroadcaster).OnElectionStarted()
+	this.DisableBroadcast()
+	this.GetBroadcaster().(*ZabBroadcaster).OnElectionStarted()
 	this.heartbeatTimerTimeout.Stop()
 
 	if failedNode != this.GetNodeId() {

@@ -26,8 +26,6 @@ type ZabBroadcaster struct {
 	onBroadcastMessageCallback func(newMessage *nodes.Message)
 	messagesPendingLeaderAck   *ack.MessagesPendingAck
 	largestSeqNumReceived      uint32
-
-	onBroadcastMessage func(newMessage *nodes.Message)
 }
 
 func CreateZabBroadcaster(selfNodeId uint32, leaderNodeId uint32, retransmissionTimeout uint64) *ZabBroadcaster {
@@ -114,7 +112,7 @@ func (this *ZabBroadcaster) SetOnBroadcastMessageCallback(callback func(newMessa
 }
 
 func (this *ZabBroadcaster) HandleDoBroadcast(message *nodes.Message) {
-	this.sendMessageToFollowers(message.WithType(types.MESSAGE_BROADCAST))
+	this.sendMessageToFollowers(message.WithType(types.MESSAGE_BROADCAST).AddFlag(types.FLAG_BROADCAST))
 }
 
 func (this *ZabBroadcaster) HandleAckMessage(message *nodes.Message) {

@@ -17,10 +17,10 @@ import (
 
 func main() {
 	//startFifo()
-	startZab()
+	//startZab()
 	//startPaxos()
 	//startMultipaxos()
-	//startRaft()
+	startRaft()
 
 	//startRaftLeaderElection()
 }
@@ -163,17 +163,20 @@ func startZab() {
 			1000,
 			prevNodeId,
 			[]uint32{0, 1, 2, 3},
-			zab.CreateZabBroadcaster(nodeId, 0, 1500))
+			zab.CreateZabBroadcaster(nodeId, 0, 1500),
+			func(message *nodes.Message) {
+				fmt.Println("RECEIVED: ", string(message.Content))
+			})
 
 		for otherNodeId := uint32(0); otherNodeId < nNodes; otherNodeId++ {
-			zabNodes[nodeId].GetNode().AddOtherNodeConnection(otherNodeId, otherNodeId+1000)
+			zabNodes[nodeId].AddOtherNodeConnection(otherNodeId, otherNodeId+1000)
 		}
 	}
 	for nodeId := uint32(0); nodeId < nNodes; nodeId++ {
-		zabNodes[nodeId].GetNode().StartListeningAsync()
+		zabNodes[nodeId].StartListeningAsync()
 	}
 	for nodeId := uint32(0); nodeId < nNodes; nodeId++ {
-		zabNodes[nodeId].GetNode().GetConnectionManager().OpenAllConnections()
+		zabNodes[nodeId].GetConnectionManager().OpenAllConnections()
 	}
 	for _, zabNode := range zabNodes {
 		zabNode.SetStateToBroadcast()

@@ -16,7 +16,7 @@ func (this *ZabNode) startSendingHeartbeats() {
 				nodes.WithType(types.MESSAGE_HEARTBEAT),
 				nodes.WithFlags(types.FLAG_BYPASS_ORDERING, types.FLAG_BYPASS_LEADER, types.FLAG_BROADCAST))
 
-			this.node.Broadcast(message)
+			this.Broadcast(message)
 		}
 	}
 }

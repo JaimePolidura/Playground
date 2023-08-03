@@ -46,7 +46,7 @@ func (this *Message) WithType(typeToSet uint8) *Message {
 }
 
 func (this *Message) HasFlag(flag uint8) bool {
-	return this.Flags&flag != 0
+	return this.Flags&flag == flag
 }
 
 func (this *Message) HasNotFlag(flag uint8) bool {

@@ -1,13 +1,12 @@
 package types
 
 // Skips order, ack. Used for heartbeats
-const FLAG_BYPASS_ORDERING = 1
+const FLAG_BYPASS_ORDERING = 1 << 0
 
 // The follower will communicate to the other followers without pass through the leader
 // Used for when leader has failed
-const FLAG_BYPASS_LEADER = 2
-
-const FLAG_BROADCAST = 3
+const FLAG_BYPASS_LEADER = 1 << 2
+const FLAG_BROADCAST = 1 << 3
 
 const MESSAGE_BROADCAST = 0
 const MESSAGE_ACK = 1

@@ -12,7 +12,7 @@ import (
 )
 
 type ZabNode struct {
-	node *broadcast.Node
+	broadcast.Node
 
 	state NodeState
 
@@ -37,9 +37,9 @@ type ZabNode struct {
 	lastFailedNodeLock                sync.Mutex
 }
 
-func CreateZabNode(selfNodeId uint32, port uint16, leaderNodeId uint32, heartbeatTimeMs uint64, heartbeatTimeoutMs uint64, prevNodeRing uint32, nodesIdRing []uint32, broadcasterNode *ZabBroadcaster) *ZabNode {
+func CreateZabNode(selfNodeId uint32, port uint16, leaderNodeId uint32, heartbeatTimeMs uint64, heartbeatTimeoutMs uint64, prevNodeRing uint32, nodesIdRing []uint32, broadcasterNode *ZabBroadcaster, onBroadcastMessage func(message *nodes.Message)) *ZabNode {
 	zabNode := &ZabNode{
-		node:                             broadcast.CreateNode(selfNodeId, port, broadcasterNode),
+		Node:                             *broadcast.CreateNode(selfNodeId, port, broadcasterNode),
 		heartbeatSenderTicker:            time.NewTicker(time.Duration(heartbeatTimeMs * uint64(time.Millisecond))),
 		heartbeatTimerTimeout:            time.NewTimer(time.Duration(heartbeatTimeoutMs * uint64(time.Millisecond))),
 		nodesVotesRegistry:               make(map[uint32]map[uint32]uint32),
@@ -59,40 +59,33 @@ func CreateZabNode(selfNodeId uint32, port uint16, leaderNodeId uint32, heartbea
 		go zabNode.startLeaderHeartbeatTimerTimeout()
 	}
 
-	zabNode.node.AddMessageHandler(types.MESSAGE_DO_BROADCAST, broadcasterNode.HandleDoBroadcast)
-	zabNode.node.AddMessageHandler(types.MESSAGE_ACK, broadcasterNode.HandleAckMessage)
+	zabNode.AddMessageHandler(types.MESSAGE_BROADCAST, onBroadcastMessage)
 
-	zabNode.node.AddMessageHandler(types.MESSAGE_ZAB_ELECTION_FAILURE_DETECTED, zabNode.handleNodeFailureMessage)
-	zabNode.node.AddMessageHandler(types.MESSAGE_HEARTBEAT, zabNode.handleHeartbeatMessage)
-	zabNode.node.AddMessageHandler(types.MESSAGE_ZAB_ELECTION_COMMIT, zabNode.handleElectionCommitMessage)
-	zabNode.node.AddMessageHandler(types.MESSAGE_ZAB_ELECTION_ACK_PROPOSAL, zabNode.handleElectionAckProposalMessage)
-	zabNode.node.AddMessageHandler(types.MESSAGE_ZAB_ELECTION_PROPOSAL, zabNode.handleElectionProposalMessage)
+	zabNode.AddMessageHandler(types.MESSAGE_DO_BROADCAST, broadcasterNode.HandleDoBroadcast)
+	zabNode.AddMessageHandler(types.MESSAGE_ACK, broadcasterNode.HandleAckMessage)
+
+	zabNode.AddMessageHandler(types.MESSAGE_ZAB_ELECTION_FAILURE_DETECTED, zabNode.handleNodeFailureMessage)
+	zabNode.AddMessageHandler(types.MESSAGE_HEARTBEAT, zabNode.handleHeartbeatMessage)
+	zabNode.AddMessageHandler(types.MESSAGE_ZAB_ELECTION_COMMIT, zabNode.handleElectionCommitMessage)
+	zabNode.AddMessageHandler(types.MESSAGE_ZAB_ELECTION_ACK_PROPOSAL, zabNode.handleElectionAckProposalMessage)
+	zabNode.AddMessageHandler(types.MESSAGE_ZAB_ELECTION_PROPOSAL, zabNode.handleElectionProposalMessage)
 
 	return zabNode
 }
 
 func (this *ZabNode) BroadcastString(toBroadcast string) {
-	this.node.Broadcast(nodes.CreateMessage(
+	this.Broadcast(nodes.CreateMessage(
 		nodes.WithNodeId(this.GetNodeId()),
 		nodes.WithContentString(toBroadcast),
-		nodes.WithType(types.MESSAGE_DO_BROADCAST),
-		nodes.WithFlags(types.FLAG_BROADCAST)))
-}
-
-func (this *ZabNode) GetNodeId() uint32 {
-	return this.node.GetNodeId()
-}
-
-func (this *ZabNode) GetNode() *broadcast.Node {
-	return this.node
+		nodes.WithType(types.MESSAGE_DO_BROADCAST)))
 }
 
 func (this *ZabNode) IsLeader() bool {
-	return this.leaderNodeId == this.node.GetNodeId()
+	return this.leaderNodeId == this.GetNodeId()
 }
 
 func (this *ZabNode) IsFollower() bool {
-	return this.leaderNodeId != this.node.GetNodeId()
+	return this.leaderNodeId != this.GetNodeId()
 }
 
 func (this *ZabNode) Stop() {
@@ -103,11 +96,11 @@ func (this *ZabNode) Stop() {
 	if this.heartbeatTimerTimeout != nil {
 		this.heartbeatTimerTimeout.Stop()
 	}
-	this.node.Stop()
+	this.Node.Stop()
 }
 
-func (this *ZabNode) GetConnectionManager() *nodes.ConnectionManager {
-	return this.node.GetConnectionManager()
+func (this *ZabNode) SetOnBroadcastMessageCallback(callback func(message *nodes.Message)) {
+	//TODO
 }
 
 func (this *ZabNode) SetStateToBroadcast() {
