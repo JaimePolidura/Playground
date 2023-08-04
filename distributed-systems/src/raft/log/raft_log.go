@@ -31,7 +31,7 @@ func (this *RaftLog) Commit() []*RaftLogEntry {
 	}
 }
 
-func (this *RaftLog) AddUncommittedEntry(value uint32, term uint32, index uint32) {
+func (this *RaftLog) AddUncommittedEntry(value uint32, term uint64, index uint32) {
 	this.uncommittedEntries = append([]*RaftLogEntry{{value: value, term: term, index: index}}, this.uncommittedEntries...)
 }
 
@@ -47,7 +47,7 @@ func (this *RaftLog) GetNextIndexToAppend() uint32 {
 	return uint32(len(this.committedEntries))
 }
 
-func (this *RaftLog) GetTermByIndex(index uint32) uint32 {
+func (this *RaftLog) GetTermByIndex(index uint32) uint64 {
 	if len(this.committedEntries) == 0 {
 		return 0
 	} else {
@@ -55,7 +55,7 @@ func (this *RaftLog) GetTermByIndex(index uint32) uint32 {
 	}
 }
 
-func (this *RaftLog) GetLastCommitted() (_index uint32, _term uint32) {
+func (this *RaftLog) GetLastCommitted() (_index uint32, _term uint64) {
 	if len(this.committedEntries) == 0 {
 		return 0, 0
 	}

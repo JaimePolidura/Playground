@@ -13,12 +13,12 @@ type RaftGRPCClient struct {
 	nativeClient proto.RaftNodeClient
 }
 
-func CreateRaftGRPCClient(otherPort uint16) RaftGRPCClient {
+func CreateRaftGRPCClient(otherPort uint16) *RaftGRPCClient {
 	conn, _ := grpc.Dial("127.0.0.1:"+strconv.Itoa(int(otherPort)), grpc.WithInsecure())
 
 	grpcClient := proto.NewRaftNodeClient(conn)
 
-	return RaftGRPCClient{
+	return &RaftGRPCClient{
 		nativeClient: grpcClient,
 	}
 }
@@ -42,8 +42,11 @@ func (this *RaftGRPCClient) RequestVote(context context.Context, request *messag
 	}
 }
 
-func (this *RaftGRPCClient) ReceiveLeaderHealthCheck(context context.Context, request *messages.HeartbeatRequest) {
-	this.nativeClient.ReceiveLeaderHeartbeat(context, &proto.HeartbeatRequest{Term: &request.Term})
+func (this *RaftGRPCClient) ReceiveLeaderHeartbeat(context context.Context, request *messages.HeartbeatRequest) {
+	this.nativeClient.ReceiveLeaderHeartbeat(context, &proto.HeartbeatRequest{
+		Term:         &request.Term,
+		SenderNodeId: &request.SenderNodeId,
+	})
 }
 
 func (this *RaftGRPCClient) AppendEntries(context context.Context, request *messages.AppendEntriesRequest) *messages.AppendEntriesResponse {

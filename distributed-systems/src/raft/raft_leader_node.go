@@ -35,9 +35,9 @@ func (this *RaftNode) AppendEntries(entryValue uint32) {
 		nodes.WithType(types.MESSAGE_RAFT_LOG_APPEND_ENTRIES),
 		nodes.WithFlags(types.FLAG_BROADCAST),
 		nodes.WithContentsUInt32(
-			this.currentTerm,
+			uint32(this.currentTerm),
 			index,
-			term,
+			uint32(term),
 			1,
 			entryValue)))
 }

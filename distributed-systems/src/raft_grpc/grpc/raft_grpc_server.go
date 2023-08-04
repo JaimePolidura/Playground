@@ -5,6 +5,7 @@ import (
 	"distributed-systems/src/raft_grpc"
 	"distributed-systems/src/raft_grpc/grpc/proto"
 	"distributed-systems/src/raft_grpc/messages"
+	"fmt"
 	"google.golang.org/grpc"
 	"net"
 	"strconv"
@@ -13,7 +14,8 @@ import (
 type RaftGRPCServer struct {
 	proto.UnimplementedRaftNodeServer
 
-	raftNode *raft_grpc.RaftNode
+	raftNode     *raft_grpc.RaftNode
+	nativeServer *grpc.Server
 }
 
 func CreateRaftGRPCServerAndRun(raftNode *raft_grpc.RaftNode) *RaftGRPCServer {
@@ -23,9 +25,17 @@ func CreateRaftGRPCServerAndRun(raftNode *raft_grpc.RaftNode) *RaftGRPCServer {
 	grpcServer := grpc.NewServer()
 	proto.RegisterRaftNodeServer(grpcServer, raftGrpcServer)
 
+	fmt.Printf("[%d] Listening on port %d gRPC\n", raftNode.NodeId, raftNode.Port)
+
+	raftGrpcServer.nativeServer = grpcServer
+
 	go grpcServer.Serve(lis)
 
 	return raftGrpcServer
+}
+
+func (this *RaftGRPCServer) Stop() {
+	this.nativeServer.Stop()
 }
 
 func (this *RaftGRPCServer) RequestVote(context context.Context, request *proto.RequestVoteRequest) (*proto.RequestVoteResponse, error) {
@@ -43,7 +53,10 @@ func (this *RaftGRPCServer) RequestVote(context context.Context, request *proto.
 }
 
 func (this *RaftGRPCServer) ReceiveLeaderHeartbeat(context context.Context, request *proto.HeartbeatRequest) (*proto.Void, error) {
-	this.raftNode.ReceiveLeaderHealthCheck(context, &messages.HeartbeatRequest{Term: *request.Term})
+	this.raftNode.ReceiveLeaderHeartbeat(context, &messages.HeartbeatRequest{
+		SenderNodeId: *request.SenderNodeId,
+		Term:         *request.Term,
+	})
 
 	return &proto.Void{}, nil
 }

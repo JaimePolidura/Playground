@@ -208,7 +208,7 @@ func (this *ZabNode) registerNodeVote(nodeIdCandidateToVote uint32, nodeIdThatVo
 	registeredVotes[nodeIdThatVoted] = nodeIdThatVoted
 }
 
-func (this *ZabNode) setupHeartbeatCandidateTimerTimeout(failedNode uint32) { //NodeId <- Self
+func (this *ZabNode) setupHeartbeatCandidateTimerTimeout(failedNode uint32) { //SenderNodeId <- Self
 	if this.heartbeatCandidateTimerTimeout != nil {
 		this.heartbeatCandidateTimerTimeout.Stop()
 	}

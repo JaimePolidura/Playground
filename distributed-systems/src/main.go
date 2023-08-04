@@ -10,6 +10,8 @@ import (
 	"distributed-systems/src/nodes/types"
 	"distributed-systems/src/paxos"
 	"distributed-systems/src/raft"
+	"distributed-systems/src/raft_grpc"
+	raft_grpc2 "distributed-systems/src/raft_grpc/grpc"
 	"fmt"
 	"os"
 	"time"
@@ -20,9 +22,42 @@ func main() {
 	//startZab()
 	//startPaxos()
 	//startMultipaxos()
-	startRaft()
+	//startRaft()
 
 	//startRaftLeaderElection()
+
+	startRaftGRPC()
+}
+
+func startRaftGRPC() {
+	nNodes := uint32(6)
+	raftNodes := make([]*raft_grpc.RaftNode, nNodes)
+	grpcServers := make([]*raft_grpc2.RaftGRPCServer, nNodes)
+	allPeers := make([]*raft_grpc.Peer, nNodes)
+
+	for nodeId := uint32(0); nodeId < nNodes; nodeId++ {
+		timeout := uint64(1500 + (nodeId * 500))
+		port := uint16(nodeId + 1000)
+
+		node := raft_grpc.CreateRaftNode(nodeId, 0, port, timeout, 250, timeout)
+
+		raftNodes[nodeId] = node
+		grpcServers[nodeId] = raft_grpc2.CreateRaftGRPCServerAndRun(node)
+		allPeers[nodeId] = &raft_grpc.Peer{
+			RaftNodeService: raft_grpc2.CreateRaftGRPCClient(node.Port),
+			NodeId:          nodeId,
+		}
+	}
+	for nodeId := uint32(0); nodeId < nNodes; nodeId++ {
+		raftNodes[nodeId].AddPeers(allPeers)
+	}
+	for nodeId := uint32(0); nodeId < nNodes; nodeId++ {
+		raftNodes[nodeId].Start()
+	}
+
+	raftNodes[0].Stop()
+
+	blockMainThread()
 }
 
 func startRaft() {

@@ -18,7 +18,7 @@ func (this *RaftNode) handleHeartbeatTimeout() {
 	}
 }
 
-func (this *RaftNode) onElectionTimeout(termElectionTimeout uint32) {
+func (this *RaftNode) onElectionTimeout(termElectionTimeout uint64) {
 	if termElectionTimeout == this.currentTerm {
 		this.startElection()
 	}
@@ -39,11 +39,11 @@ func (this *RaftNode) startElection() {
 		nodes.WithNodeId(this.GetNodeId()),
 		nodes.WithType(types.MESSAGE_RAFT_REQUEST_ELECTION),
 		nodes.WithFlags(types.FLAG_BROADCAST),
-		nodes.WithContentUInt32(nextTerm)))
+		nodes.WithContentUInt64(nextTerm)))
 }
 
 func (this *RaftNode) handleRequestElection(message *nodes.Message) {
-	requestElectionTerm := message.GetContentToUint32()
+	requestElectionTerm := message.GetContentToUint64()
 	requestElectionCandidate := message.NodeIdSender
 
 	if requestElectionTerm <= this.currentTerm {
@@ -53,7 +53,7 @@ func (this *RaftNode) handleRequestElection(message *nodes.Message) {
 		this.GetConnectionManager().Send(requestElectionCandidate, nodes.CreateMessage(
 			nodes.WithNodeId(this.GetNodeId()),
 			nodes.WithType(types.MESSAGE_RAFT_OUTDATED_TERM),
-			nodes.WithContentUInt32(this.currentTerm)))
+			nodes.WithContentUInt64(this.currentTerm)))
 		return
 	}
 
@@ -62,7 +62,7 @@ func (this *RaftNode) handleRequestElection(message *nodes.Message) {
 	if this.IsLeader() {
 		this.stopLeader()
 	}
-	if election.HaveVoted() {
+	if election.HaveIVoted() {
 		fmt.Printf("[%d] Ignoring REQUEST_ELECTION of node %d with currentTerm %d Already voted for that currentTerm\n",
 			this.GetNodeId(), requestElectionCandidate, requestElectionTerm, this.currentTerm)
 
@@ -83,11 +83,11 @@ func (this *RaftNode) handleRequestElection(message *nodes.Message) {
 	this.GetConnectionManager().Send(requestElectionCandidate, nodes.CreateMessage(
 		nodes.WithNodeId(this.GetNodeId()),
 		nodes.WithType(types.MESSAGE_RAFT_REQUEST_ELECTION_VOTED),
-		nodes.WithContentUInt32(requestElectionTerm)))
+		nodes.WithContentUInt64(requestElectionTerm)))
 }
 
 func (this *RaftNode) handleOutdatedTerm(message *nodes.Message) {
-	newTerm := message.GetContentToUint32()
+	newTerm := message.GetContentToUint64()
 
 	if this.IsLeader() {
 		this.stopLeader()
@@ -101,7 +101,7 @@ func (this *RaftNode) handleOutdatedTerm(message *nodes.Message) {
 }
 
 func (this *RaftNode) handleRequestElectionVoted(message *nodes.Message) {
-	termVote := message.GetContentToUint32()
+	termVote := message.GetContentToUint64()
 	election := this.getElectionOrCreate(termVote)
 
 	if termVote < this.currentTerm {
@@ -111,7 +111,7 @@ func (this *RaftNode) handleRequestElectionVoted(message *nodes.Message) {
 		this.GetConnectionManager().Send(message.NodeIdSender, nodes.CreateMessage(
 			nodes.WithNodeId(this.GetNodeId()),
 			nodes.WithType(types.MESSAGE_RAFT_OUTDATED_TERM),
-			nodes.WithContentUInt32(this.currentTerm)))
+			nodes.WithContentUInt64(this.currentTerm)))
 		return
 	}
 
@@ -135,12 +135,12 @@ func (this *RaftNode) handleRequestElectionVoted(message *nodes.Message) {
 			nodes.WithNodeId(this.GetNodeId()),
 			nodes.WithType(types.MESSAGE_RAFT_REQUEST_ELECTION_NODE_ELECTED),
 			nodes.WithFlags(types.FLAG_BROADCAST),
-			nodes.WithContentsUInt32(this.currentTerm)))
+			nodes.WithContentsUInt64(this.currentTerm)))
 	}
 }
 
 func (this *RaftNode) handleElectionNodeElected(message *nodes.Message) {
-	term := message.GetContentToUint32()
+	term := message.GetContentToUint64()
 	election := this.getElectionOrCreate(term)
 	candidateChosen := message.NodeIdSender
 
@@ -153,7 +153,7 @@ func (this *RaftNode) handleElectionNodeElected(message *nodes.Message) {
 		this.GetConnectionManager().Send(message.NodeIdSender, nodes.CreateMessage(
 			nodes.WithNodeId(this.GetNodeId()),
 			nodes.WithType(types.MESSAGE_RAFT_OUTDATED_TERM),
-			nodes.WithContentUInt32(this.currentTerm)))
+			nodes.WithContentUInt64(this.currentTerm)))
 		return
 	}
 
@@ -166,17 +166,17 @@ func (this *RaftNode) handleElectionNodeElected(message *nodes.Message) {
 }
 
 func (this *RaftNode) handleRequestElectionOutdatedTerm(message *nodes.Message) {
-	this.currentTerm = message.GetContentToUint32()
+	this.currentTerm = message.GetContentToUint64()
 	if this.IsLeader() {
 		this.stopLeader()
 	}
 }
 
 func (this *RaftNode) handleAppendEntries(message *nodes.Message) {
-	termLeader := message.GetContentToUint32WithOffset(0)
-	prevIndexLeader := message.GetContentToUint32WithOffset(4)
-	prevTermLeader := message.GetContentToUint32WithOffset(8)
-	entryLeaderToAppend := message.GetContentToUint32WithOffset(12)
+	termLeader := message.GetContentToUint64()
+	prevIndexLeader := message.GetContentToUint32WithOffset(8)
+	prevTermLeader := message.GetContentToUint64WithOffset(12)
+	entryLeaderToAppend := message.GetContentToUint32WithOffset(20)
 
 	if termLeader < this.currentTerm {
 		fmt.Printf("[%d] Ignoring APPEND_ENTRIES of node %d with currentTerm %d Outdated currentTerm %d \n",
@@ -185,7 +185,7 @@ func (this *RaftNode) handleAppendEntries(message *nodes.Message) {
 		this.GetConnectionManager().Send(message.NodeIdSender, nodes.CreateMessage(
 			nodes.WithNodeId(this.GetNodeId()),
 			nodes.WithType(types.MESSAGE_RAFT_OUTDATED_TERM),
-			nodes.WithContentUInt32(this.currentTerm)))
+			nodes.WithContentUInt64(this.currentTerm)))
 		return
 	}
 
@@ -225,7 +225,7 @@ func (this *RaftNode) handleHeartbeatMessage(message *nodes.Message) {
 	this.heartbeatTimeoutTimer.Reset(this.heartbeatTimeoutMs)
 }
 
-func (this *RaftNode) startElectionTimeout(newTerm uint32) {
+func (this *RaftNode) startElectionTimeout(newTerm uint64) {
 	this.getElectionOrCreate(newTerm) //Will initialize the timer
 }
 

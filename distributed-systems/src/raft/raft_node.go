@@ -13,12 +13,12 @@ type RaftNode struct {
 	broadcast.Node
 
 	leaderNodeId uint32
-	currentTerm  uint32
+	currentTerm  uint64
 	state        RaftState
 
 	log *log.RaftLog
 
-	electionsByTerm map[uint32]*elections.RaftElection
+	electionsByTerm map[uint64]*elections.RaftElection
 
 	heartbeatTimeoutTimer *time.Timer
 	heartbeatTimeoutMs    time.Duration
@@ -47,7 +47,7 @@ func CreateRaftNode(heartbeatTimeoutMs uint64, heartbeatTickerMs uint64, electio
 	raftNode := &RaftNode{
 		Node:               *broadcast.CreateNode(nodeId, port, fifoBroadcaster),
 		leaderNodeId:       leaderNodeId,
-		electionsByTerm:    map[uint32]*elections.RaftElection{},
+		electionsByTerm:    map[uint64]*elections.RaftElection{},
 		heartbeatTimeoutMs: time.Duration(heartbeatTimeoutMs * uint64(time.Millisecond)),
 		heartbeatTickerMs:  time.Duration(heartbeatTickerMs * uint64(time.Millisecond)),
 		electionTimeoutMs:  time.Duration(electionTimeoutMs * uint64(time.Millisecond)),
@@ -89,7 +89,7 @@ func (this *RaftNode) IsFollower() bool {
 	return this.GetNodeId() != this.leaderNodeId
 }
 
-func (this *RaftNode) getElectionOrCreate(newTerm uint32) *elections.RaftElection {
+func (this *RaftNode) getElectionOrCreate(newTerm uint64) *elections.RaftElection {
 	if _, contained := this.electionsByTerm[newTerm]; !contained {
 		this.electionsByTerm[newTerm] = elections.CreateRaftElection(this.electionTimeoutMs, newTerm, this.onElectionTimeout)
 	}

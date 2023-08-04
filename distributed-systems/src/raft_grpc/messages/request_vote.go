@@ -6,3 +6,8 @@ type RequestVoteRequest struct {
 	LastLogIndex uint32
 	LastLogTerm  uint32
 }
+
+type RequestVoteResponse struct {
+	Term        uint64
+	VoteGranted bool
+}

@@ -107,7 +107,7 @@ func (this *ZabNode) SetStateToBroadcast() {
 	this.state = BROADCAST
 }
 
-func (this *ZabNode) getNextIndexInRingByIndex(prevIndex uint32) uint32 { //NodeId <- Self
+func (this *ZabNode) getNextIndexInRingByIndex(prevIndex uint32) uint32 { //SenderNodeId <- Self
 	if prevIndex+1 >= uint32(len(this.nodesIdRing)) {
 		return 0
 	} else {
@@ -115,7 +115,7 @@ func (this *ZabNode) getNextIndexInRingByIndex(prevIndex uint32) uint32 { //Node
 	}
 }
 
-func (this *ZabNode) getBackIndexInRingByIndex(nextIndex uint32) uint32 { //NodeId <- Self
+func (this *ZabNode) getBackIndexInRingByIndex(nextIndex uint32) uint32 { //SenderNodeId <- Self
 	if nextIndex-1 < 0 {
 		return this.nodesIdRing[len(this.nodesIdRing)-1]
 	} else {
@@ -123,7 +123,7 @@ func (this *ZabNode) getBackIndexInRingByIndex(nextIndex uint32) uint32 { //Node
 	}
 }
 
-func (this *ZabNode) getRingIndexByNodeId(nodeIdToSearch uint32) uint32 { //NodeId <- Self
+func (this *ZabNode) getRingIndexByNodeId(nodeIdToSearch uint32) uint32 { //SenderNodeId <- Self
 	for actualIndex, actualNodeId := range this.nodesIdRing {
 		if actualNodeId == nodeIdToSearch {
 			return uint32(actualIndex)

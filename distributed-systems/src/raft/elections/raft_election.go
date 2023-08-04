@@ -5,20 +5,21 @@ import (
 )
 
 type RaftElection struct {
-	term       uint32
+	term       uint64
 	isFinished bool
 
 	haveVoted      bool
 	nodeIdVotedFor uint32
 
+	//Implement listener
 	electionTimeoutTimer *time.Timer
 	heartbeatTimeoutMs   time.Duration
-	onTimeoutCallback    func(term uint32)
+	onTimeoutCallback    func(term uint64)
 
 	nodesVotedForMe map[uint32]uint32
 }
 
-func CreateRaftElection(electionTimeoutMs time.Duration, term uint32, onTimeoutCallback func(term uint32)) *RaftElection {
+func CreateRaftElection(electionTimeoutMs time.Duration, term uint64, onTimeoutCallback func(term uint64)) *RaftElection {
 	return &RaftElection{
 		electionTimeoutTimer: time.NewTimer(electionTimeoutMs),
 		heartbeatTimeoutMs:   electionTimeoutMs,
@@ -40,16 +41,21 @@ func (this *RaftElection) IsOnGoing() bool {
 	return !this.isFinished
 }
 
-func (this *RaftElection) HaveVoted() bool {
+func (this *RaftElection) HaveNodeVotedForMe(otherNodeId uint32) bool {
+	_, contains := this.nodesVotedForMe[otherNodeId]
+	return contains
+}
+
+func (this *RaftElection) HaveIVoted() bool {
 	return this.haveVoted
 }
 
 func (this *RaftElection) Finish() {
+	this.isFinished = true
+
 	if this.electionTimeoutTimer != nil {
 		this.electionTimeoutTimer.Stop()
 	}
-
-	this.isFinished = true
 }
 
 func (this *RaftElection) RegisterVoteForMe(nodeIdWhoVotedMe uint32) {
