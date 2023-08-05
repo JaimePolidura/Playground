@@ -1,17 +1,16 @@
-package raft_grpc
+package raft
 
 import (
 	"context"
-	"distributed-systems/src/raft"
 	"distributed-systems/src/raft/elections"
-	"distributed-systems/src/raft_grpc/messages"
+	"distributed-systems/src/raft/messages"
 	"fmt"
 )
 
 func (this *RaftNode) startElection() {
 	this.stopFollower()
 
-	this.state = raft.CANDIDATE
+	this.state = CANDIDATE
 	nextTerm := this.currentTerm + 1
 	this.currentTerm = nextTerm
 
@@ -22,22 +21,30 @@ func (this *RaftNode) startElection() {
 
 	for _, peer := range this.peers {
 		go func(_peer *Peer) {
-			this.handlePeerRequestVoteResponse(_peer, _peer.RaftNodeService.RequestVote(context.Background(), &messages.RequestVoteRequest{
+			requestVoteResponse := _peer.RaftNodeService.RequestVote(context.Background(), &messages.RequestVoteRequest{
 				Term:         nextTerm,
 				CandidateId:  this.NodeId,
-				LastLogIndex: 0,
-				LastLogTerm:  0,
-			}))
+				LastLogIndex: this.log.GetLastIndex(),
+				LastLogTerm:  this.log.GetLastTerm(),
+			})
+
+			this.handlePeerRequestVoteResponse(_peer, requestVoteResponse)
 		}(peer)
 	}
 }
 
 func (this *RaftNode) RequestVote(context context.Context, request *messages.RequestVoteRequest) *messages.RequestVoteResponse {
-	if this.currentTerm < request.Term {
-		this.updateOutdatedTerm(request.Term)
-	}
 	if this.currentTerm > request.Term {
 		return &messages.RequestVoteResponse{VoteGranted: false, Term: this.currentTerm}
+	}
+	if request.LastLogIndex != -1 &&
+		(!this.log.HasIndex(request.LastLogIndex) || this.log.GetTermByIndex(request.LastLogIndex) != request.LastLogTerm) {
+
+		return &messages.RequestVoteResponse{VoteGranted: false, Term: this.currentTerm}
+	}
+
+	if this.currentTerm < request.Term {
+		this.updateOutdatedTerm(request.Term)
 	}
 	if this.IsLeader() {
 		this.stopLeader()
@@ -104,29 +111,11 @@ func (this *RaftNode) handlePeerVote(peer *Peer, response *messages.RequestVoteR
 	}
 }
 
-func (this *RaftNode) ReceiveLeaderHeartbeat(context context.Context, request *messages.HeartbeatRequest) {
-	if this.currentTerm > request.Term {
-		return
-	}
-	if this.IsLeader() {
-		this.stopLeader()
-	}
-	if this.currentTerm < request.Term {
-		this.currentTerm = request.Term
-	}
-	if this.leaderNodeId != request.SenderNodeId {
-		this.leaderNodeId = request.SenderNodeId
-	}
-	if this.heartbeatTimeoutTimer != nil {
-		this.heartbeatTimeoutTimer.Reset(this.heartbeatTimeoutMs)
-	}
-}
-
 func (this *RaftNode) handleHeartbeatTimeout() {
 	for {
 		select {
 		case <-this.heartbeatTimeoutTimer.C:
-			if this.state == raft.FOLLOWER {
+			if this.state == FOLLOWER {
 				this.startElection()
 			}
 		}
@@ -145,7 +134,7 @@ func (this *RaftNode) updateOutdatedTerm(newTerm uint64) {
 	}
 
 	this.currentTerm = newTerm
-	this.state = raft.FOLLOWER
+	this.state = FOLLOWER
 }
 
 func (this *RaftNode) startElectionTimeout(newTerm uint64) {

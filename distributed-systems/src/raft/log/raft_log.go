@@ -1,98 +1,76 @@
 package log
 
 type RaftLog struct {
-	committedEntries []*RaftLogEntry
-	commitIndex      uint32
-
-	uncommittedEntries []*RaftLogEntry
-
-	NNodesAppendedLog            uint32
-	QuorumNodesAppendedSatisfied bool
+	Entries     []RaftLogEntry
+	commitIndex int32
+	lastAdded   int32
 }
 
-func (this *RaftLog) Commit() []*RaftLogEntry {
-	if len(this.uncommittedEntries) > 0 {
-		toCommit := this.uncommittedEntries
-		firstUnCommittedEntry := this.uncommittedEntries[len(this.uncommittedEntries)-1]
+type RaftLogEntry struct {
+	Value uint32
+	Term  uint64
+	Index int32
+}
 
-		this.trimCommittedEntriesLog(firstUnCommittedEntry.index)
+func (this *RaftLog) Size() int32 {
+	return int32(len(this.Entries))
+}
 
-		this.committedEntries = append(this.committedEntries, this.uncommittedEntries...)
-		this.commitIndex += uint32(len(this.uncommittedEntries))
-
-		this.uncommittedEntries = nil
-		this.NNodesAppendedLog = 0
-		this.QuorumNodesAppendedSatisfied = false
-		this.uncommittedEntries = []*RaftLogEntry{}
-
-		return toCommit
+func (this *RaftLog) GetFromIndexExclusive(index int32) []RaftLogEntry {
+	if len(this.Entries) > 0 {
+		return this.Entries[index+1:]
 	} else {
-		return []*RaftLogEntry{}
+		return []RaftLogEntry{}
 	}
 }
 
-func (this *RaftLog) AddUncommittedEntry(value uint32, term uint64, index uint32) {
-	this.uncommittedEntries = append([]*RaftLogEntry{{value: value, term: term, index: index}}, this.uncommittedEntries...)
+func (this *RaftLog) AddEntry(value uint32, term uint64) {
+	this.Entries = append(this.Entries, RaftLogEntry{Term: term, Value: value, Index: int32(len(this.Entries))})
 }
 
-func (this *RaftLog) HasUnCommittedValue() bool {
-	return this.uncommittedEntries != nil
+func (this *RaftLog) AddEntries(entries []RaftLogEntry) int32 {
+	indexToAdd := int32(len(this.Entries))
+
+	this.Entries = this.Entries[:this.commitIndex]
+	this.Entries = append(this.Entries, entries...)
+
+	return indexToAdd
 }
 
-func (this *RaftLog) HasIndex(index uint32) bool {
-	return len(this.committedEntries) > 0 && uint32(len(this.committedEntries)-1) <= index
+func (this *RaftLog) HasIndex(index int32) bool {
+	return len(this.Entries) > 0 && int32(len(this.Entries)-1) <= index
 }
 
-func (this *RaftLog) GetNextIndexToAppend() uint32 {
-	return uint32(len(this.committedEntries))
-}
-
-func (this *RaftLog) GetTermByIndex(index uint32) uint64 {
-	if len(this.committedEntries) == 0 {
+func (this *RaftLog) GetTermByIndex(index int32) uint64 {
+	if len(this.Entries) == 0 {
 		return 0
 	} else {
-		return this.committedEntries[len(this.committedEntries)-1].term
+		return this.Entries[len(this.Entries)-1].Term
 	}
 }
 
-func (this *RaftLog) GetLastCommitted() (_index uint32, _term uint64) {
-	if len(this.committedEntries) == 0 {
-		return 0, 0
-	}
-
-	index := uint32(len(this.committedEntries) - 1)
-	term := this.committedEntries[len(this.committedEntries)-1].term
-
-	return index, term
-}
-
-func (this *RaftLog) GetCommittedLogEntries() []uint32 {
-	entriesValues := make([]uint32, len(this.committedEntries))
-
-	for index, entry := range this.committedEntries {
-		entriesValues[index] = entry.value
-	}
-
-	return entriesValues
-}
-
-func (this *RaftLog) GetLastCommittedIndex() uint32 {
-	if len(this.committedEntries) == 0 {
+func (this *RaftLog) GetLastTerm() uint64 {
+	if len(this.Entries) == 0 {
 		return 0
 	} else {
-		return uint32(len(this.committedEntries) - 1)
+		return this.Entries[len(this.Entries)-1].Term
 	}
 }
 
-func (this *RaftLog) trimCommittedEntriesLog(lastIndexInclusive uint32) {
-	for i := int(lastIndexInclusive); i < len(this.committedEntries); i++ {
-		this.committedEntries[i] = nil
+func (this *RaftLog) GetLastIndex() int32 {
+	if len(this.Entries) == 0 {
+		return -1
+	} else {
+		return int32(len(this.Entries)) - 1
 	}
+}
+
+func (this *RaftLog) GetNextIndex() int32 {
+	return this.GetLastIndex() + 1
 }
 
 func CreateRaftLog() *RaftLog {
 	return &RaftLog{
-		committedEntries:   make([]*RaftLogEntry, 0),
-		uncommittedEntries: make([]*RaftLogEntry, 0),
+		Entries: make([]RaftLogEntry, 0),
 	}
 }

@@ -10,8 +10,7 @@ import (
 	"distributed-systems/src/nodes/types"
 	"distributed-systems/src/paxos"
 	"distributed-systems/src/raft"
-	"distributed-systems/src/raft_grpc"
-	raft_grpc2 "distributed-systems/src/raft_grpc/grpc"
+	raft_grpc2 "distributed-systems/src/raft/grpc"
 	"fmt"
 	"os"
 	"time"
@@ -31,19 +30,19 @@ func main() {
 
 func startRaftGRPC() {
 	nNodes := uint32(6)
-	raftNodes := make([]*raft_grpc.RaftNode, nNodes)
+	raftNodes := make([]*raft.RaftNode, nNodes)
 	grpcServers := make([]*raft_grpc2.RaftGRPCServer, nNodes)
-	allPeers := make([]*raft_grpc.Peer, nNodes)
+	allPeers := make([]*raft.Peer, nNodes)
 
 	for nodeId := uint32(0); nodeId < nNodes; nodeId++ {
 		timeout := uint64(1500 + (nodeId * 500))
 		port := uint16(nodeId + 1000)
 
-		node := raft_grpc.CreateRaftNode(nodeId, 0, port, timeout, 250, timeout)
+		node := raft.CreateRaftNode(nodeId, 0, port, timeout, 250, timeout)
 
 		raftNodes[nodeId] = node
 		grpcServers[nodeId] = raft_grpc2.CreateRaftGRPCServerAndRun(node)
-		allPeers[nodeId] = &raft_grpc.Peer{
+		allPeers[nodeId] = &raft.Peer{
 			RaftNodeService: raft_grpc2.CreateRaftGRPCClient(node.Port),
 			NodeId:          nodeId,
 		}
@@ -54,71 +53,8 @@ func startRaftGRPC() {
 	for nodeId := uint32(0); nodeId < nNodes; nodeId++ {
 		raftNodes[nodeId].Start()
 	}
-
-	raftNodes[0].Stop()
-
-	blockMainThread()
-}
-
-func startRaft() {
-	nNodes := uint32(6)
-	raftNodes := make([]*raft.RaftNode, nNodes)
-
-	for nodeId := uint32(0); nodeId < nNodes; nodeId++ {
-		timeout := uint64(1500 + (nodeId * 500))
-
-		raftNodes[nodeId] = raft.CreateRaftNode(timeout, 250, timeout, 0, nodeId, uint16(nodeId)+1000)
-
-		for otherNodeId := uint32(0); otherNodeId < nNodes; otherNodeId++ {
-			raftNodes[nodeId].Node.AddOtherNodeConnection(otherNodeId, otherNodeId+1000)
-		}
-	}
-
-	for nodeId := uint32(0); nodeId < nNodes; nodeId++ {
-		raftNodes[nodeId].Node.StartListeningAsync()
-	}
-	for nodeId := uint32(0); nodeId < nNodes; nodeId++ {
-		raftNodes[nodeId].Node.GetConnectionManager().OpenAllConnections()
-	}
-	for nodeId := uint32(0); nodeId < nNodes; nodeId++ {
-		raftNodes[nodeId].Start()
-	}
-
-	time.Sleep(1 * time.Second)
-	raftNodes[0].AppendEntries(10)
-
-	blockMainThread()
-}
-
-func startRaftLeaderElection() {
-	nNodes := uint32(6)
-	raftNodes := make([]*raft.RaftNode, nNodes)
-
-	for nodeId := uint32(0); nodeId < nNodes; nodeId++ {
-		timeout := uint64(1500 + (nodeId * 500))
-
-		raftNodes[nodeId] = raft.CreateRaftNode(timeout, 250, timeout, 0, nodeId, uint16(nodeId)+1000)
-
-		for otherNodeId := uint32(0); otherNodeId < nNodes; otherNodeId++ {
-			raftNodes[nodeId].Node.AddOtherNodeConnection(otherNodeId, otherNodeId+1000)
-		}
-	}
-
-	for nodeId := uint32(0); nodeId < nNodes; nodeId++ {
-		raftNodes[nodeId].Node.StartListeningAsync()
-	}
-	for nodeId := uint32(0); nodeId < nNodes; nodeId++ {
-		raftNodes[nodeId].Node.GetConnectionManager().OpenAllConnections()
-	}
-	for nodeId := uint32(0); nodeId < nNodes; nodeId++ {
-		raftNodes[nodeId].Start()
-	}
-
-	time.Sleep(1 * time.Second)
-
-	raftNodes[0].Stop()
-	time.Sleep(2 * time.Second)
-	//raftNodes[1].Stop()
+	
+	raftNodes[0].Append(1)
 
 	blockMainThread()
 }

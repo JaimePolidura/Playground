@@ -2,6 +2,7 @@ package utils
 
 import (
 	"reflect"
+	"sync"
 )
 
 func ZeroArray(bytes *[]byte) {
@@ -10,18 +11,15 @@ func ZeroArray(bytes *[]byte) {
 	}
 }
 
-func MaxArray(values []uint32) (value uint32, index int) {
-	biggestValue := uint32(0)
-	biggestIndex := 0
+func GetInt32FromSyncMap(syncMap *sync.Map, key any) int32 {
+	value, contained := syncMap.Load(key)
 
-	for actualIndex, actualValue := range values {
-		if actualValue > biggestValue {
-			biggestValue = actualValue
-			biggestIndex = actualIndex
-		}
+	if contained {
+		valueInt, _ := value.(int32)
+		return valueInt
+	} else {
+		return 0
 	}
-
-	return biggestValue, biggestIndex
 }
 
 func MaxUint32(a uint32, b uint32) uint32 {
@@ -29,6 +27,14 @@ func MaxUint32(a uint32, b uint32) uint32 {
 		return a
 	} else {
 		return b
+	}
+}
+
+func MinInt32(a int32, b int32) int32 {
+	if a > b {
+		return b
+	} else {
+		return a
 	}
 }
 

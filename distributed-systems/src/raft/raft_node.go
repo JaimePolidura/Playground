@@ -1,24 +1,41 @@
 package raft
 
 import (
-	"distributed-systems/src/broadcast"
-	"distributed-systems/src/broadcast/fifo"
-	"distributed-systems/src/nodes/types"
+	"context"
 	"distributed-systems/src/raft/elections"
 	"distributed-systems/src/raft/log"
+	"distributed-systems/src/raft/messages"
+	"sync"
 	"time"
 )
 
+type RaftNodeService interface {
+	RequestVote(context.Context, *messages.RequestVoteRequest) *messages.RequestVoteResponse
+	AppendEntries(context.Context, *messages.AppendEntriesRequest) *messages.AppendEntriesResponse
+}
+
+type Peer struct {
+	RaftNodeService RaftNodeService
+	NodeId          uint32
+}
+
 type RaftNode struct {
-	broadcast.Node
+	NodeId uint32
+	Port   uint16
+	state  RaftState
+	log    *log.RaftLog
 
-	leaderNodeId uint32
-	currentTerm  uint64
-	state        RaftState
-
-	log *log.RaftLog
-
+	leaderNodeId    uint32
+	currentTerm     uint64
 	electionsByTerm map[uint64]*elections.RaftElection
+	peers           []*Peer
+	commitIndex     int32
+
+	//nextIndex  map[uint32]int32
+	//matchIndex map[uint32]int32
+
+	nextIndex  *sync.Map
+	matchIndex *sync.Map
 
 	heartbeatTimeoutTimer *time.Timer
 	heartbeatTimeoutMs    time.Duration
@@ -27,11 +44,9 @@ type RaftNode struct {
 	heartbeatTickerMs time.Duration
 
 	electionTimeoutMs time.Duration
-
-	onConsensusCallback func(entries []*log.RaftLogEntry)
 }
 
-func CreateRaftNode(heartbeatTimeoutMs uint64, heartbeatTickerMs uint64, electionTimeoutMs uint64, leaderNodeId uint32, nodeId uint32, port uint16) *RaftNode {
+func CreateRaftNode(nodeId uint32, leaderNodeId uint32, port uint16, heartbeatTimeoutMs uint64, heartbeatTickerMs uint64, electionTimeoutMs uint64) *RaftNode {
 	var state RaftState
 
 	if leaderNodeId == nodeId {
@@ -40,37 +55,42 @@ func CreateRaftNode(heartbeatTimeoutMs uint64, heartbeatTickerMs uint64, electio
 		state = FOLLOWER
 	}
 
-	fifoBroadcaster := fifo.CreateFifoBroadcaster(3, 6, nodeId)
-	fifoBroadcaster.DisableGossiping()
-	fifoBroadcaster.DisableLogging()
-
-	raftNode := &RaftNode{
-		Node:               *broadcast.CreateNode(nodeId, port, fifoBroadcaster),
-		leaderNodeId:       leaderNodeId,
-		electionsByTerm:    map[uint64]*elections.RaftElection{},
+	return &RaftNode{
 		heartbeatTimeoutMs: time.Duration(heartbeatTimeoutMs * uint64(time.Millisecond)),
 		heartbeatTickerMs:  time.Duration(heartbeatTickerMs * uint64(time.Millisecond)),
 		electionTimeoutMs:  time.Duration(electionTimeoutMs * uint64(time.Millisecond)),
-		state:              state,
-		log:                log.CreateRaftLog(),
+		electionsByTerm:    map[uint64]*elections.RaftElection{},
+		nextIndex:          new(sync.Map),
+		matchIndex:         new(sync.Map),
+		//matchIndex:         map[uint32]int32{},
+		//nextIndex:          map[uint32]int32{},
+		log:          log.CreateRaftLog(),
+		peers:        make([]*Peer, 0),
+		leaderNodeId: leaderNodeId,
+		NodeId:       nodeId,
+		state:        state,
+		Port:         port,
 	}
-
-	raftNode.AddMessageHandler(types.MESSAGE_RAFT_REQUEST_ELECTION, raftNode.handleRequestElection)
-	raftNode.AddMessageHandler(types.MESSAGE_RAFT_OUTDATED_TERM, raftNode.handleRequestElectionOutdatedTerm)
-	raftNode.AddMessageHandler(types.MESSAGE_RAFT_REQUEST_ELECTION_VOTED, raftNode.handleRequestElectionVoted)
-	raftNode.AddMessageHandler(types.MESSAGE_RAFT_REQUEST_ELECTION_NODE_ELECTED, raftNode.handleElectionNodeElected)
-	raftNode.AddMessageHandler(types.MESSAGE_HEARTBEAT, raftNode.handleHeartbeatMessage)
-
-	raftNode.AddMessageHandler(types.MESSAGE_RAFT_LOG_APPEND_ENTRIES, raftNode.handleAppendEntries)
-	raftNode.AddMessageHandler(types.MESSAGE_RAFT_LOG_APPENDED_ENTRY, raftNode.handleAppendedEntry)
-	raftNode.AddMessageHandler(types.MESSAGE_RAFT_LOG_DO_COMMIT, raftNode.handleDoCommit)
-	raftNode.AddMessageHandler(types.MESSAGE_RAFT_LOG_OUTDATED_ENTRIES, raftNode.handleOutdatedEntries)
-
-	return raftNode
 }
 
-func (this *RaftNode) SetOnConsensusCallback(callback func(entries []*log.RaftLogEntry)) {
-	this.onConsensusCallback = callback
+func (this *RaftNode) AddPeers(peers []*Peer) {
+	for _, peer := range peers {
+		if peer.NodeId != this.NodeId {
+			this.peers = append(this.peers, peer)
+		}
+	}
+}
+
+func (this *RaftNode) Stop() {
+	if this.heartbeatsTicker != nil {
+		this.heartbeatsTicker.Stop()
+	}
+	if this.heartbeatTimeoutTimer != nil {
+		this.heartbeatTimeoutTimer.Stop()
+	}
+	if this.heartbeatTimeoutTimer != nil {
+		this.heartbeatTimeoutTimer.Stop()
+	}
 }
 
 func (this *RaftNode) Start() {
@@ -82,18 +102,9 @@ func (this *RaftNode) Start() {
 }
 
 func (this *RaftNode) IsLeader() bool {
-	return this.GetNodeId() == this.leaderNodeId
+	return this.NodeId == this.leaderNodeId
 }
 
 func (this *RaftNode) IsFollower() bool {
-	return this.GetNodeId() != this.leaderNodeId
-}
-
-func (this *RaftNode) getElectionOrCreate(newTerm uint64) *elections.RaftElection {
-	if _, contained := this.electionsByTerm[newTerm]; !contained {
-		this.electionsByTerm[newTerm] = elections.CreateRaftElection(this.electionTimeoutMs, newTerm, this.onElectionTimeout)
-	}
-
-	election, _ := this.electionsByTerm[newTerm]
-	return election
+	return this.NodeId != this.leaderNodeId
 }

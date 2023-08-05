@@ -2,9 +2,10 @@ package raft_grpc
 
 import (
 	"context"
-	"distributed-systems/src/raft_grpc"
-	"distributed-systems/src/raft_grpc/grpc/proto"
-	"distributed-systems/src/raft_grpc/messages"
+	"distributed-systems/src/raft"
+	"distributed-systems/src/raft/grpc/proto"
+	"distributed-systems/src/raft/log"
+	"distributed-systems/src/raft/messages"
 	"fmt"
 	"google.golang.org/grpc"
 	"net"
@@ -14,11 +15,11 @@ import (
 type RaftGRPCServer struct {
 	proto.UnimplementedRaftNodeServer
 
-	raftNode     *raft_grpc.RaftNode
+	raftNode     *raft.RaftNode
 	nativeServer *grpc.Server
 }
 
-func CreateRaftGRPCServerAndRun(raftNode *raft_grpc.RaftNode) *RaftGRPCServer {
+func CreateRaftGRPCServerAndRun(raftNode *raft.RaftNode) *RaftGRPCServer {
 	raftGrpcServer := &RaftGRPCServer{raftNode: raftNode}
 
 	lis, _ := net.Listen("tcp", "127.0.0.1:"+strconv.Itoa(int(raftNode.Port)))
@@ -52,25 +53,16 @@ func (this *RaftGRPCServer) RequestVote(context context.Context, request *proto.
 	}, nil
 }
 
-func (this *RaftGRPCServer) ReceiveLeaderHeartbeat(context context.Context, request *proto.HeartbeatRequest) (*proto.Void, error) {
-	this.raftNode.ReceiveLeaderHeartbeat(context, &messages.HeartbeatRequest{
-		SenderNodeId: *request.SenderNodeId,
-		Term:         *request.Term,
-	})
-
-	return &proto.Void{}, nil
-}
-
 func (this *RaftGRPCServer) AppendEntries(context context.Context, request *proto.AppendEntriesRequest) (*proto.AppendEntriesResponse, error) {
-	entries := make([]messages.Entry, len(request.Entries))
+	entries := make([]log.RaftLogEntry, len(request.Entries))
 	for index, entry := range request.Entries {
-		entries[index] = messages.Entry{Index: *entry.Index, Term: *entry.Term}
+		entries[index] = log.RaftLogEntry{Index: *entry.Index, Term: *entry.Term, Value: *entry.Value}
 	}
 
 	response := this.raftNode.AppendEntries(context, &messages.AppendEntriesRequest{
 		Term:         *request.Term,
 		LeaderId:     *request.LeaderId,
-		PrevLogIndex: *request.PrevLogTerm,
+		PrevLogIndex: *request.PrevLogIndex,
 		PrevLogTerm:  *request.PrevLogTerm,
 		LeaderCommit: *request.LeaderCommit,
 		Entries:      entries,

@@ -2,8 +2,8 @@ package raft_grpc
 
 import (
 	"context"
-	"distributed-systems/src/raft_grpc/grpc/proto"
-	"distributed-systems/src/raft_grpc/messages"
+	"distributed-systems/src/raft/grpc/proto"
+	"distributed-systems/src/raft/messages"
 	"fmt"
 	"google.golang.org/grpc"
 	"strconv"
@@ -42,17 +42,10 @@ func (this *RaftGRPCClient) RequestVote(context context.Context, request *messag
 	}
 }
 
-func (this *RaftGRPCClient) ReceiveLeaderHeartbeat(context context.Context, request *messages.HeartbeatRequest) {
-	this.nativeClient.ReceiveLeaderHeartbeat(context, &proto.HeartbeatRequest{
-		Term:         &request.Term,
-		SenderNodeId: &request.SenderNodeId,
-	})
-}
-
 func (this *RaftGRPCClient) AppendEntries(context context.Context, request *messages.AppendEntriesRequest) *messages.AppendEntriesResponse {
 	entries := make([]*proto.Entry, len(request.Entries))
 	for index, entry := range request.Entries {
-		entries[index] = &proto.Entry{Index: &entry.Index, Term: &entry.Term}
+		entries[index] = &proto.Entry{Index: &entry.Index, Term: &entry.Term, Value: &entry.Value}
 	}
 
 	response, err := this.nativeClient.AppendEntries(context, &proto.AppendEntriesRequest{

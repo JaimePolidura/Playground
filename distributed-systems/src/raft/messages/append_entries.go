@@ -1,17 +1,14 @@
 package messages
 
+import "distributed-systems/src/raft/log"
+
 type AppendEntriesRequest struct {
 	Term         uint64
 	LeaderId     uint32
-	PrevLogIndex uint32
-	PrevLogTerm  uint32
-	Entries      []Entry
-	LeaderCommit uint32
-}
-
-type Entry struct {
-	Term  uint64
-	Index uint32
+	PrevLogIndex int32
+	PrevLogTerm  uint64
+	Entries      []log.RaftLogEntry
+	LeaderCommit int32
 }
 
 type AppendEntriesResponse struct {
