@@ -1,6 +1,7 @@
 package es.jaime.workers;
 
 import io.netty.util.internal.ConcurrentSet;
+import lombok.SneakyThrows;
 import org.apache.zookeeper.*;
 import org.apache.zookeeper.data.Stat;
 
@@ -115,7 +116,10 @@ public final class Worker {
     }
 
     private void getTaskDataAndAssignTask(UUID taskId) {
-        zookeeper.getData("/tasks/" + taskId.toString(), false, this::onGetTaskData, taskId);
+        zookeeper.getData("/tasks/" + taskId.toString(),
+                false,
+                this::onGetTaskData,
+                taskId);
     }
 
     private void onGetTaskData(int resultCode, String s, Object o, byte[] bytes, Stat stat) {
@@ -132,36 +136,15 @@ public final class Worker {
         UUID workerId = workersIds.get((int) (Math.random() * workersIds.size()));
         String assignmentPath = "/assign/" + workerId.toString() + "/" + unassignedTaskId.toString();
 
-        createTasksAssigment(assignmentPath, command);
+        createTasksAssigment(unassignedTaskId, assignmentPath, command);
     }
 
-    private void createTasksAssigment(String assignmentPath, String command) {
-        zookeeper.create(assignmentPath,
-                command.getBytes(),
-                ZooDefs.Ids.OPEN_ACL_UNSAFE,
-                CreateMode.PERSISTENT,
-                this::onTaskAssignmentCreated, command);
-    }
-
-    private void onTaskAssignmentCreated(int resultCode, String path, Object o, String s1, Stat stat) {
-        UUID taskId = UUID.fromString(path.substring(path.lastIndexOf("/")));
-        String command = (String) o;
-
-        switch (KeeperException.Code.get(resultCode)) {
-            case CONNECTIONLOSS -> createTasksAssigment(path, command);
-            case OK -> deleteTask(taskId);
-        }
-    }
-
-    private void deleteTask(UUID taskId) {
-        this.zookeeper.delete("/tasks/" + taskId.toString(), -1, this::onTaskDeleted, taskId);
-    }
-
-    private void onTaskDeleted(int resultCode, String path, Object ctx) {
-        switch (KeeperException.Code.get(resultCode)) {
-            case CONNECTIONLOSS -> deleteTask((UUID) ctx);
-            case OK -> System.out.printf("Task %s deleted\n", ctx.toString());
-        }
+    @SneakyThrows
+    private void createTasksAssigment(UUID taskId, String assignmentPath, String command) {
+        zookeeper.multi(List.of(
+                Op.create(assignmentPath, command.getBytes(), ZooDefs.Ids.OPEN_ACL_UNSAFE, CreateMode.PERSISTENT),
+                Op.delete("/tasks/" + taskId.toString(), -1)
+        ));
     }
 
     private void deleteSelfWorker() {
@@ -230,10 +213,6 @@ public final class Worker {
 
     private String getWorkerPath() {
         return "/workers/" + this.nodeId.toString();
-    }
-
-    public boolean isMaster() {
-        return this.state == State.MASTER;
     }
 
     public enum State {
