@@ -2,7 +2,7 @@
 // versions:
 // 	protoc-gen-go v1.28.1
 // 	protoc        v4.24.0--rc3
-// source: raft_node.proto
+// source: raft_node.counters_grpc
 
 package proto
 
@@ -420,18 +420,18 @@ func file_raft_node_proto_rawDescGZIP() []byte {
 
 var file_raft_node_proto_msgTypes = make([]protoimpl.MessageInfo, 5)
 var file_raft_node_proto_goTypes = []interface{}{
-	(*AppendEntriesRequest)(nil),  // 0: proto.AppendEntriesRequest
-	(*AppendEntriesResponse)(nil), // 1: proto.AppendEntriesResponse
-	(*Entry)(nil),                 // 2: proto.Entry
-	(*RequestVoteRequest)(nil),    // 3: proto.RequestVoteRequest
-	(*RequestVoteResponse)(nil),   // 4: proto.RequestVoteResponse
+	(*AppendEntriesRequest)(nil),  // 0: counters_grpc.AppendEntriesRequest
+	(*AppendEntriesResponse)(nil), // 1: counters_grpc.AppendEntriesResponse
+	(*Entry)(nil),                 // 2: counters_grpc.Entry
+	(*RequestVoteRequest)(nil),    // 3: counters_grpc.RequestVoteRequest
+	(*RequestVoteResponse)(nil),   // 4: counters_grpc.RequestVoteResponse
 }
 var file_raft_node_proto_depIdxs = []int32{
-	2, // 0: proto.AppendEntriesRequest.entries:type_name -> proto.Entry
-	3, // 1: proto.RaftNode.RequestVote:input_type -> proto.RequestVoteRequest
-	0, // 2: proto.RaftNode.AppendEntries:input_type -> proto.AppendEntriesRequest
-	4, // 3: proto.RaftNode.RequestVote:output_type -> proto.RequestVoteResponse
-	1, // 4: proto.RaftNode.AppendEntries:output_type -> proto.AppendEntriesResponse
+	2, // 0: counters_grpc.AppendEntriesRequest.entries:type_name -> counters_grpc.Entry
+	3, // 1: counters_grpc.RaftNode.RequestVote:input_type -> counters_grpc.RequestVoteRequest
+	0, // 2: counters_grpc.RaftNode.AppendEntries:input_type -> counters_grpc.AppendEntriesRequest
+	4, // 3: counters_grpc.RaftNode.RequestVote:output_type -> counters_grpc.RequestVoteResponse
+	1, // 4: counters_grpc.RaftNode.AppendEntries:output_type -> counters_grpc.AppendEntriesResponse
 	3, // [3:5] is the sub-list for method output_type
 	1, // [1:3] is the sub-list for method input_type
 	1, // [1:1] is the sub-list for extension type_name

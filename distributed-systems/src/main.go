@@ -5,6 +5,8 @@ import (
 	"distributed-systems/src/broadcast"
 	"distributed-systems/src/broadcast/fifo"
 	"distributed-systems/src/broadcast/zab"
+	"distributed-systems/src/counters"
+	counters_grpc2 "distributed-systems/src/counters/proto"
 	"distributed-systems/src/multipaxos"
 	"distributed-systems/src/nodes"
 	"distributed-systems/src/nodes/types"
@@ -22,10 +24,29 @@ func main() {
 	//startPaxos()
 	//startMultipaxos()
 	//startRaft()
-
 	//startRaftLeaderElection()
+	//startRaftGRPC()
+	startCounters()
+}
 
-	startRaftGRPC()
+func startCounters() {
+	nNodes := uint32(10)
+	counterGrpcServers := make([]*counters_grpc2.CounterGRPCServer, nNodes)
+	counterGrpcClients := make([]counters.CounterNodeService, nNodes)
+	counterNodes := make([]*counters.Node, nNodes)
+
+	for nodeId := uint32(0); nodeId < nNodes; nodeId++ {
+		node := counters.CreateNode(int(nodeId), uint16(10000+nodeId))
+
+		counterGrpcClients[nodeId] = counters_grpc2.CreateCounterGRPCClient(uint16(10000 + nodeId))
+		counterGrpcServers[nodeId] = counters_grpc2.CreateCounterGRPCServer(node)
+		counterNodes[nodeId] = node
+	}
+	for nodeId := uint32(0); nodeId < nNodes; nodeId++ {
+		counterNodes[nodeId].SetPeers(counterGrpcClients)
+	}
+
+	blockMainThread()
 }
 
 func startRaftGRPC() {
@@ -53,7 +74,7 @@ func startRaftGRPC() {
 	for nodeId := uint32(0); nodeId < nNodes; nodeId++ {
 		raftNodes[nodeId].Start()
 	}
-	
+
 	raftNodes[0].Append(1)
 
 	blockMainThread()

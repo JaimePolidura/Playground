@@ -12,7 +12,6 @@ public final class Main {
         try(var curator = CuratorFrameworkFactory.newClient("127.0.0.1:2181", new RetryNTimes(10, 2000))) {
             curator.getCuratorListenable().addListener((curatorFramework, curatorEvent) -> {
                 switch (curatorEvent.getType()) {
-
                 }
             });
 

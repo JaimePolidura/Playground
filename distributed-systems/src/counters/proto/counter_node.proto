@@ -1,0 +1,24 @@
+syntax="proto2";
+
+package proto;
+option go_package = "./counters_grpc";
+
+service CounterNode {
+  rpc Update(UpdateCounterRequest) returns (UpdateCounterResponse) {}
+}
+
+message UpdateCounterRequest {
+  required bool isIncrement = 1;
+  required uint64 nextSelfSeqValue = 2;
+  required uint64 lastSeqValueSeenIncrement = 3;
+  required uint32 nodeId = 4;
+  required uint64 lastSeqValueSeenDecrement = 5;
+}
+
+message UpdateCounterResponse {
+  required bool needsSyncIncrement = 1;
+  required uint64 nextSelfSeqValueToSyncIncrement = 2;
+
+  required bool NeedsSyncDecrement = 3;
+  required uint64 NextSelfSeqValueToSyncDecrement = 4;
+}
