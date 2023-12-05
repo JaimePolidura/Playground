@@ -15,7 +15,6 @@ type RaftGRPCClient struct {
 
 func CreateRaftGRPCClient(otherPort uint16) *RaftGRPCClient {
 	conn, _ := grpc.Dial("127.0.0.1:"+strconv.Itoa(int(otherPort)), grpc.WithInsecure())
-
 	grpcClient := proto.NewRaftNodeClient(conn)
 
 	return &RaftGRPCClient{

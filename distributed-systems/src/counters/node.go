@@ -7,11 +7,15 @@ import (
 	"golang.org/x/sys/cpu"
 )
 
+type Peer struct {
+	Service CounterNodeService
+}
+
 type Node struct {
 	NodeId int
 	Port   uint16
 
-	Peers    []CounterNodeService
+	Peers    []*Peer
 	counters []CounterByNode
 }
 
@@ -59,8 +63,8 @@ func (n *Node) Decrement() uint64 {
 func (n *Node) replicate(newValue uint64, isIncrement bool) {
 	for peerNodeId, peer := range n.Peers {
 		if peerNodeId != n.NodeId {
-			go func(peer CounterNodeService, peerNodeId int) {
-				updateResponse := peer.Update(context.Background(), &UpdateCounterRequest{
+			go func(peer *Peer, peerNodeId int) {
+				updateResponse := peer.Service.Update(context.Background(), &UpdateCounterRequest{
 					LastSeqValueSeenIncrement: atomic.LoadUint64(&n.counters[peerNodeId].SeqIncrements),
 					LastSeqValueSeenDecrement: atomic.LoadUint64(&n.counters[peerNodeId].SeqDecrements),
 					SelfNodeId:                uint32(n.NodeId),
@@ -121,11 +125,11 @@ func CreateNode(nodeId int, port uint16) *Node {
 	return &Node{
 		NodeId: nodeId,
 		Port:   port,
-		Peers:  make([]CounterNodeService, 0),
+		Peers:  make([]*Peer, 0),
 	}
 }
 
-func (n *Node) SetPeers(peers []CounterNodeService) {
+func (n *Node) SetPeers(peers []*Peer) {
 	for _, peer := range peers {
 		n.Peers = append(n.Peers, peer)
 	}

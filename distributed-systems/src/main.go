@@ -14,6 +14,7 @@ import (
 	"distributed-systems/src/raft"
 	raft_grpc2 "distributed-systems/src/raft/grpc"
 	"fmt"
+	"math/rand"
 	"os"
 	"time"
 )
@@ -32,18 +33,44 @@ func main() {
 func startCounters() {
 	nNodes := uint32(10)
 	counterGrpcServers := make([]*counters_grpc2.CounterGRPCServer, nNodes)
-	counterGrpcClients := make([]counters.CounterNodeService, nNodes)
+	counterGrpcClients := make([]*counters.Peer, nNodes)
 	counterNodes := make([]*counters.Node, nNodes)
 
 	for nodeId := uint32(0); nodeId < nNodes; nodeId++ {
 		node := counters.CreateNode(int(nodeId), uint16(10000+nodeId))
 
-		counterGrpcClients[nodeId] = counters_grpc2.CreateCounterGRPCClient(uint16(10000 + nodeId))
+		counterGrpcClients[nodeId] = &counters.Peer{Service: counters_grpc2.CreateCounterGRPCClient(uint16(10000 + nodeId))}
 		counterGrpcServers[nodeId] = counters_grpc2.CreateCounterGRPCServer(node)
 		counterNodes[nodeId] = node
 	}
 	for nodeId := uint32(0); nodeId < nNodes; nodeId++ {
 		counterNodes[nodeId].SetPeers(counterGrpcClients)
+	}
+
+	for i := 0; i < 10; i++ {
+		go func(i int) {
+			for j := 0; j < 100; j++ {
+				rand.Seed(time.Now().UnixNano())
+				counterNodes[i].Increment()
+				time.Sleep(time.Duration(rand.Intn(100)) * time.Millisecond)
+			}
+		}(i)
+	}
+
+	for {
+		rand.Seed(time.Now().UnixNano())
+		value := counterNodes[rand.Intn(int(nNodes))].Get()
+		fmt.Println(value)
+		time.Sleep(time.Duration(rand.Intn(50)) * time.Millisecond)
+		if value == 1000 {
+			break
+		}
+	}
+
+	fmt.Println("Final")
+
+	for _, node := range counterNodes {
+		fmt.Println(node.Get())
 	}
 
 	blockMainThread()

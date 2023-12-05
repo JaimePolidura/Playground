@@ -4,7 +4,6 @@ import (
 	"context"
 	"distributed-systems/src/counters"
 	"distributed-systems/src/counters/proto/counters_grpc"
-	"distributed-systems/src/raft/grpc/proto"
 	"net"
 	"strconv"
 
@@ -12,7 +11,7 @@ import (
 )
 
 type CounterGRPCServer struct {
-	proto.UnimplementedRaftNodeServer
+	counters_grpc.UnimplementedCounterNodeServer
 
 	nativeServer *grpc.Server
 	node         *counters.Node
@@ -21,13 +20,11 @@ type CounterGRPCServer struct {
 func CreateCounterGRPCServer(node *counters.Node) *CounterGRPCServer {
 	countersGrpcServer := &CounterGRPCServer{node: node}
 
-	lis, err := net.Listen("tcp", "127.0.0.1:"+strconv.Itoa(int(node.Port)))
-	if err != nil {
-		panic(err)
-	}
+	lis, _ := net.Listen("tcp", "127.0.0.1:"+strconv.Itoa(int(node.Port)))
 
 	grpcServer := grpc.NewServer()
-	proto.RegisterRaftNodeServer(grpcServer, countersGrpcServer)
+
+	counters_grpc.RegisterCounterNodeServer(grpcServer, countersGrpcServer)
 
 	countersGrpcServer.nativeServer = grpcServer
 
@@ -36,7 +33,7 @@ func CreateCounterGRPCServer(node *counters.Node) *CounterGRPCServer {
 	return countersGrpcServer
 }
 
-func (c *CounterGRPCServer) Update(ctx context.Context, request *counters_grpc.UpdateCounterRequest) (*counters.UpdateCounterResponse, error) {
+func (c *CounterGRPCServer) Update(ctx context.Context, request *counters_grpc.UpdateCounterRequest) (*counters_grpc.UpdateCounterResponse, error) {
 	res := c.node.OnUpdateFromNode(ctx, counters.UpdateCounterRequest{
 		IsIncrement:               *request.IsIncrement,
 		NextSelfSeqValue:          *request.NextSelfSeqValue,
@@ -45,11 +42,11 @@ func (c *CounterGRPCServer) Update(ctx context.Context, request *counters_grpc.U
 		SelfNodeId:                *request.NodeId,
 	})
 
-	return &counters.UpdateCounterResponse{
-		NeedsSyncIncrement:              res.NeedsSyncIncrement,
-		NextSelfSeqValueToSyncIncrement: res.NextSelfSeqValueToSyncIncrement,
-		NeedsSyncDecrement:              res.NeedsSyncDecrement,
-		NextSelfSeqValueToSyncDecrement: res.NextSelfSeqValueToSyncDecrement,
+	return &counters_grpc.UpdateCounterResponse{
+		NeedsSyncIncrement:              &res.NeedsSyncIncrement,
+		NextSelfSeqValueToSyncIncrement: &res.NextSelfSeqValueToSyncIncrement,
+		NeedsSyncDecrement:              &res.NeedsSyncDecrement,
+		NextSelfSeqValueToSyncDecrement: &res.NextSelfSeqValueToSyncDecrement,
 	}, nil
 }
 
