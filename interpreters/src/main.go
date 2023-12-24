@@ -3,6 +3,7 @@ package main
 import (
 	"bufio"
 	"fmt"
+	"interpreters/src/failures"
 	"interpreters/src/lex"
 	"interpreters/src/utils"
 	"io"
@@ -38,14 +39,19 @@ func showInteractivePrompt() {
 	for scanner.Scan() {
 		fmt.Print("> ")
 		text := scanner.Text()
-		runCode(text)
+		if err := runCode(text); err != nil {
+			failures.ReportFailure(err)
+		}
 	}
 }
 
-func runCode(code string) {
+func runCode(code string) error {
 	lexer := lex.CreateLexer(code)
 
 	for lexer.HasNext() {
 		token, err := lexer.Next()
+		if err != nil {
+			return err
+		}
 	}
 }
