@@ -33,4 +33,20 @@ func TestParser_Parse(t *testing.T) {
 
 	assert.Equal(t, minus.Left.Type(), BINARY)
 	assert.Equal(t, minus.Right.Type(), GROUPING)
+
+	minus_slash := minus.Right.(GroupingExpression).OtherExpression.(BinaryExpression)
+	assert.Equal(t, minus_slash.Type(), BINARY)
+	assert.Equal(t, minus_slash.Token.Type, lex.SLASH)
+	assert.Equal(t, minus_slash.Left.Type(), LITERAL)
+	assert.Equal(t, minus_slash.Right.Type(), LITERAL)
+	assert.Equal(t, minus_slash.Left.(LiteralExpression).Literal, float64(1))
+	assert.Equal(t, minus_slash.Right.(LiteralExpression).Literal, float64(2))
+
+	minus_plus := minus.Left.(BinaryExpression)
+	assert.Equal(t, minus_plus.Type(), BINARY)
+	assert.Equal(t, minus_plus.Token.Type, lex.PLUS)
+	assert.Equal(t, minus_plus.Left.Type(), LITERAL)
+	assert.Equal(t, minus_plus.Right.Type(), LITERAL)
+	assert.Equal(t, minus_plus.Left.(LiteralExpression).Literal, float64(1))
+	assert.Equal(t, minus_plus.Right.(LiteralExpression).Literal, float64(2))
 }
