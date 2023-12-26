@@ -24,6 +24,7 @@ func (e Expression) Type() ExpressionType {
 	return e.ExpressionType
 }
 
+// The infix arithmetic (+, -, *, /) and logic (==, !=, <=, < , >, >=)
 type BinaryExpression struct {
 	Expression
 
@@ -32,6 +33,7 @@ type BinaryExpression struct {
 	Token lex.Token
 }
 
+// A prefix ! to perform a logical not
 type UnaryExpression struct {
 	Expression
 
@@ -39,12 +41,14 @@ type UnaryExpression struct {
 	Token lex.Token
 }
 
+// Parentheses – A pair of ( and ) wrapped around an expression
 type GroupingExpression struct {
 	Expression
 
 	OtherExpression Expr
 }
 
+// Numbers, strings, Booleans, and nil.
 type LiteralExpression struct {
 	Expression
 

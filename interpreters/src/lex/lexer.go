@@ -243,3 +243,13 @@ func (l *Lexer) atTheEnd() bool {
 func (l *Lexer) isDigit(char rune) bool {
 	return char >= '0' && char <= '9'
 }
+
+func IsAnyType(target TokenType, types ...TokenType) bool {
+	for _, tokenType := range types {
+		if tokenType == target {
+			return true
+		}
+	}
+
+	return false
+}

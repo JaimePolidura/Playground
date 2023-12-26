@@ -12,8 +12,8 @@ import (
 		      -   false
 			 / \
 			+   /
-	       /\  /\
-		  1 2 1 2
+	       /\  / \
+		  1 2 1  2
 */
 func TestParser_Parse(t *testing.T) {
 	lexer := lex.CreateLexer("(1 + 2 - (1 / 2)) != false")
@@ -36,7 +36,7 @@ func TestParser_Parse(t *testing.T) {
 
 	minus_slash := minus.Right.(GroupingExpression).OtherExpression.(BinaryExpression)
 	assert.Equal(t, minus_slash.Type(), BINARY)
-	assert.Equal(t, minus_slash.Token.Type, lex.SLASH)
+	assert.Equal(t, string(minus_slash.Token.Type), lex.SLASH) //NOT
 	assert.Equal(t, minus_slash.Left.Type(), LITERAL)
 	assert.Equal(t, minus_slash.Right.Type(), LITERAL)
 	assert.Equal(t, minus_slash.Left.(LiteralExpression).Literal, float64(1))
@@ -44,7 +44,7 @@ func TestParser_Parse(t *testing.T) {
 
 	minus_plus := minus.Left.(BinaryExpression)
 	assert.Equal(t, minus_plus.Type(), BINARY)
-	assert.Equal(t, minus_plus.Token.Type, lex.PLUS)
+	assert.Equal(t, string(minus_plus.Token.Type), lex.PLUS)
 	assert.Equal(t, minus_plus.Left.Type(), LITERAL)
 	assert.Equal(t, minus_plus.Right.Type(), LITERAL)
 	assert.Equal(t, minus_plus.Left.(LiteralExpression).Literal, float64(1))
