@@ -8,54 +8,76 @@ const (
 	BINARY ExpressionType = iota
 	UNARY
 	GROUPING
+	LITERAL
 )
 
-type Expression struct {
-	Left  *Expression
-	Right *Expression
-	Token lex.Token
+type Expr interface {
+	Type() ExpressionType
+}
 
+type Expression struct {
+	Expr
 	ExpressionType ExpressionType
+}
+
+func (e Expression) Type() ExpressionType {
+	return e.ExpressionType
 }
 
 type BinaryExpression struct {
 	Expression
+
+	Left  Expr
+	Right Expr
+	Token lex.Token
 }
 
 type UnaryExpression struct {
 	Expression
+
+	Right Expr
+	Token lex.Token
 }
 
 type GroupingExpression struct {
+	Expression
+
+	OtherExpression Expr
 }
 
-func CreateBinaryExpression(left *Expression, right *Expression, token lex.Token) *BinaryExpression {
-	return &BinaryExpression{
-		Expression: Expression{
-			Left:           left,
-			Right:          right,
-			Token:          token,
-			ExpressionType: BINARY,
-		},
+type LiteralExpression struct {
+	Expression
+
+	Literal any
+}
+
+func CreateLiteralExpression(literal any) Expr {
+	return LiteralExpression{
+		Expression: Expression{ExpressionType: LITERAL},
+		Literal:    literal,
 	}
 }
 
-func CreateUnaryExpression(right *Expression, token lex.Token) *BinaryExpression {
-	return &BinaryExpression{
-		Expression: Expression{
-			Right:          right,
-			Token:          token,
-			ExpressionType: UNARY,
-		},
+func CreateGroupingExpression(otherExpression Expr) Expr {
+	return GroupingExpression{
+		Expression:      Expression{ExpressionType: GROUPING},
+		OtherExpression: otherExpression,
 	}
 }
 
-func CreateGrouping(right *Expression, token lex.Token) *BinaryExpression {
-	return &BinaryExpression{
-		Expression: Expression{
-			Right:          right,
-			Token:          token,
-			ExpressionType: UNARY,
-		},
+func CreateBinaryExpression(left Expr, right Expr, token lex.Token) Expr {
+	return BinaryExpression{
+		Expression: Expression{ExpressionType: BINARY},
+		Left:       left,
+		Right:      right,
+		Token:      token,
+	}
+}
+
+func CreateUnaryExpression(right Expr, token lex.Token) Expr {
+	return BinaryExpression{
+		Expression: Expression{ExpressionType: UNARY},
+		Right:      right,
+		Token:      token,
 	}
 }
