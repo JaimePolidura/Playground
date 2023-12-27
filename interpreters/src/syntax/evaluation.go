@@ -45,12 +45,12 @@ func evaluateUnary(unaryExpression UnaryExpression) (Expr, error) {
 }
 
 func evaluateGrouping(expression GroupingExpression) (Expr, error) {
-	return evaluateRecursive(expression)
+	return evaluateRecursive(expression.OtherExpression)
 }
 
 func evaluateBinary(expression BinaryExpression) (Expr, error) {
 	left, errLeft := evaluateRecursive(expression.Left)
-	right, errRight := evaluateRecursive(expression.Left)
+	right, errRight := evaluateRecursive(expression.Right)
 	if errLeft != nil {
 		return nil, errLeft
 	}
@@ -198,7 +198,11 @@ func castNumber(value any) (float64, error) {
 	case float64:
 		return value.(float64), nil
 	case bool:
-		return value.(float64), nil
+		if value.(bool) {
+			return 1, nil
+		} else {
+			return 0, nil
+		}
 	default:
 		return -1, errors.New("Cannot take " + reflect.TypeOf(value).Name() + " as number")
 	}
