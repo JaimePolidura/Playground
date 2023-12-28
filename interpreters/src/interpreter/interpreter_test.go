@@ -45,3 +45,28 @@ func TestInterpreter_Interpret_Variable(t *testing.T) {
 	assert.Equal(t, interpreter.Log[1], "2")
 	assert.Equal(t, interpreter.Log[2], "4")
 }
+
+func TestInterpreter_Interpret_ScopeVariables(t *testing.T) {
+	lexer := lex.CreateLexerFromLines(
+		"var a = 1;",
+		"{",
+		"a = 10;",
+		"var b = 2;",
+		"print a;",
+		"print b;",
+		"}",
+		"print a;",
+	)
+	tokens, _ := lexer.ScanTokens()
+	parser := syntax.CreateParser(tokens)
+	statements, _ := parser.Parse()
+	interpreter := CreateInterpreter(statements)
+
+	err := interpreter.Interpret()
+
+	assert.Nil(t, err)
+	assert.Equal(t, len(interpreter.Log), 3)
+	assert.Equal(t, interpreter.Log[0], "10")
+	assert.Equal(t, interpreter.Log[1], "2")
+	assert.Equal(t, interpreter.Log[2], "10")
+}

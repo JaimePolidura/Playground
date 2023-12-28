@@ -8,6 +8,7 @@ const (
 	PRINT_STMT StatementType = iota
 	EXPRESSION_STMT
 	VAR_STMT
+	BLOCK_STMT
 )
 
 type Stmt interface {
@@ -25,6 +26,10 @@ type ExpressionStatement struct {
 type VarStatement struct {
 	Name        lex.Token
 	Initializer Expr
+}
+
+type BlockStatement struct {
+	Statements []Stmt
 }
 
 func CreateVarStatement(name lex.Token, initializer Expr) VarStatement {
@@ -46,6 +51,12 @@ func CreatePrintStatement(other Expr) PrintStatement {
 	}
 }
 
+func CreateBlockStatement(statements []Stmt) BlockStatement {
+	return BlockStatement{
+		Statements: statements,
+	}
+}
+
 func (p ExpressionStatement) Type() StatementType {
 	return EXPRESSION_STMT
 }
@@ -54,4 +65,7 @@ func (p PrintStatement) Type() StatementType {
 }
 func (p VarStatement) Type() StatementType {
 	return VAR_STMT
+}
+func (p BlockStatement) Type() StatementType {
+	return BLOCK_STMT
 }

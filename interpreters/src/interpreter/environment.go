@@ -6,20 +6,28 @@ import (
 )
 
 type Environment struct {
+	parent    *Environment //Used for scope variables
 	variables map[string]any
 }
 
-func createEnvironment() *Environment {
+func createRootEnvironment() *Environment {
 	return &Environment{variables: make(map[string]any)}
+}
+
+func createChildEnvironment(parent *Environment) *Environment {
+	return &Environment{variables: make(map[string]any), parent: parent}
 }
 
 func (e *Environment) Assign(name lex.Token, value any) error {
 	if _, contained := e.variables[name.Lexeme]; contained {
 		e.variables[name.Lexeme] = value
 		return nil
-	} else {
-		return errors.New("Undefined variable: " + name.Lexeme)
 	}
+	if e.parent != nil {
+		return e.parent.Assign(name, value)
+	}
+
+	return errors.New("Undefined variable: " + name.Lexeme)
 }
 
 func (e *Environment) Define(name string, value any) {
@@ -29,7 +37,10 @@ func (e *Environment) Define(name string, value any) {
 func (e *Environment) Get(name string) (any, error) {
 	if value, contained := e.variables[name]; contained {
 		return value, nil
-	} else {
-		return nil, errors.New("Cannot find variable: " + name)
 	}
+	if e.parent != nil {
+		return e.parent.Get(name)
+	}
+
+	return nil, errors.New("Cannot find variable: " + name)
 }

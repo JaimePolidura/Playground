@@ -57,8 +57,26 @@ func (p *Parser) statement() (Stmt, error) {
 	if p.match(lex.PRINT) {
 		return p.printStatement()
 	}
+	if p.match(lex.OPEN_BRACE) {
+		return p.block()
+	}
 
 	return p.expressionStatement()
+}
+
+func (p *Parser) block() (Stmt, error) {
+	statements := make([]Stmt, 0)
+	for !p.check(lex.CLOSE_BRACE) && !p.atTheEnd() {
+		if declaration, err := p.declaration(); err != nil {
+			return nil, err
+		} else {
+			statements = append(statements, declaration)
+		}
+	}
+
+	p.consume(lex.CLOSE_BRACE, "Expected } at the end of the statement")
+
+	return CreateBlockStatement(statements), nil
 }
 
 func (p *Parser) printStatement() (Stmt, error) {

@@ -13,7 +13,7 @@ type Interpreter struct {
 func CreateInterpreter(statements []syntax.Stmt) *Interpreter {
 	return &Interpreter{
 		statements:  statements,
-		environment: createEnvironment(),
+		environment: createRootEnvironment(),
 		Log:         make([]string, 0),
 	}
 }

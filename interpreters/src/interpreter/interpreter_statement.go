@@ -14,9 +14,25 @@ func (i *Interpreter) interpretStatement(statement syntax.Stmt) error {
 		return i.interpretVarStmt(statement.(syntax.VarStatement))
 	case syntax.EXPRESSION_STMT:
 		return i.interpretExprStmt(statement.(syntax.ExpressionStatement))
+	case syntax.BLOCK_STMT:
+		return i.interpretBlockStmt(statement.(syntax.BlockStatement), i.environment)
 	}
 
 	return errors.New("unhandled statement")
+}
+
+func (i *Interpreter) interpretBlockStmt(blockStatement syntax.BlockStatement, environmentParent *Environment) error {
+	newEnvironment := createChildEnvironment(environmentParent)
+	prevEnvironment := i.environment
+	i.environment = newEnvironment
+	for _, statement := range blockStatement.Statements {
+		if err := i.interpretStatement(statement); err != nil {
+			return err
+		}
+	}
+
+	i.environment = prevEnvironment
+	return nil
 }
 
 func (i *Interpreter) interpretExprStmt(statement syntax.ExpressionStatement) error {
