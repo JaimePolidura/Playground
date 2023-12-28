@@ -8,20 +8,47 @@ import (
 
 func (i *Interpreter) interpretStatement(statement syntax.Stmt) error {
 	switch statement.Type() {
-	case syntax.PRINT:
-		return i.interpretPrint(statement.(syntax.PrintStatement))
+	case syntax.PRINT_STMT:
+		return i.interpretPrintStmt(statement.(syntax.PrintStatement))
+	case syntax.VAR_STMT:
+		return i.interpretVarStmt(statement.(syntax.VarStatement))
+	case syntax.EXPRESSION_STMT:
+		return i.interpretExprStmt(statement.(syntax.ExpressionStatement))
 	}
 
 	return errors.New("unhandled statement")
 }
 
-func (i *Interpreter) interpretPrint(statement syntax.PrintStatement) error {
-	expr, err := interpretExpression(statement.Expression)
+func (i *Interpreter) interpretExprStmt(statement syntax.ExpressionStatement) error {
+	_, err := i.interpretExpression(statement.Expression)
+	return err
+}
+
+func (i *Interpreter) interpretVarStmt(statement syntax.VarStatement) error {
+	initializer := statement.Initializer
+	if initializer != nil {
+		if initializerInterpreted, err := i.interpretExpression(initializer); err != nil {
+			return err
+		} else {
+			initializer = initializerInterpreted
+		}
+	}
+
+	if initializer.Type() != syntax.LITERAL_EXPR {
+		return errors.New("invalid initializer variable. It should return a literal")
+	}
+
+	i.environment.Define(statement.Name.Literal.(string), initializer.(syntax.LiteralExpression).Literal)
+
+	return nil
+}
+
+func (i *Interpreter) interpretPrintStmt(statement syntax.PrintStatement) error {
+	expr, err := i.interpretExpression(statement.Expression)
 	if err != nil {
 		return err
 	}
 
-	//TODO Lookup variables
 	stringValueToPrint, err := castString(expr.(syntax.LiteralExpression).Literal)
 	if err != nil {
 		return err

@@ -3,7 +3,6 @@ package main
 import (
 	"bufio"
 	"fmt"
-	"interpreters/src/failures"
 	"interpreters/src/lex"
 	"interpreters/src/utils"
 	"io"
@@ -40,7 +39,7 @@ func showInteractivePrompt() {
 		fmt.Print("> ")
 		text := scanner.Text()
 		if err := runCode(text); err != nil {
-			failures.ReportFailure(err)
+			utils.ReportFailure(err)
 		}
 	}
 }

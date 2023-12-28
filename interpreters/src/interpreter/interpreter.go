@@ -5,13 +5,16 @@ import "interpreters/src/syntax"
 type Interpreter struct {
 	statements []syntax.Stmt
 
+	environment *Environment
+
 	Log []string
 }
 
 func CreateInterpreter(statements []syntax.Stmt) *Interpreter {
 	return &Interpreter{
-		statements: statements,
-		Log:        make([]string, 0),
+		statements:  statements,
+		environment: createEnvironment(),
+		Log:         make([]string, 0),
 	}
 }
 

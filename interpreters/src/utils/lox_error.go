@@ -1,4 +1,4 @@
-package failures
+package utils
 
 type LoxError struct {
 	Line    int

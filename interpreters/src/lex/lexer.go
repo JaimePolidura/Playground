@@ -1,8 +1,9 @@
 package lex
 
 import (
-	"interpreters/src/failures"
+	"interpreters/src/utils"
 	"strconv"
+	"strings"
 )
 
 type Lexer struct {
@@ -17,6 +18,10 @@ type Lexer struct {
 
 func CreateLexer(inputCode string) *Lexer {
 	return &Lexer{code: inputCode}
+}
+
+func CreateLexerFromLines(lines ...string) *Lexer {
+	return &Lexer{code: strings.Join(lines[:], "\n")}
 }
 
 func (l *Lexer) ScanTokens() ([]Token, error) {
@@ -108,7 +113,7 @@ func (l *Lexer) scanToken() error {
 		} else if l.isAlpha(actualChar) {
 			l.addIdentifierToken()
 		} else {
-			return failures.LoxError{Line: l.line, Where: "", Message: "Unexpected token: " + string(actualChar)}
+			return utils.LoxError{Line: l.line, Where: "", Message: "Unexpected token: " + string(actualChar)}
 		}
 	}
 
@@ -173,7 +178,7 @@ func (l *Lexer) addStringToken() error {
 	}
 
 	if l.atTheEnd() {
-		return failures.LoxError{Line: l.line, Where: "", Message: "Unexpected end of string"}
+		return utils.LoxError{Line: l.line, Where: "", Message: "Unexpected end of string"}
 	}
 
 	l.advance()

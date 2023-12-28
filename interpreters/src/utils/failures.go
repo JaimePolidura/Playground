@@ -1,4 +1,4 @@
-package failures
+package utils
 
 import (
 	"fmt"

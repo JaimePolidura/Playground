@@ -6,37 +6,60 @@ import (
 	"interpreters/src/syntax"
 )
 
-func interpretExpression(rootExpression syntax.Expr) (syntax.Expr, error) {
-	return interpretRecursiveExpression(rootExpression)
+func (i *Interpreter) interpretExpression(rootExpression syntax.Expr) (syntax.Expr, error) {
+	return i.interpretRecursiveExpression(rootExpression)
 }
 
-func interpretRecursiveExpression(rootExpression syntax.Expr) (syntax.Expr, error) {
+func (i *Interpreter) interpretRecursiveExpression(rootExpression syntax.Expr) (syntax.Expr, error) {
 	switch rootExpression.Type() {
-	case syntax.BINARY:
-		return interpretBinaryExpression(rootExpression.(syntax.BinaryExpression))
-	case syntax.UNARY:
-		return interpretUnaryExpression(rootExpression.(syntax.UnaryExpression))
-	case syntax.GROUPING:
-		return interpretGroupingExpression(rootExpression.(syntax.GroupingExpression))
-	case syntax.LITERAL:
+	case syntax.BINARY_EXPR:
+		return i.interpretBinaryExpression(rootExpression.(syntax.BinaryExpression))
+	case syntax.UNARY_EXPR:
+		return i.interpretUnaryExpression(rootExpression.(syntax.UnaryExpression))
+	case syntax.GROUPING_EXPR:
+		return i.interpretGroupingExpression(rootExpression.(syntax.GroupingExpression))
+	case syntax.VARIABLE_EXPR:
+		return i.interpretVariableExpression(rootExpression.(syntax.VariableExpression))
+	case syntax.LITERAL_EXPR:
 		return rootExpression, nil
+	case syntax.ASSIGN_EXPR:
+		return i.interpretAssignExpression(rootExpression.(syntax.AssignExpression))
 	}
 
 	return nil, nil
 }
 
-func interpretUnaryExpression(unaryExpression syntax.UnaryExpression) (syntax.Expr, error) {
-	interpretedExpression, err := interpretRecursiveExpression(unaryExpression.Right)
+func (i *Interpreter) interpretAssignExpression(assignExpression syntax.AssignExpression) (syntax.Expr, error) {
+	valueExpr, err := i.interpretExpression(assignExpression.Value)
 	if err != nil {
 		return nil, err
 	}
 
-	if interpretedExpression.Type() != syntax.LITERAL {
+	if valueExpr.Type() != syntax.LITERAL_EXPR {
+		return nil, errors.New("unexpected assigment expression type")
+	}
+
+	value := valueExpr.(syntax.LiteralExpression).Literal
+
+	if err = i.environment.Assign(assignExpression.Name, value); err != nil {
+		return nil, err
+	} else {
+		return syntax.CreateLiteralExpression(value), nil //We return the assigned value
+	}
+}
+
+func (i *Interpreter) interpretUnaryExpression(unaryExpression syntax.UnaryExpression) (syntax.Expr, error) {
+	interpretedExpression, err := i.interpretRecursiveExpression(unaryExpression.Right)
+	if err != nil {
+		return nil, err
+	}
+
+	if interpretedExpression.Type() != syntax.LITERAL_EXPR {
 		unaryExpression.Right = interpretedExpression
 		return unaryExpression, nil
 	}
 
-	unaryResult, err := calculateUnaryExpression(interpretedExpression.(syntax.LiteralExpression).Literal, unaryExpression.Token.Type)
+	unaryResult, err := i.calculateUnaryExpression(interpretedExpression.(syntax.LiteralExpression).Literal, unaryExpression.Token.Type)
 	if err != nil {
 		return nil, err
 	}
@@ -44,13 +67,22 @@ func interpretUnaryExpression(unaryExpression syntax.UnaryExpression) (syntax.Ex
 	return syntax.CreateLiteralExpression(unaryResult), nil
 }
 
-func interpretGroupingExpression(expression syntax.GroupingExpression) (syntax.Expr, error) {
-	return interpretRecursiveExpression(expression.OtherExpression)
+func (i *Interpreter) interpretGroupingExpression(expression syntax.GroupingExpression) (syntax.Expr, error) {
+	return i.interpretRecursiveExpression(expression.OtherExpression)
 }
 
-func interpretBinaryExpression(expression syntax.BinaryExpression) (syntax.Expr, error) {
-	left, errLeft := interpretRecursiveExpression(expression.Left)
-	right, errRight := interpretRecursiveExpression(expression.Right)
+func (i *Interpreter) interpretVariableExpression(expression syntax.VariableExpression) (syntax.Expr, error) {
+	variableValue, err := i.environment.Get(expression.Name.Literal.(string))
+	if err != nil {
+		return nil, err
+	}
+
+	return syntax.CreateLiteralExpression(variableValue), nil
+}
+
+func (i *Interpreter) interpretBinaryExpression(expression syntax.BinaryExpression) (syntax.Expr, error) {
+	left, errLeft := i.interpretRecursiveExpression(expression.Left)
+	right, errRight := i.interpretRecursiveExpression(expression.Right)
 	if errLeft != nil {
 		return nil, errLeft
 	}
@@ -58,13 +90,13 @@ func interpretBinaryExpression(expression syntax.BinaryExpression) (syntax.Expr,
 		return nil, errRight
 	}
 
-	if !isLiteral(left, right) {
+	if !i.isLiteral(left, right) {
 		expression.Left = left
 		expression.Right = right
 		return expression, nil
 	}
 
-	literalInterpretedResult, err := calculateBinaryExpression(left.(syntax.LiteralExpression).Literal,
+	literalInterpretedResult, err := i.calculateBinaryExpression(left.(syntax.LiteralExpression).Literal,
 		right.(syntax.LiteralExpression).Literal, expression.Token.Type)
 	if err != nil {
 		return nil, err
@@ -73,7 +105,7 @@ func interpretBinaryExpression(expression syntax.BinaryExpression) (syntax.Expr,
 	return syntax.CreateLiteralExpression(literalInterpretedResult), nil
 }
 
-func calculateUnaryExpression(literal any, tokenType lex.TokenType) (any, error) {
+func (i *Interpreter) calculateUnaryExpression(literal any, tokenType lex.TokenType) (any, error) {
 	switch tokenType {
 	case lex.BANG:
 		if castedBool, err := castBoolean(literal); err != nil {
@@ -86,7 +118,7 @@ func calculateUnaryExpression(literal any, tokenType lex.TokenType) (any, error)
 	}
 }
 
-func calculateBinaryExpression(left any, right any, operationTokenType lex.TokenType) (any, error) {
+func (i *Interpreter) calculateBinaryExpression(left any, right any, operationTokenType lex.TokenType) (any, error) {
 	if lex.IsAnyType(operationTokenType, lex.OPEN_PAREN, lex.CLOSE_PAREN, lex.OPEN_BRACE, lex.CLOSE_BRACE, lex.COMMA, lex.DOT, lex.SEMICOLON,
 		lex.IDENTIFIER, lex.STRING, lex.NUMBER, lex.CLASS, lex.ELSE, lex.FUN, lex.IF, lex.FOR, lex.NIL, lex.PRINT,
 		lex.RETURN, lex.SUPER, lex.THIS, lex.TRUE, lex.VAR, lex.WHILE, lex.EOF, lex.BANG, lex.FALSE) {
@@ -102,15 +134,15 @@ func calculateBinaryExpression(left any, right any, operationTokenType lex.Token
 	}
 
 	if isComparativeOperation {
-		return calculateComparativeOperation(left, right, operationTokenType)
+		return i.calculateComparativeOperation(left, right, operationTokenType)
 	} else if isArithmeticOperation {
-		return calculateArithmeticOperation(left, right, operationTokenType)
+		return i.calculateArithmeticOperation(left, right, operationTokenType)
 	} else {
-		return calculateLogicalOperation(left, right, operationTokenType)
+		return i.calculateLogicalOperation(left, right, operationTokenType)
 	}
 }
 
-func calculateComparativeOperation(left any, right any, tokenType lex.TokenType) (bool, error) {
+func (i *Interpreter) calculateComparativeOperation(left any, right any, tokenType lex.TokenType) (bool, error) {
 	numberLeft, errLeft := castNumber(left)
 	numberRight, errRight := castNumber(right)
 	if errLeft != nil {
@@ -138,7 +170,7 @@ func calculateComparativeOperation(left any, right any, tokenType lex.TokenType)
 	}
 }
 
-func calculateLogicalOperation(left any, right any, tokenType lex.TokenType) (bool, error) {
+func (i *Interpreter) calculateLogicalOperation(left any, right any, tokenType lex.TokenType) (bool, error) {
 	boolLeft, errLeft := castBoolean(left)
 	boolRight, errRight := castBoolean(right)
 	if errLeft != nil {
@@ -158,7 +190,7 @@ func calculateLogicalOperation(left any, right any, tokenType lex.TokenType) (bo
 	}
 }
 
-func calculateArithmeticOperation(left any, right any, tokenType lex.TokenType) (float64, error) {
+func (i *Interpreter) calculateArithmeticOperation(left any, right any, tokenType lex.TokenType) (float64, error) {
 	numberLeft, errLeft := castNumber(left)
 	numberRight, errRight := castNumber(right)
 	if errLeft != nil {
@@ -182,9 +214,9 @@ func calculateArithmeticOperation(left any, right any, tokenType lex.TokenType) 
 	}
 }
 
-func isLiteral(expressions ...syntax.Expr) bool {
+func (i *Interpreter) isLiteral(expressions ...syntax.Expr) bool {
 	for _, expression := range expressions {
-		if expression.Type() != syntax.LITERAL {
+		if expression.Type() != syntax.LITERAL_EXPR {
 			return false
 		}
 	}

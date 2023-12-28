@@ -2,16 +2,6 @@ package syntax
 
 import "interpreters/src/lex"
 
-/**
-expression → equality
-equality → comparison ( ( "!=" | "==" ) comparison )*
-comparison → term ( ( ">" | ">=" | "<" | "<=" ) term )*
-term → factor ( ( "-" | "+" ) factor )*
-factor → unary ( ( "/" | "*" ) unary )*
-unary → ( "!" | "-" ) unary | primary
-primary → NUMBER | STRING | "true" | "false" | "nil" | "(" expression ")"
-*/
-
 type Parser struct {
 	Tokens []lex.Token
 
@@ -28,7 +18,7 @@ func CreateParser(Tokens []lex.Token) *Parser {
 func (p *Parser) Parse() ([]Stmt, error) {
 	statements := make([]Stmt, 0)
 	for !p.atTheEnd() {
-		if statement, err := p.statement(); err != nil {
+		if statement, err := p.declaration(); err != nil {
 			return statements, err
 		} else {
 			statements = append(statements, statement)
@@ -38,9 +28,29 @@ func (p *Parser) Parse() ([]Stmt, error) {
 	return statements, nil
 }
 
-// TODO Make private
-func (p *Parser) ParseExpression() (Expr, error) {
+func (p *Parser) parseExpression() (Expr, error) {
 	return p.expression(), nil
+}
+
+func (p *Parser) declaration() (Stmt, error) {
+	if p.match(lex.VAR) {
+		return p.varDeclaration()
+	} else {
+		return p.statement()
+	}
+}
+
+func (p *Parser) varDeclaration() (Stmt, error) {
+	name := p.consume(lex.IDENTIFIER, "Expect variable name")
+
+	var initializer Expr
+	if p.match(lex.EQUAL) {
+		initializer = p.expression()
+	}
+
+	p.consume(lex.SEMICOLON, "Expect ;")
+
+	return CreateVarStatement(name, initializer), nil
 }
 
 func (p *Parser) statement() (Stmt, error) {
@@ -63,9 +73,25 @@ func (p *Parser) expressionStatement() (Stmt, error) {
 	return CreateExpressionStatement(expr), nil
 }
 
-// expression → equality
+// Every expression starts with assigment
 func (p *Parser) expression() Expr {
-	return p.equality()
+	return p.assignment()
+}
+
+func (p *Parser) assignment() Expr {
+	exp := p.equality() //Actual expression
+
+	if p.match(lex.EQUAL) {
+		if exp.Type() != VARIABLE_EXPR {
+			panic("Invalid assigment")
+		}
+		variableName := exp.(VariableExpression).Name
+		variableValueExpr := p.assignment() //We get the other expression
+
+		return CreateAssignExpression(variableName, variableValueExpr)
+	}
+
+	return exp
 }
 
 // equality → comparison ( ( "!=" | "==" ) comparison )*
@@ -144,6 +170,9 @@ func (p *Parser) primary() Expr {
 	}
 	if p.match(lex.NUMBER, lex.STRING) {
 		return CreateLiteralExpression(p.previousToken().Literal)
+	}
+	if p.match(lex.IDENTIFIER) {
+		return CreateVariableExpression(p.previousToken())
 	}
 	if p.match(lex.OPEN_PAREN) {
 		expr := p.expression()
