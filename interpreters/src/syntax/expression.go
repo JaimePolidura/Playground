@@ -15,19 +15,8 @@ type Expr interface {
 	Type() ExpressionType
 }
 
-type Expression struct {
-	Expr
-	ExpressionType ExpressionType
-}
-
-func (e Expression) Type() ExpressionType {
-	return e.ExpressionType
-}
-
 // The infix arithmetic (+, -, *, /) and logic (==, !=, <=, < , >, >=)
 type BinaryExpression struct {
-	Expression
-
 	Left  Expr
 	Right Expr
 	Token lex.Token
@@ -35,53 +24,56 @@ type BinaryExpression struct {
 
 // A prefix ! to perform a logical not
 type UnaryExpression struct {
-	Expression
-
 	Right Expr
 	Token lex.Token
 }
 
 // Parentheses – A pair of ( and ) wrapped around an expression
 type GroupingExpression struct {
-	Expression
-
 	OtherExpression Expr
 }
 
 // Numbers, strings, Booleans, and nil.
 type LiteralExpression struct {
-	Expression
-
 	Literal any
+}
+
+func (e BinaryExpression) Type() ExpressionType {
+	return BINARY
+}
+func (e GroupingExpression) Type() ExpressionType {
+	return GROUPING
+}
+func (e UnaryExpression) Type() ExpressionType {
+	return UNARY
+}
+func (e LiteralExpression) Type() ExpressionType {
+	return LITERAL
 }
 
 func CreateLiteralExpression(literal any) Expr {
 	return LiteralExpression{
-		Expression: Expression{ExpressionType: LITERAL},
-		Literal:    literal,
+		Literal: literal,
 	}
 }
 
 func CreateGroupingExpression(otherExpression Expr) Expr {
 	return GroupingExpression{
-		Expression:      Expression{ExpressionType: GROUPING},
 		OtherExpression: otherExpression,
 	}
 }
 
 func CreateBinaryExpression(left Expr, right Expr, token lex.Token) Expr {
 	return BinaryExpression{
-		Expression: Expression{ExpressionType: BINARY},
-		Left:       left,
-		Right:      right,
-		Token:      token,
+		Left:  left,
+		Right: right,
+		Token: token,
 	}
 }
 
 func CreateUnaryExpression(right Expr, token lex.Token) Expr {
 	return BinaryExpression{
-		Expression: Expression{ExpressionType: UNARY},
-		Right:      right,
-		Token:      token,
+		Right: right,
+		Token: token,
 	}
 }

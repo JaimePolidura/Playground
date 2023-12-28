@@ -6,6 +6,24 @@ import (
 	"testing"
 )
 
+func TestParser_Parse2(t *testing.T) {
+	lexer := lex.CreateLexer("print \"hola\";\n" +
+		"print 1 + 2 == 2;\n" +
+		"print (7 * 3) == (7 + 7 + 7);")
+	tokens, _ := lexer.ScanTokens()
+	parser := CreateParser(tokens)
+
+	statements, err := parser.Parse()
+
+	assert.Nil(t, err)
+	assert.Equal(t, len(statements), 3)
+
+	assert.True(t, statements[0].Type() == PRINT && statements[1].Type() == PRINT && statements[2].Type() == PRINT)
+	assert.Equal(t, statements[0].(PrintStatement).Expression.Type(), LITERAL)
+	assert.Equal(t, statements[1].(PrintStatement).Expression.Type(), BINARY)
+	assert.Equal(t, statements[2].(PrintStatement).Expression.Type(), BINARY)
+}
+
 /*
 				!=
 		       /  \
@@ -20,7 +38,7 @@ func TestParser_Parse(t *testing.T) {
 	tokens, _ := lexer.ScanTokens()
 
 	parser := CreateParser(tokens)
-	expr, _ := parser.Parse()
+	expr, _ := parser.ParseExpression()
 
 	assert.Equal(t, expr.Type(), BINARY)
 
@@ -36,7 +54,7 @@ func TestParser_Parse(t *testing.T) {
 
 	minus_slash := minus.Right.(GroupingExpression).OtherExpression.(BinaryExpression)
 	assert.Equal(t, minus_slash.Type(), BINARY)
-	assert.Equal(t, string(minus_slash.Token.Type), lex.SLASH) //NOT
+	assert.Equal(t, minus_slash.Token.Type, lex.SLASH) //NOT
 	assert.Equal(t, minus_slash.Left.Type(), LITERAL)
 	assert.Equal(t, minus_slash.Right.Type(), LITERAL)
 	assert.Equal(t, minus_slash.Left.(LiteralExpression).Literal, float64(1))
@@ -44,7 +62,7 @@ func TestParser_Parse(t *testing.T) {
 
 	minus_plus := minus.Left.(BinaryExpression)
 	assert.Equal(t, minus_plus.Type(), BINARY)
-	assert.Equal(t, string(minus_plus.Token.Type), lex.PLUS)
+	assert.Equal(t, minus_plus.Token.Type, lex.PLUS)
 	assert.Equal(t, minus_plus.Left.Type(), LITERAL)
 	assert.Equal(t, minus_plus.Right.Type(), LITERAL)
 	assert.Equal(t, minus_plus.Left.(LiteralExpression).Literal, float64(1))

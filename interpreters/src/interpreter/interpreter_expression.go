@@ -1,56 +1,56 @@
-package syntax
+package interpreter
 
 import (
 	"errors"
 	"interpreters/src/lex"
-	"reflect"
+	"interpreters/src/syntax"
 )
 
-func Evaluate(rootExpression Expr) (Expr, error) {
-	return evaluateRecursive(rootExpression)
+func interpretExpression(rootExpression syntax.Expr) (syntax.Expr, error) {
+	return interpretRecursiveExpression(rootExpression)
 }
 
-func evaluateRecursive(rootExpression Expr) (Expr, error) {
+func interpretRecursiveExpression(rootExpression syntax.Expr) (syntax.Expr, error) {
 	switch rootExpression.Type() {
-	case BINARY:
-		return evaluateBinary(rootExpression.(BinaryExpression))
-	case UNARY:
-		return evaluateUnary(rootExpression.(UnaryExpression))
-	case GROUPING:
-		return evaluateGrouping(rootExpression.(GroupingExpression))
-	case LITERAL:
+	case syntax.BINARY:
+		return interpretBinaryExpression(rootExpression.(syntax.BinaryExpression))
+	case syntax.UNARY:
+		return interpretUnaryExpression(rootExpression.(syntax.UnaryExpression))
+	case syntax.GROUPING:
+		return interpretGroupingExpression(rootExpression.(syntax.GroupingExpression))
+	case syntax.LITERAL:
 		return rootExpression, nil
 	}
 
 	return nil, nil
 }
 
-func evaluateUnary(unaryExpression UnaryExpression) (Expr, error) {
-	evaluatedExpression, err := evaluateRecursive(unaryExpression.Right)
+func interpretUnaryExpression(unaryExpression syntax.UnaryExpression) (syntax.Expr, error) {
+	interpretedExpression, err := interpretRecursiveExpression(unaryExpression.Right)
 	if err != nil {
 		return nil, err
 	}
 
-	if evaluatedExpression.Type() != LITERAL {
-		unaryExpression.Right = evaluatedExpression
+	if interpretedExpression.Type() != syntax.LITERAL {
+		unaryExpression.Right = interpretedExpression
 		return unaryExpression, nil
 	}
 
-	unaryResult, err := calculateUnaryExpression(evaluatedExpression.(LiteralExpression).Literal, unaryExpression.Token.Type)
+	unaryResult, err := calculateUnaryExpression(interpretedExpression.(syntax.LiteralExpression).Literal, unaryExpression.Token.Type)
 	if err != nil {
 		return nil, err
 	}
 
-	return CreateLiteralExpression(unaryResult), nil
+	return syntax.CreateLiteralExpression(unaryResult), nil
 }
 
-func evaluateGrouping(expression GroupingExpression) (Expr, error) {
-	return evaluateRecursive(expression.OtherExpression)
+func interpretGroupingExpression(expression syntax.GroupingExpression) (syntax.Expr, error) {
+	return interpretRecursiveExpression(expression.OtherExpression)
 }
 
-func evaluateBinary(expression BinaryExpression) (Expr, error) {
-	left, errLeft := evaluateRecursive(expression.Left)
-	right, errRight := evaluateRecursive(expression.Right)
+func interpretBinaryExpression(expression syntax.BinaryExpression) (syntax.Expr, error) {
+	left, errLeft := interpretRecursiveExpression(expression.Left)
+	right, errRight := interpretRecursiveExpression(expression.Right)
 	if errLeft != nil {
 		return nil, errLeft
 	}
@@ -64,13 +64,13 @@ func evaluateBinary(expression BinaryExpression) (Expr, error) {
 		return expression, nil
 	}
 
-	literalEvaluationResult, err := calculateBinaryExpression(left.(LiteralExpression).Literal,
-		right.(LiteralExpression).Literal, expression.Token.Type)
+	literalInterpretedResult, err := calculateBinaryExpression(left.(syntax.LiteralExpression).Literal,
+		right.(syntax.LiteralExpression).Literal, expression.Token.Type)
 	if err != nil {
 		return nil, err
 	}
 
-	return CreateLiteralExpression(literalEvaluationResult), nil
+	return syntax.CreateLiteralExpression(literalInterpretedResult), nil
 }
 
 func calculateUnaryExpression(literal any, tokenType lex.TokenType) (any, error) {
@@ -182,35 +182,9 @@ func calculateArithmeticOperation(left any, right any, tokenType lex.TokenType) 
 	}
 }
 
-func castBoolean(value any) (bool, error) {
-	switch value.(type) {
-	case float64:
-		return value.(float64) > 0, nil
-	case bool:
-		return value.(bool), nil
-	default:
-		return false, errors.New("Cannot take " + reflect.TypeOf(value).Name() + " as boolean")
-	}
-}
-
-func castNumber(value any) (float64, error) {
-	switch value.(type) {
-	case float64:
-		return value.(float64), nil
-	case bool:
-		if value.(bool) {
-			return 1, nil
-		} else {
-			return 0, nil
-		}
-	default:
-		return -1, errors.New("Cannot take " + reflect.TypeOf(value).Name() + " as number")
-	}
-}
-
-func isLiteral(expressions ...Expr) bool {
+func isLiteral(expressions ...syntax.Expr) bool {
 	for _, expression := range expressions {
-		if expression.Type() != LITERAL {
+		if expression.Type() != syntax.LITERAL {
 			return false
 		}
 	}

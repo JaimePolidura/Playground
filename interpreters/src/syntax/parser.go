@@ -25,8 +25,42 @@ func CreateParser(Tokens []lex.Token) *Parser {
 	}
 }
 
-func (p *Parser) Parse() (Expr, error) {
+func (p *Parser) Parse() ([]Stmt, error) {
+	statements := make([]Stmt, 0)
+	for !p.atTheEnd() {
+		if statement, err := p.statement(); err != nil {
+			return statements, err
+		} else {
+			statements = append(statements, statement)
+		}
+	}
+
+	return statements, nil
+}
+
+// TODO Make private
+func (p *Parser) ParseExpression() (Expr, error) {
 	return p.expression(), nil
+}
+
+func (p *Parser) statement() (Stmt, error) {
+	if p.match(lex.PRINT) {
+		return p.printStatement()
+	}
+
+	return p.expressionStatement()
+}
+
+func (p *Parser) printStatement() (Stmt, error) {
+	expr := p.expression()
+	p.consume(lex.SEMICOLON, "Expect ; after value.")
+	return CreatePrintStatement(expr), nil
+}
+
+func (p *Parser) expressionStatement() (Stmt, error) {
+	expr := p.expression()
+	p.consume(lex.SEMICOLON, "Expect ; after value.")
+	return CreateExpressionStatement(expr), nil
 }
 
 // expression → equality
