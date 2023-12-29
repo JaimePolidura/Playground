@@ -6,6 +6,7 @@ type Interpreter struct {
 	statements []syntax.Stmt
 
 	environment *Environment
+	global      *Environment
 
 	Log []string
 }
@@ -14,8 +15,16 @@ func CreateInterpreter(statements []syntax.Stmt) *Interpreter {
 	return &Interpreter{
 		statements:  statements,
 		environment: createRootEnvironment(),
+		global:      createGlobalEnvironment(),
 		Log:         make([]string, 0),
 	}
+}
+
+func createGlobalEnvironment() *Environment {
+	global := createRootEnvironment()
+	global.variables["clock"] = ClockNativeFunction{}
+
+	return global
 }
 
 func (i *Interpreter) Interpret() error {

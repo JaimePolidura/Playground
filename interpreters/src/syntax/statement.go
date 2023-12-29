@@ -11,6 +11,7 @@ const (
 	BLOCK_STMT
 	IF_STMT
 	WHILE_STMT
+	FUNCTION_STMT
 )
 
 type Stmt interface {
@@ -37,6 +38,12 @@ type VarStatement struct {
 
 type BlockStatement struct {
 	Statements []Stmt
+}
+
+type FunctionStatement struct {
+	Name   lex.Token
+	Params []lex.Token
+	Body   []Stmt
 }
 
 type IfStatement struct {
@@ -85,6 +92,14 @@ func CreateWhileStatement(condition Expr, body Stmt) WhileStatement {
 	}
 }
 
+func CreateFunctionStatement(name lex.Token, params []lex.Token, body []Stmt) FunctionStatement {
+	return FunctionStatement{
+		Name:   name,
+		Params: params,
+		Body:   body,
+	}
+}
+
 func (p ExpressionStatement) Type() StatementType {
 	return EXPRESSION_STMT
 }
@@ -102,4 +117,7 @@ func (p WhileStatement) Type() StatementType {
 }
 func (p IfStatement) Type() StatementType {
 	return IF_STMT
+}
+func (p FunctionStatement) Type() StatementType {
+	return FUNCTION_STMT
 }

@@ -26,9 +26,50 @@ func (i *Interpreter) interpretRecursiveExpression(rootExpression syntax.Expr) (
 		return i.interpretAssignExpression(rootExpression.(syntax.AssignExpression))
 	case syntax.LOGICAL_EXPR:
 		return i.interpretLogicalExpression(rootExpression.(syntax.LogicalExpression))
+	case syntax.CALL_EXPR:
+		return i.interpretCallExpression(rootExpression.(syntax.CallExpression))
 	}
 
 	return nil, nil
+}
+
+func (i *Interpreter) interpretCallExpression(callExpression syntax.CallExpression) (syntax.Expr, error) {
+	callee, err := i.interpretExpression(callExpression.Callee)
+	if err != nil {
+		return nil, err
+	}
+
+	arguments, err := i.parseCallArgs(callExpression)
+	if err != nil {
+		return nil, err
+	}
+
+	callable, isCallable := callee.(LoxCallable)
+	if !isCallable {
+		return nil, errors.New("not a function")
+	}
+	if callable.Arity() != len(arguments) {
+		return nil, errors.New("invalid nº of arguments")
+	}
+
+	return callable.Call(i, arguments)
+}
+
+func (i *Interpreter) parseCallArgs(callExpression syntax.CallExpression) ([]any, error) {
+	arguments := make([]any, 0)
+	for _, argExpr := range callExpression.Args {
+		argExprLiteral, argExpr := i.interpretExpression(argExpr)
+		if argExpr != nil {
+			return nil, argExpr
+		}
+		if argExprLiteral.Type() != syntax.LITERAL_EXPR {
+			return nil, errors.New("literal value expected in function call arguments")
+		}
+
+		arguments = append(arguments, argExprLiteral.(syntax.LiteralExpression).Literal)
+	}
+
+	return arguments, nil
 }
 
 func (i *Interpreter) interpretLogicalExpression(expression syntax.LogicalExpression) (syntax.Expr, error) {

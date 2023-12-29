@@ -5,6 +5,7 @@
     <inspection_tool class="GoSnakeCaseUsage" enabled="false" level="WEAK WARNING" enabled_by_default="false" />
     <inspection_tool class="GoSwitchMissingCasesForIotaConsts" enabled="false" level="WARNING" enabled_by_default="false" />
     <inspection_tool class="GoUnhandledErrorResult" enabled="false" level="WARNING" enabled_by_default="false" />
+    <inspection_tool class="GoUnusedParameter" enabled="false" level="WARNING" enabled_by_default="false" />
     <inspection_tool class="GrazieInspection" enabled="false" level="GRAMMAR_ERROR" enabled_by_default="false" />
   </profile>
 </component>

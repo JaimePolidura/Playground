@@ -15,14 +15,22 @@ func (i *Interpreter) interpretStatement(statement syntax.Stmt) error {
 	case syntax.EXPRESSION_STMT:
 		return i.interpretExprStmt(statement.(syntax.ExpressionStatement))
 	case syntax.BLOCK_STMT:
-		return i.interpretBlockStmt(statement.(syntax.BlockStatement), i.environment)
+		return i.interpretBlockStmt(statement.(syntax.BlockStatement).Statements, i.environment)
 	case syntax.IF_STMT:
 		return i.interpretIfStmt(statement.(syntax.IfStatement))
 	case syntax.WHILE_STMT:
 		return i.interpretWhileStmt(statement.(syntax.WhileStatement))
+	case syntax.FUNCTION_STMT:
+		return i.interpretFunctionStmt(statement.(syntax.FunctionStatement))
 	}
 
 	return errors.New("unhandled statement")
+}
+
+func (i *Interpreter) interpretFunctionStmt(functionStmt syntax.FunctionStatement) error {
+	loxFunction := LoxFunction{FunctionStmt: functionStmt}
+	i.environment.Define(functionStmt.Name.Lexeme, loxFunction)
+	return nil
 }
 
 func (i *Interpreter) interpretWhileStmt(statement syntax.WhileStatement) error {
@@ -54,11 +62,11 @@ func (i *Interpreter) interpretIfStmt(ifStmt syntax.IfStatement) error {
 	return nil
 }
 
-func (i *Interpreter) interpretBlockStmt(blockStatement syntax.BlockStatement, environmentParent *Environment) error {
+func (i *Interpreter) interpretBlockStmt(blockStatements []syntax.Stmt, environmentParent *Environment) error {
 	newEnvironment := createChildEnvironment(environmentParent)
 	prevEnvironment := i.environment
 	i.environment = newEnvironment
-	for _, statement := range blockStatement.Statements {
+	for _, statement := range blockStatements {
 		if err := i.interpretStatement(statement); err != nil {
 			return err
 		}

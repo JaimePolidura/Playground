@@ -12,6 +12,7 @@ const (
 	VARIABLE_EXPR
 	ASSIGN_EXPR
 	LOGICAL_EXPR
+	CALL_EXPR
 )
 
 type Expr interface {
@@ -56,6 +57,12 @@ type LogicalExpression struct {
 	Right    Expr
 }
 
+type CallExpression struct {
+	Callee Expr
+	Parent lex.Token
+	Args   []Expr
+}
+
 func (e BinaryExpression) Type() ExpressionType {
 	return BINARY_EXPR
 }
@@ -76,6 +83,9 @@ func (e LogicalExpression) Type() ExpressionType {
 }
 func (e AssignExpression) Type() ExpressionType {
 	return ASSIGN_EXPR
+}
+func (e CallExpression) Type() ExpressionType {
+	return CALL_EXPR
 }
 
 func CreateLiteralExpression(literal any) Expr {
@@ -123,5 +133,13 @@ func CreateAssignExpression(name lex.Token, value Expr) Expr {
 	return AssignExpression{
 		Name:  name,
 		Value: value,
+	}
+}
+
+func CreateCallExpression(callee Expr, parent lex.Token, args []Expr) Expr {
+	return CallExpression{
+		Args:   args,
+		Parent: parent,
+		Callee: callee,
 	}
 }

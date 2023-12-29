@@ -37,9 +37,36 @@ func (p *Parser) parseExpression() (Expr, error) {
 func (p *Parser) declaration() (Stmt, error) {
 	if p.match(lex.VAR) {
 		return p.varDeclaration()
+	} else if p.match(lex.FUN) {
+		return p.function()
 	} else {
 		return p.statement()
 	}
+}
+
+func (p *Parser) function() (Stmt, error) {
+	name := p.consume(lex.IDENTIFIER, "Expect name of the function")
+	p.consume("(", "'(' expected after function name")
+	parameters := make([]lex.Token, 0)
+
+	if p.match(lex.CLOSE_PAREN) {
+		for {
+			parameterName := p.consume(lex.IDENTIFIER, "Expect parameter name in function")
+			parameters = append(parameters, parameterName)
+
+			if !p.match(lex.COMMA) {
+				break
+			}
+		}
+	}
+	p.consume(lex.CLOSE_PAREN, "Expect ')' after function parameters")
+	p.consume(lex.CLOSE_PAREN, "Expect '{' after function declaration")
+	body, err := p.blockStatement()
+	if err != nil {
+		return nil, err
+	}
+
+	return CreateFunctionStatement(name, parameters, body.(BlockStatement).Statements), nil
 }
 
 func (p *Parser) varDeclaration() (Stmt, error) {
@@ -261,8 +288,42 @@ func (p *Parser) unary() Expr {
 		right := p.unary()
 		return CreateUnaryExpression(right, prevToken)
 	} else {
-		return p.primary()
+		return p.call()
 	}
+}
+
+func (p *Parser) call() Expr {
+	expr := p.primary()
+
+	for {
+		if p.match(lex.OPEN_PAREN) {
+			expr = p.finishCall(expr)
+		} else {
+			break
+		}
+	}
+
+	return expr
+}
+
+func (p *Parser) finishCall(calle Expr) Expr {
+	args := make([]Expr, 0)
+
+	if !p.check(lex.CLOSE_PAREN) {
+		args = append(args, p.expression())
+
+		for p.match(lex.COMMA) {
+			args = append(args, p.expression())
+
+			if len(args) >= 255 {
+				panic("cannot handle more than 255 arguments")
+			}
+		}
+	}
+
+	parent := p.consume(lex.CLOSE_PAREN, "Expect ')' after arguments.")
+
+	return CreateCallExpression(calle, parent, args)
 }
 
 // primary → NUMBER | STRING | "true" | "false" | "nil" | "(" expression ")"
