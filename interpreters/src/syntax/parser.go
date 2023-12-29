@@ -1,6 +1,8 @@
 package syntax
 
-import "interpreters/src/lex"
+import (
+	"interpreters/src/lex"
+)
 
 type Parser struct {
 	Tokens []lex.Token
@@ -57,6 +59,9 @@ func (p *Parser) statement() (Stmt, error) {
 	if p.match(lex.PRINT) {
 		return p.printStatement()
 	}
+	if p.match(lex.WHILE) {
+		return p.whileStatement()
+	}
 	if p.match(lex.OPEN_BRACE) {
 		return p.blockStatement()
 	}
@@ -65,6 +70,18 @@ func (p *Parser) statement() (Stmt, error) {
 	}
 
 	return p.expressionStatement()
+}
+
+func (p *Parser) whileStatement() (Stmt, error) {
+	p.consume(lex.OPEN_PAREN, "Expect '(' at beginning of while loop")
+	condition := p.expression()
+	p.consume(lex.CLOSE_PAREN, "Expect ')' at the end of while loop")
+	body, err := p.statement()
+	if err != nil {
+		return nil, err
+	}
+
+	return CreateWhileStatement(condition, body), nil
 }
 
 func (p *Parser) ifStatement() (Stmt, error) {

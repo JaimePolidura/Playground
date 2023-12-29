@@ -244,3 +244,19 @@ func (i *Interpreter) isLiteral(expressions ...syntax.Expr) bool {
 
 	return true
 }
+
+func (i *Interpreter) interpreteExprAndGetBool(expr syntax.Expr) (bool, error) {
+	resultCondition, err := i.interpretExpression(expr)
+	if err != nil {
+		return false, err
+	}
+	if resultCondition.Type() != syntax.LITERAL_EXPR {
+		return false, errors.New("expression should yield a boolean")
+	}
+	boolValue, err := castBoolean(resultCondition.(syntax.LiteralExpression).Literal)
+	if err != nil {
+		return false, errors.New("expression should yield a boolean")
+	}
+
+	return boolValue, nil
+}

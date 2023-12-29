@@ -10,10 +10,16 @@ const (
 	VAR_STMT
 	BLOCK_STMT
 	IF_STMT
+	WHILE_STMT
 )
 
 type Stmt interface {
 	Type() StatementType
+}
+
+type WhileStatement struct {
+	Condition Expr
+	Body      Stmt
 }
 
 type PrintStatement struct {
@@ -72,6 +78,13 @@ func CreateBlockStatement(statements []Stmt) BlockStatement {
 	}
 }
 
+func CreateWhileStatement(condition Expr, body Stmt) WhileStatement {
+	return WhileStatement{
+		Condition: condition,
+		Body:      body,
+	}
+}
+
 func (p ExpressionStatement) Type() StatementType {
 	return EXPRESSION_STMT
 }
@@ -83,6 +96,9 @@ func (p VarStatement) Type() StatementType {
 }
 func (p BlockStatement) Type() StatementType {
 	return BLOCK_STMT
+}
+func (p WhileStatement) Type() StatementType {
+	return WHILE_STMT
 }
 func (p IfStatement) Type() StatementType {
 	return IF_STMT

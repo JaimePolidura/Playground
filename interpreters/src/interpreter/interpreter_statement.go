@@ -18,20 +18,29 @@ func (i *Interpreter) interpretStatement(statement syntax.Stmt) error {
 		return i.interpretBlockStmt(statement.(syntax.BlockStatement), i.environment)
 	case syntax.IF_STMT:
 		return i.interpretIfStmt(statement.(syntax.IfStatement))
+	case syntax.WHILE_STMT:
+		return i.interpretWhileStmt(statement.(syntax.WhileStatement))
 	}
 
 	return errors.New("unhandled statement")
 }
 
+func (i *Interpreter) interpretWhileStmt(statement syntax.WhileStatement) error {
+	for {
+		conditionBool, err := i.interpreteExprAndGetBool(statement.Condition)
+		if err != nil {
+			return err
+		}
+		if !conditionBool {
+			return nil
+		}
+
+		i.interpretStatement(statement.Body)
+	}
+}
+
 func (i *Interpreter) interpretIfStmt(ifStmt syntax.IfStatement) error {
-	resultCondition, err := i.interpretExpression(ifStmt.Condition)
-	if err != nil {
-		return err
-	}
-	if resultCondition.Type() != syntax.LITERAL_EXPR {
-		return errors.New("the result of a if statement should yield a boolean value")
-	}
-	boolIfCondition, err := castBoolean(resultCondition.(syntax.LiteralExpression).Literal)
+	boolIfCondition, err := i.interpreteExprAndGetBool(ifStmt.Condition)
 	if err != nil {
 		return errors.New("the result of a if statement should yield a boolean value")
 	}

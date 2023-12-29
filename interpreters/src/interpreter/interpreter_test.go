@@ -4,8 +4,28 @@ import (
 	"github.com/stretchr/testify/assert"
 	"interpreters/src/lex"
 	"interpreters/src/syntax"
+	"strconv"
 	"testing"
 )
+
+func TestInterpreter_Interpret_WhileLoop(t *testing.T) {
+	interpreter, err := interpret(
+		"var numero1 = 0;",
+		"while (numero1 < 10) {",
+		"print numero1;",
+		"numero1 = numero1 + 1;",
+		"}",
+		"while(numero1 == 0){",
+		"print numero1;",
+		"}",
+	)
+
+	assert.Nil(t, err)
+	assert.Equal(t, len(interpreter.Log), 10)
+	for i := 0; i < 10; i++ {
+		assert.Equal(t, interpreter.Log[i], strconv.Itoa(i))
+	}
+}
 
 func TestInterpreter_Interpret_IfWithLogicalOperators(t *testing.T) {
 	interpreter, err := interpret(
