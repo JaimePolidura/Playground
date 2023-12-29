@@ -11,6 +11,7 @@ const (
 	LITERAL_EXPR
 	VARIABLE_EXPR
 	ASSIGN_EXPR
+	LOGICAL_EXPR
 )
 
 type Expr interface {
@@ -49,6 +50,12 @@ type LiteralExpression struct {
 	Literal any
 }
 
+type LogicalExpression struct {
+	Operator lex.Token
+	Left     Expr
+	Right    Expr
+}
+
 func (e BinaryExpression) Type() ExpressionType {
 	return BINARY_EXPR
 }
@@ -64,7 +71,9 @@ func (e LiteralExpression) Type() ExpressionType {
 func (e VariableExpression) Type() ExpressionType {
 	return VARIABLE_EXPR
 }
-
+func (e LogicalExpression) Type() ExpressionType {
+	return LOGICAL_EXPR
+}
 func (e AssignExpression) Type() ExpressionType {
 	return ASSIGN_EXPR
 }
@@ -99,6 +108,14 @@ func CreateUnaryExpression(right Expr, token lex.Token) Expr {
 func CreateVariableExpression(name lex.Token) Expr {
 	return VariableExpression{
 		Name: name,
+	}
+}
+
+func CreateLogicalExpression(operator lex.Token, left Expr, right Expr) Expr {
+	return LogicalExpression{
+		Operator: operator,
+		Left:     left,
+		Right:    right,
 	}
 }
 

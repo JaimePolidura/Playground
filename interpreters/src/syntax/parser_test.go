@@ -6,7 +6,30 @@ import (
 	"testing"
 )
 
-func TestParser_Parse2(t *testing.T) {
+func TestParser_Parse_WithLogicalOperations(t *testing.T) {
+	lexer := lex.CreateLexer("((1 + 2) == 3) and ((1 + 2) != 4 or (1 + 2) != 3)")
+	tokens, _ := lexer.ScanTokens()
+	parser := CreateParser(tokens)
+	expression, err := parser.parseExpression()
+
+	assert.Nil(t, err)
+	assert.Equal(t, expression.Type(), LOGICAL_EXPR)
+	assert.Equal(t, expression.(LogicalExpression).Operator.Type, lex.AND)
+
+	right := expression.(LogicalExpression).Right
+	left := expression.(LogicalExpression).Left
+
+	assert.Equal(t, left.Type(), GROUPING_EXPR)
+	assert.Equal(t, left.(GroupingExpression).OtherExpression.Type(), BINARY_EXPR)
+	assert.Equal(t, left.(GroupingExpression).OtherExpression.(BinaryExpression).Token.Type, lex.EQUAL_EQUAL)
+
+	assert.Equal(t, right.Type(), GROUPING_EXPR)
+	assert.Equal(t, right.(GroupingExpression).OtherExpression.(LogicalExpression).Operator.Type, lex.OR)
+	assert.Equal(t, right.(GroupingExpression).OtherExpression.(LogicalExpression).Left.Type(), BINARY_EXPR)
+	assert.Equal(t, right.(GroupingExpression).OtherExpression.(LogicalExpression).Right.Type(), BINARY_EXPR)
+}
+
+func TestParser_Parse_StatementsWithExpressions(t *testing.T) {
 	lexer := lex.CreateLexer("print \"hola\";\n" +
 		"print 1 + 2 == 2;\n" +
 		"print (7 * 3) == (7 + 7 + 7);")
@@ -33,7 +56,7 @@ func TestParser_Parse2(t *testing.T) {
 	       /\  / \
 		  1 2 1  2
 */
-func TestParser_Parse(t *testing.T) {
+func TestParser_Parse_OnlyExpression(t *testing.T) {
 	lexer := lex.CreateLexer("(1 + 2 - (1 / 2)) != false")
 	tokens, _ := lexer.ScanTokens()
 

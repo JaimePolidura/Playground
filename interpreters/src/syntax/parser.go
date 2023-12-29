@@ -121,19 +121,43 @@ func (p *Parser) expression() Expr {
 }
 
 func (p *Parser) assignment() Expr {
-	exp := p.equality() //Actual expression
+	expr := p.or() //Actual expression
 
 	if p.match(lex.EQUAL) {
-		if exp.Type() != VARIABLE_EXPR {
+		if expr.Type() != VARIABLE_EXPR {
 			panic("Invalid assigment")
 		}
-		variableName := exp.(VariableExpression).Name
+		variableName := expr.(VariableExpression).Name
 		variableValueExpr := p.assignment() //We get the other expression
 
 		return CreateAssignExpression(variableName, variableValueExpr)
 	}
 
-	return exp
+	return expr
+}
+
+func (p *Parser) or() Expr {
+	expr := p.and()
+
+	for p.match(lex.OR) {
+		operator := p.previousToken()
+		right := p.equality()
+		expr = CreateLogicalExpression(operator, expr, right)
+	}
+
+	return expr
+}
+
+func (p *Parser) and() Expr {
+	expr := p.equality()
+
+	for p.match(lex.AND) {
+		operator := p.previousToken()
+		right := p.equality()
+		expr = CreateLogicalExpression(operator, expr, right)
+	}
+
+	return expr
 }
 
 // equality → comparison ( ( "!=" | "==" ) comparison )*

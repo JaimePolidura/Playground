@@ -38,9 +38,11 @@ func (i *Interpreter) interpretIfStmt(ifStmt syntax.IfStatement) error {
 
 	if boolIfCondition {
 		return i.interpretStatement(ifStmt.ThenBranch)
-	} else {
+	} else if ifStmt.ElseBranch != nil {
 		return i.interpretStatement(ifStmt.ElseBranch)
 	}
+
+	return nil
 }
 
 func (i *Interpreter) interpretBlockStmt(blockStatement syntax.BlockStatement, environmentParent *Environment) error {

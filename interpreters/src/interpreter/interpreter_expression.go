@@ -24,9 +24,53 @@ func (i *Interpreter) interpretRecursiveExpression(rootExpression syntax.Expr) (
 		return rootExpression, nil
 	case syntax.ASSIGN_EXPR:
 		return i.interpretAssignExpression(rootExpression.(syntax.AssignExpression))
+	case syntax.LOGICAL_EXPR:
+		return i.interpretLogicalExpression(rootExpression.(syntax.LogicalExpression))
 	}
 
 	return nil, nil
+}
+
+func (i *Interpreter) interpretLogicalExpression(expression syntax.LogicalExpression) (syntax.Expr, error) {
+	resultLeft, errLeft := i.interpretExpression(expression.Left)
+	if errLeft != nil {
+		return nil, errLeft
+	}
+	if resultLeft.Type() != syntax.LITERAL_EXPR {
+		return nil, errors.New("logical expression should yield a literal value")
+	}
+	boolLeft, errLeft := castBoolean(resultLeft.(syntax.LiteralExpression).Literal)
+	if errLeft != nil {
+		return nil, errLeft
+	}
+
+	if boolLeft && expression.Operator.Type == lex.OR {
+		return syntax.CreateLiteralExpression(true), nil
+	}
+	if !boolLeft && expression.Operator.Type == lex.AND {
+		return syntax.CreateLiteralExpression(false), nil
+	}
+
+	resultRight, errRight := i.interpretExpression(expression.Right)
+	if errRight != nil {
+		return nil, errRight
+	}
+	if resultRight.Type() != syntax.LITERAL_EXPR {
+		return nil, errors.New("logical expression should yield a literal value")
+	}
+	boolRight, errRight := castBoolean(resultRight.(syntax.LiteralExpression).Literal)
+	if errRight != nil {
+		return nil, errRight
+	}
+
+	switch expression.Operator.Type {
+	case lex.AND:
+		return syntax.CreateLiteralExpression(boolLeft && boolRight), nil
+	case lex.OR:
+		return syntax.CreateLiteralExpression(boolLeft || boolRight), nil
+	default:
+		return nil, errors.New("unhandled logical operation")
+	}
 }
 
 func (i *Interpreter) interpretAssignExpression(assignExpression syntax.AssignExpression) (syntax.Expr, error) {
@@ -121,24 +165,21 @@ func (i *Interpreter) calculateUnaryExpression(literal any, tokenType lex.TokenT
 func (i *Interpreter) calculateBinaryExpression(left any, right any, operationTokenType lex.TokenType) (any, error) {
 	if lex.IsAnyType(operationTokenType, lex.OPEN_PAREN, lex.CLOSE_PAREN, lex.OPEN_BRACE, lex.CLOSE_BRACE, lex.COMMA, lex.DOT, lex.SEMICOLON,
 		lex.IDENTIFIER, lex.STRING, lex.NUMBER, lex.CLASS, lex.ELSE, lex.FUN, lex.IF, lex.FOR, lex.NIL, lex.PRINT,
-		lex.RETURN, lex.SUPER, lex.THIS, lex.TRUE, lex.VAR, lex.WHILE, lex.EOF, lex.BANG, lex.FALSE) {
+		lex.RETURN, lex.SUPER, lex.THIS, lex.TRUE, lex.VAR, lex.WHILE, lex.EOF, lex.BANG, lex.FALSE, lex.OR, lex.AND) {
 		return nil, errors.New(string(operationTokenType) + " cannot be used as an operation")
 	}
 
 	isComparativeOperation := lex.IsAnyType(operationTokenType, lex.LESS, lex.BANG_EQUAL, lex.LESS_EQUAL, lex.EQUAL_EQUAL, lex.GREATER_EQUAL, lex.GREATER)
 	isArithmeticOperation := lex.IsAnyType(operationTokenType, lex.MINUS, lex.PLUS, lex.SLASH, lex.STAR)
-	isLogicalOperation := lex.IsAnyType(operationTokenType, lex.OR, lex.AND)
 
-	if !isComparativeOperation && !isArithmeticOperation && !isLogicalOperation {
+	if !isComparativeOperation && !isArithmeticOperation {
 		return nil, errors.New("Unhandled token: " + string(operationTokenType))
 	}
 
 	if isComparativeOperation {
 		return i.calculateComparativeOperation(left, right, operationTokenType)
-	} else if isArithmeticOperation {
-		return i.calculateArithmeticOperation(left, right, operationTokenType)
 	} else {
-		return i.calculateLogicalOperation(left, right, operationTokenType)
+		return i.calculateArithmeticOperation(left, right, operationTokenType)
 	}
 }
 
@@ -167,26 +208,6 @@ func (i *Interpreter) calculateComparativeOperation(left any, right any, tokenTy
 		return numberLeft >= numberRight, nil
 	default:
 		return false, errors.New("Unhandled comparative operation: " + string(tokenType))
-	}
-}
-
-func (i *Interpreter) calculateLogicalOperation(left any, right any, tokenType lex.TokenType) (bool, error) {
-	boolLeft, errLeft := castBoolean(left)
-	boolRight, errRight := castBoolean(right)
-	if errLeft != nil {
-		return false, errLeft
-	}
-	if errRight != nil {
-		return false, errRight
-	}
-
-	switch tokenType {
-	case lex.AND:
-		return boolLeft && boolRight, nil
-	case lex.OR:
-		return boolLeft || boolRight, nil
-	default:
-		return false, errors.New("Unhandled logical operation: " + string(tokenType))
 	}
 }
 
