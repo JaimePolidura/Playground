@@ -6,6 +6,22 @@ import (
 	"testing"
 )
 
+func TestParser_Parse_ForLoop(t *testing.T) {
+	lexer := lex.CreateLexer("for(var i = 0; i < 10; i = i + 1){\n" +
+		"print i;\n" +
+		"}")
+	tokens, _ := lexer.ScanTokens()
+	parser := CreateParser(tokens)
+	statements, err := parser.Parse()
+
+	assert.Nil(t, err)
+	assert.Equal(t, len(statements), 1)
+
+	block := statements[0].(BlockStatement)
+	assert.Equal(t, block.Statements[0].Type(), VAR_STMT)
+	assert.Equal(t, block.Statements[1].Type(), WHILE_STMT)
+}
+
 func TestParser_Parse_WithLogicalOperations(t *testing.T) {
 	lexer := lex.CreateLexer("((1 + 2) == 3) and ((1 + 2) != 4 or (1 + 2) != 3)")
 	tokens, _ := lexer.ScanTokens()

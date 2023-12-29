@@ -68,8 +68,33 @@ func (p *Parser) statement() (Stmt, error) {
 	if p.match(lex.IF) {
 		return p.ifStatement()
 	}
+	if p.match(lex.FOR) {
+		return p.forStatement()
+	}
 
 	return p.expressionStatement()
+}
+
+func (p *Parser) forStatement() (Stmt, error) {
+	p.consume(lex.OPEN_PAREN, "Expect '(' after 'for'.")
+	p.consume(lex.VAR, "Expect var in for initializer")
+	initializer, err := p.varDeclaration()
+	if err != nil {
+		return nil, err
+	}
+	condition := p.expression()
+	p.consume(lex.SEMICOLON, "Expect ; after for condition")
+	increment := p.expression()
+	p.consume(lex.CLOSE_PAREN, "Expect ) after for increment")
+	body, err := p.statement()
+	if err != nil {
+		return nil, err
+	}
+
+	whileBody := CreateBlockStatement([]Stmt{body, CreateExpressionStatement(increment)})
+	while := CreateWhileStatement(condition, whileBody)
+
+	return CreateBlockStatement([]Stmt{initializer, while}), nil
 }
 
 func (p *Parser) whileStatement() (Stmt, error) {
