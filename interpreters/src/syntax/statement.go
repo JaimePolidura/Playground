@@ -9,6 +9,7 @@ const (
 	EXPRESSION_STMT
 	VAR_STMT
 	BLOCK_STMT
+	IF_STMT
 )
 
 type Stmt interface {
@@ -30,6 +31,20 @@ type VarStatement struct {
 
 type BlockStatement struct {
 	Statements []Stmt
+}
+
+type IfStatement struct {
+	Condition  Expr
+	ThenBranch Stmt
+	ElseBranch Stmt
+}
+
+func CreateIfStatement(condition Expr, thenBranch Stmt, elseBranch Stmt) IfStatement {
+	return IfStatement{
+		Condition:  condition,
+		ThenBranch: thenBranch,
+		ElseBranch: elseBranch,
+	}
 }
 
 func CreateVarStatement(name lex.Token, initializer Expr) VarStatement {
@@ -68,4 +83,7 @@ func (p VarStatement) Type() StatementType {
 }
 func (p BlockStatement) Type() StatementType {
 	return BLOCK_STMT
+}
+func (p IfStatement) Type() StatementType {
+	return IF_STMT
 }

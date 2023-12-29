@@ -58,13 +58,37 @@ func (p *Parser) statement() (Stmt, error) {
 		return p.printStatement()
 	}
 	if p.match(lex.OPEN_BRACE) {
-		return p.block()
+		return p.blockStatement()
+	}
+	if p.match(lex.IF) {
+		return p.ifStatement()
 	}
 
 	return p.expressionStatement()
 }
 
-func (p *Parser) block() (Stmt, error) {
+func (p *Parser) ifStatement() (Stmt, error) {
+	p.consume(lex.OPEN_PAREN, "Expect '(' at beginning of if condition")
+	ifCondition := p.expression()
+	p.consume(lex.CLOSE_PAREN, "Expect ')' at end of if condition")
+
+	thenBranch, err := p.statement()
+	if err != nil {
+		return nil, err
+	}
+	var elseBranch Stmt
+	if p.match(lex.ELSE) {
+		if newElseBranch, err := p.statement(); err != nil {
+			return nil, err
+		} else {
+			elseBranch = newElseBranch
+		}
+	}
+
+	return CreateIfStatement(ifCondition, thenBranch, elseBranch), nil
+}
+
+func (p *Parser) blockStatement() (Stmt, error) {
 	statements := make([]Stmt, 0)
 	for !p.check(lex.CLOSE_BRACE) && !p.atTheEnd() {
 		if declaration, err := p.declaration(); err != nil {

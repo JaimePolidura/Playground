@@ -16,9 +16,31 @@ func (i *Interpreter) interpretStatement(statement syntax.Stmt) error {
 		return i.interpretExprStmt(statement.(syntax.ExpressionStatement))
 	case syntax.BLOCK_STMT:
 		return i.interpretBlockStmt(statement.(syntax.BlockStatement), i.environment)
+	case syntax.IF_STMT:
+		return i.interpretIfStmt(statement.(syntax.IfStatement))
 	}
 
 	return errors.New("unhandled statement")
+}
+
+func (i *Interpreter) interpretIfStmt(ifStmt syntax.IfStatement) error {
+	resultCondition, err := i.interpretExpression(ifStmt.Condition)
+	if err != nil {
+		return err
+	}
+	if resultCondition.Type() != syntax.LITERAL_EXPR {
+		return errors.New("the result of a if statement should yield a boolean value")
+	}
+	boolIfCondition, err := castBoolean(resultCondition.(syntax.LiteralExpression).Literal)
+	if err != nil {
+		return errors.New("the result of a if statement should yield a boolean value")
+	}
+
+	if boolIfCondition {
+		return i.interpretStatement(ifStmt.ThenBranch)
+	} else {
+		return i.interpretStatement(ifStmt.ElseBranch)
+	}
 }
 
 func (i *Interpreter) interpretBlockStmt(blockStatement syntax.BlockStatement, environmentParent *Environment) error {
