@@ -13,6 +13,8 @@ const (
 	ASSIGN_EXPR
 	LOGICAL_EXPR
 	CALL_EXPR
+	GET_EXPR
+	SET_EXPR
 )
 
 type Expr interface {
@@ -63,29 +65,23 @@ type CallExpression struct {
 	Args   []Expr
 }
 
-func (e BinaryExpression) Type() ExpressionType {
-	return BINARY_EXPR
+type GetExpression struct {
+	Object Expr
+	Name   lex.Token
 }
-func (e GroupingExpression) Type() ExpressionType {
-	return GROUPING_EXPR
+
+type SetExpression struct {
+	Object Expr
+	Name   lex.Token
+	Value  Expr
 }
-func (e UnaryExpression) Type() ExpressionType {
-	return UNARY_EXPR
-}
-func (e LiteralExpression) Type() ExpressionType {
-	return LITERAL_EXPR
-}
-func (e VariableExpression) Type() ExpressionType {
-	return VARIABLE_EXPR
-}
-func (e LogicalExpression) Type() ExpressionType {
-	return LOGICAL_EXPR
-}
-func (e AssignExpression) Type() ExpressionType {
-	return ASSIGN_EXPR
-}
-func (e CallExpression) Type() ExpressionType {
-	return CALL_EXPR
+
+func CreateSetExpression(object Expr, name lex.Token, value Expr) SetExpression {
+	return SetExpression{
+		Object: object,
+		Name:   name,
+		Value:  value,
+	}
 }
 
 func CreateLiteralExpression(literal any) Expr {
@@ -142,4 +138,42 @@ func CreateCallExpression(functionName string, parent lex.Token, args []Expr) Ex
 		Parent: parent,
 		Name:   functionName,
 	}
+}
+
+func CreateGetExpression(object Expr, Name lex.Token) GetExpression {
+	return GetExpression{
+		Object: object,
+		Name:   Name,
+	}
+}
+
+func (e BinaryExpression) Type() ExpressionType {
+	return BINARY_EXPR
+}
+func (e GroupingExpression) Type() ExpressionType {
+	return GROUPING_EXPR
+}
+func (e UnaryExpression) Type() ExpressionType {
+	return UNARY_EXPR
+}
+func (e LiteralExpression) Type() ExpressionType {
+	return LITERAL_EXPR
+}
+func (e VariableExpression) Type() ExpressionType {
+	return VARIABLE_EXPR
+}
+func (e LogicalExpression) Type() ExpressionType {
+	return LOGICAL_EXPR
+}
+func (e AssignExpression) Type() ExpressionType {
+	return ASSIGN_EXPR
+}
+func (e CallExpression) Type() ExpressionType {
+	return CALL_EXPR
+}
+func (e GetExpression) Type() ExpressionType {
+	return GET_EXPR
+}
+func (e SetExpression) Type() ExpressionType {
+	return SET_EXPR
 }

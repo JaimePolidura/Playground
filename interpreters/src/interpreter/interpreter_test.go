@@ -8,7 +8,18 @@ import (
 	"testing"
 )
 
-func TestInterpreter_Interpret_RecursiveReturnFunction1(t *testing.T) {
+func TestInterpreter_Interpret_SimpleClasses(t *testing.T) {
+	interpreter, err := interpret(
+		"class Car {",
+		"}",
+		"var car = Car();",
+		"print car;")
+
+	assert.Nil(t, err)
+	assert.Equal(t, len(interpreter.Log), 1)
+}
+
+func TestInterpreter_Interpret_RecursiveReturnFunction(t *testing.T) {
 	interpreter, err := interpret(
 		"fun factRecursive(next, act) {",
 		"var newNext = next - 1;",

@@ -60,7 +60,7 @@ func (p *Parser) class() (Stmt, error) {
 	}
 
 	p.consume(lex.CLOSE_BRACE, "Expected '}' after class declaration")
-	
+
 	return CreateClassStatement(name, methods), nil
 }
 
@@ -231,13 +231,15 @@ func (p *Parser) assignment() Expr {
 	expr := p.or() //Actual expression
 
 	if p.match(lex.EQUAL) {
-		if expr.Type() != VARIABLE_EXPR {
-			panic("Invalid assigment")
-		}
-		variableName := expr.(VariableExpression).Name
 		variableValueExpr := p.assignment() //We get the other expression
 
-		return CreateAssignExpression(variableName, variableValueExpr)
+		if expr.Type() == VARIABLE_EXPR {
+			return CreateAssignExpression(expr.(VariableExpression).Name, variableValueExpr)
+		} else if expr.Type() == GET_EXPR {
+			return CreateSetExpression(expr.(GetExpression).Object, expr.(GetExpression).Name, variableValueExpr)
+		} else {
+			panic("Invalid assigment")
+		}
 	}
 
 	return expr
@@ -330,6 +332,7 @@ func (p *Parser) unary() Expr {
 	}
 }
 
+// Page 196
 func (p *Parser) call() Expr {
 	expr := p.primary()
 
@@ -341,6 +344,9 @@ func (p *Parser) call() Expr {
 
 			functionName := expr.(VariableExpression).Name.Lexeme
 			expr = p.finishCall(functionName)
+		} else if p.match(lex.DOT) { //Accessing object property
+			name := p.consume(lex.IDENTIFIER, "Expect property name after .")
+			expr = CreateGetExpression(expr, name)
 		} else {
 			break
 		}

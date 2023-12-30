@@ -33,6 +33,8 @@ func castString(value any) (string, error) {
 		return "", nil
 	case string:
 		return value.(string), nil
+	case LoxInstance:
+		return value.(LoxInstance).KClass.Name, nil
 	default:
 		return "", errors.New("Cannot take " + reflect.TypeOf(value).Name() + " as number")
 	}

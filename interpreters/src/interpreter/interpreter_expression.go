@@ -28,9 +28,68 @@ func (i *Interpreter) interpretRecursiveExpression(rootExpression syntax.Expr) (
 		return i.interpretLogicalExpression(rootExpression.(syntax.LogicalExpression))
 	case syntax.CALL_EXPR:
 		return i.interpretCallExpression(rootExpression.(syntax.CallExpression))
+	case syntax.GET_EXPR:
+		return i.interpretGetExpression(rootExpression.(syntax.GetExpression))
+	case syntax.SET_EXPR:
+		return i.interpretSetExpression(rootExpression.(syntax.SetExpression))
 	}
 
 	return nil, nil
+}
+
+func (i *Interpreter) interpretSetExpression(setExpression syntax.SetExpression) (syntax.Expr, error) {
+	object, err := i.interpretExpression(setExpression.Object)
+	if err != nil {
+		return nil, err
+	}
+	if object.Type() != syntax.LITERAL_EXPR {
+		return nil, errors.New("expected class name")
+	}
+
+	objectInstanceVariableName := object.(syntax.LiteralExpression).Literal.(string)
+	loxInstanceNotCasted, err := i.environment.Get(objectInstanceVariableName)
+	if err != nil {
+		return nil, err
+	}
+
+	propertyValueToSetExpr, err := i.interpretExpression(setExpression.Value)
+	if err != nil {
+		return nil, err
+	}
+
+	if propertyValueToSetExpr.Type() != syntax.LITERAL_EXPR {
+		return nil, errors.New("expected expression to yield a value when setting a property")
+	}
+
+	propertyValueToSet := propertyValueToSetExpr.(syntax.LiteralExpression).Literal
+
+	loxInstance := loxInstanceNotCasted.(LoxInstance)
+	loxInstance.Properties[setExpression.Name.Lexeme] = propertyValueToSet
+
+	return syntax.CreateLiteralExpression(propertyValueToSet), nil
+}
+
+func (i *Interpreter) interpretGetExpression(getExpression syntax.GetExpression) (syntax.Expr, error) {
+	object, err := i.interpretExpression(getExpression.Object)
+	if err != nil {
+		return nil, err
+	}
+	if object.Type() != syntax.LITERAL_EXPR {
+		return nil, errors.New("expected class name")
+	}
+
+	objectInstanceVariableName := object.(syntax.LiteralExpression).Literal.(string)
+	loxInstanceNotCasted, err := i.environment.Get(objectInstanceVariableName)
+	if err != nil {
+		return nil, err
+	}
+
+	loxInstance := loxInstanceNotCasted.(LoxInstance)
+	if property, err := loxInstance.GetProperty(getExpression.Name.Lexeme); err != nil {
+		return nil, err
+	} else {
+		return syntax.CreateLiteralExpression(property), nil
+	}
 }
 
 func (i *Interpreter) interpretCallExpression(callExpression syntax.CallExpression) (syntax.Expr, error) {
