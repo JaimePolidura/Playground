@@ -13,6 +13,7 @@ const (
 	WHILE_STMT
 	FUNCTION_STMT
 	RETURN_STMT
+	CLASS_STMT
 )
 
 type Stmt interface {
@@ -56,6 +57,11 @@ type IfStatement struct {
 type ReturnStatement struct {
 	Keyword lex.Token
 	Value   Expr
+}
+
+type ClassStatement struct {
+	Name    lex.Token
+	Methods []Stmt
 }
 
 func CreateIfStatement(condition Expr, thenBranch Stmt, elseBranch Stmt) IfStatement {
@@ -105,6 +111,13 @@ func CreateReturnStatement(keyword lex.Token, value Expr) ReturnStatement {
 	}
 }
 
+func CreateClassStatement(name lex.Token, methods []Stmt) ClassStatement {
+	return ClassStatement{
+		Name:    name,
+		Methods: methods,
+	}
+}
+
 func CreateFunctionStatement(name lex.Token, params []lex.Token, body []Stmt) FunctionStatement {
 	return FunctionStatement{
 		Name:   name,
@@ -136,4 +149,7 @@ func (p FunctionStatement) Type() StatementType {
 }
 func (p ReturnStatement) Type() StatementType {
 	return RETURN_STMT
+}
+func (p ClassStatement) Type() StatementType {
+	return CLASS_STMT
 }

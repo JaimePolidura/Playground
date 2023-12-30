@@ -24,9 +24,16 @@ func (i *Interpreter) interpretStatement(statement syntax.Stmt) error {
 		return i.interpretFunctionStmt(statement.(syntax.FunctionStatement))
 	case syntax.RETURN_STMT:
 		return i.interpretReturnStmt(statement.(syntax.ReturnStatement))
+	case syntax.CLASS_STMT:
+		return i.interpretClassStmt(statement.(syntax.ClassStatement))
 	}
 
 	return errors.New("unhandled statement")
+}
+
+func (i *Interpreter) interpretClassStmt(statement syntax.ClassStatement) error {
+	i.environment.Define(statement.Name.Lexeme, LoxClass{Name: statement.Name.Lexeme})
+	return nil
 }
 
 func (i *Interpreter) interpretReturnStmt(statement syntax.ReturnStatement) error {

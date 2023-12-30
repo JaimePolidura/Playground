@@ -39,9 +39,29 @@ func (p *Parser) declaration() (Stmt, error) {
 		return p.varDeclaration()
 	} else if p.match(lex.FUN) {
 		return p.function()
+	} else if p.match(lex.CLASS) {
+		return p.class()
 	} else {
 		return p.statement()
 	}
+}
+
+func (p *Parser) class() (Stmt, error) {
+	name := p.consume(lex.IDENTIFIER, "Class name expected")
+	p.consume(lex.OPEN_BRACE, "Expected '{' after class name")
+	methods := make([]Stmt, 0)
+
+	for p.check(lex.FUN) && !p.atTheEnd() {
+		if method, err := p.function(); err == nil {
+			methods = append(methods, method)
+		} else {
+			return nil, err
+		}
+	}
+
+	p.consume(lex.CLOSE_BRACE, "Expected '}' after class declaration")
+	
+	return CreateClassStatement(name, methods), nil
 }
 
 func (p *Parser) function() (Stmt, error) {

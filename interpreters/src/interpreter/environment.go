@@ -54,6 +54,7 @@ func (e *Environment) Assign(name lex.Token, value any) error {
 	return errors.New("Undefined variable: " + name.Lexeme)
 }
 
+// TODO Return error if name already exist
 func (e *Environment) Define(name string, value any) {
 	e.variables[name] = value
 }
