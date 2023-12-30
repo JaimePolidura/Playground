@@ -7,7 +7,7 @@ type LoxFunction struct {
 }
 
 func (l LoxFunction) Call(interpreter *Interpreter, args []any) (syntax.Expr, error) {
-	environmentForFunction := createGlobalEnvironment()
+	environmentForFunction := createGlobalEnvironment().CopyInto(interpreter.environment)
 
 	for i := 0; i < len(l.FunctionStmt.Params); i++ {
 		environmentForFunction.Define(l.FunctionStmt.Params[i].Lexeme, args[i])

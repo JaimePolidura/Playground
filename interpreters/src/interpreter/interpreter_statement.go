@@ -35,7 +35,7 @@ func (i *Interpreter) interpretFunctionStmt(functionStmt syntax.FunctionStatemen
 
 func (i *Interpreter) interpretWhileStmt(statement syntax.WhileStatement) error {
 	for {
-		conditionBool, err := i.interpreteExprAndGetBool(statement.Condition)
+		conditionBool, err := i.interpretExprAndGetBool(statement.Condition)
 		if err != nil {
 			return err
 		}
@@ -48,7 +48,7 @@ func (i *Interpreter) interpretWhileStmt(statement syntax.WhileStatement) error 
 }
 
 func (i *Interpreter) interpretIfStmt(ifStmt syntax.IfStatement) error {
-	boolIfCondition, err := i.interpreteExprAndGetBool(ifStmt.Condition)
+	boolIfCondition, err := i.interpretExprAndGetBool(ifStmt.Condition)
 	if err != nil {
 		return errors.New("the result of a if statement should yield a boolean value")
 	}

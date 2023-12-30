@@ -8,6 +8,37 @@ import (
 	"testing"
 )
 
+func TestInterpreter_Interpret_VoidFunction(t *testing.T) {
+	interpreter, err := interpret("fun sumar(a, b) {",
+		"var resultado = a + b;",
+		"print resultado;",
+		"}",
+		"sumar(2, 4);",
+		"sumar(2, 5);")
+
+	assert.Nil(t, err)
+	assert.Equal(t, len(interpreter.Log), 2)
+	assert.Equal(t, interpreter.Log[0], "6")
+	assert.Equal(t, interpreter.Log[1], "7")
+}
+
+func TestInterpreter_Interpret_RecursiveFunction(t *testing.T) {
+	interpreter, err := interpret("fun repeat(times, actual) {",
+		"print actual;",
+		"actual = actual + 1;",
+		"if(actual < times) {",
+		"repeat(times, actual);",
+		"}",
+		"}",
+		"repeat(3, 0);")
+
+	assert.Nil(t, err)
+	assert.Equal(t, len(interpreter.Log), 3)
+	assert.Equal(t, interpreter.Log[0], "0")
+	assert.Equal(t, interpreter.Log[1], "1")
+	assert.Equal(t, interpreter.Log[2], "2")
+}
+
 func TestInterpreter_Interpret_ForLoop(t *testing.T) {
 	interpreter, err := interpret("for(var i = 0; i < 10; i = i + 1){",
 		"print i;",

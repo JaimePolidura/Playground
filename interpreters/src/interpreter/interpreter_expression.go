@@ -34,7 +34,7 @@ func (i *Interpreter) interpretRecursiveExpression(rootExpression syntax.Expr) (
 }
 
 func (i *Interpreter) interpretCallExpression(callExpression syntax.CallExpression) (syntax.Expr, error) {
-	callee, err := i.interpretExpression(callExpression.Callee)
+	loxFunctionNotCasted, err := i.environment.Get(callExpression.Name)
 	if err != nil {
 		return nil, err
 	}
@@ -44,7 +44,7 @@ func (i *Interpreter) interpretCallExpression(callExpression syntax.CallExpressi
 		return nil, err
 	}
 
-	callable, isCallable := callee.(LoxCallable)
+	callable, isCallable := loxFunctionNotCasted.(LoxCallable)
 	if !isCallable {
 		return nil, errors.New("not a function")
 	}
@@ -286,7 +286,7 @@ func (i *Interpreter) isLiteral(expressions ...syntax.Expr) bool {
 	return true
 }
 
-func (i *Interpreter) interpreteExprAndGetBool(expr syntax.Expr) (bool, error) {
+func (i *Interpreter) interpretExprAndGetBool(expr syntax.Expr) (bool, error) {
 	resultCondition, err := i.interpretExpression(expr)
 	if err != nil {
 		return false, err

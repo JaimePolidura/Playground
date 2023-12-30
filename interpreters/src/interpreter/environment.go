@@ -18,6 +18,21 @@ func createChildEnvironment(parent *Environment) *Environment {
 	return &Environment{variables: make(map[string]any), parent: parent}
 }
 
+func (e *Environment) CopyInto(otherEnvironment *Environment) *Environment {
+	actual := otherEnvironment
+	for actual != nil {
+		for k, v := range actual.variables {
+			if _, contained := e.variables[k]; !contained {
+				e.variables[k] = v
+			}
+		}
+		
+		actual = actual.parent
+	}
+
+	return e
+}
+
 func (e *Environment) Assign(name lex.Token, value any) error {
 	if _, contained := e.variables[name.Lexeme]; contained {
 		e.variables[name.Lexeme] = value

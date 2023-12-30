@@ -46,10 +46,10 @@ func (p *Parser) declaration() (Stmt, error) {
 
 func (p *Parser) function() (Stmt, error) {
 	name := p.consume(lex.IDENTIFIER, "Expect name of the function")
-	p.consume("(", "'(' expected after function name")
+	p.consume(lex.OPEN_PAREN, "'(' expected after function name")
 	parameters := make([]lex.Token, 0)
 
-	if p.match(lex.CLOSE_PAREN) {
+	if !p.match(lex.CLOSE_PAREN) {
 		for {
 			parameterName := p.consume(lex.IDENTIFIER, "Expect parameter name in function")
 			parameters = append(parameters, parameterName)
@@ -60,7 +60,7 @@ func (p *Parser) function() (Stmt, error) {
 		}
 	}
 	p.consume(lex.CLOSE_PAREN, "Expect ')' after function parameters")
-	p.consume(lex.CLOSE_PAREN, "Expect '{' after function declaration")
+	p.consume(lex.OPEN_BRACE, "Expect '{' after function declaration")
 	body, err := p.blockStatement()
 	if err != nil {
 		return nil, err
@@ -297,7 +297,12 @@ func (p *Parser) call() Expr {
 
 	for {
 		if p.match(lex.OPEN_PAREN) {
-			expr = p.finishCall(expr)
+			if expr.Type() != VARIABLE_EXPR {
+				panic("Invalid function name")
+			}
+
+			functionName := expr.(VariableExpression).Name.Lexeme
+			expr = p.finishCall(functionName)
 		} else {
 			break
 		}
@@ -306,7 +311,7 @@ func (p *Parser) call() Expr {
 	return expr
 }
 
-func (p *Parser) finishCall(calle Expr) Expr {
+func (p *Parser) finishCall(functionName string) Expr {
 	args := make([]Expr, 0)
 
 	if !p.check(lex.CLOSE_PAREN) {
@@ -323,7 +328,7 @@ func (p *Parser) finishCall(calle Expr) Expr {
 
 	parent := p.consume(lex.CLOSE_PAREN, "Expect ')' after arguments.")
 
-	return CreateCallExpression(calle, parent, args)
+	return CreateCallExpression(functionName, parent, args)
 }
 
 // primary → NUMBER | STRING | "true" | "false" | "nil" | "(" expression ")"
