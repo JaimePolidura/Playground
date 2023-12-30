@@ -22,9 +22,20 @@ func (i *Interpreter) interpretStatement(statement syntax.Stmt) error {
 		return i.interpretWhileStmt(statement.(syntax.WhileStatement))
 	case syntax.FUNCTION_STMT:
 		return i.interpretFunctionStmt(statement.(syntax.FunctionStatement))
+	case syntax.RETURN_STMT:
+		return i.interpretReturnStmt(statement.(syntax.ReturnStatement))
 	}
 
 	return errors.New("unhandled statement")
+}
+
+func (i *Interpreter) interpretReturnStmt(statement syntax.ReturnStatement) error {
+	value, err := i.interpretExpression(statement.Value)
+	if err != nil {
+		return err
+	}
+
+	return LoxReturn{Value: value}
 }
 
 func (i *Interpreter) interpretFunctionStmt(functionStmt syntax.FunctionStatement) error {

@@ -98,8 +98,26 @@ func (p *Parser) statement() (Stmt, error) {
 	if p.match(lex.FOR) {
 		return p.forStatement()
 	}
-
+	if p.match(lex.RETURN) {
+		return p.returnStatement()
+	}
 	return p.expressionStatement()
+}
+
+func (p *Parser) returnStatement() (Stmt, error) {
+	keyword := p.previousToken()
+	var value Expr
+	if !p.check(lex.SEMICOLON) {
+		valueParsed, err := p.parseExpression()
+		if err != nil {
+			return nil, err
+		}
+
+		value = valueParsed
+	}
+	p.consume(lex.SEMICOLON, "Expect ';' after return statement")
+
+	return CreateReturnStatement(keyword, value), nil
 }
 
 func (p *Parser) forStatement() (Stmt, error) {

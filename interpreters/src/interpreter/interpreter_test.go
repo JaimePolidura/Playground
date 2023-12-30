@@ -8,6 +8,41 @@ import (
 	"testing"
 )
 
+func TestInterpreter_Interpret_RecursiveReturnFunction1(t *testing.T) {
+	interpreter, err := interpret(
+		"fun factRecursive(next, act) {",
+		"var newNext = next - 1;",
+		"if(newNext == 0) {",
+		"return act;",
+		"}",
+		"return factRecursive(newNext, act * newNext);",
+		"}",
+		"fun fact(value) {",
+		"return factRecursive(value, value);",
+		"}",
+		"print fact(5);")
+	assert.Nil(t, err)
+	assert.Equal(t, len(interpreter.Log), 1)
+	assert.Equal(t, interpreter.Log[0], "120")
+}
+
+func TestInterpreter_Interpret_ReturnFunction(t *testing.T) {
+	interpreter, err := interpret("fun max(a, b) {",
+		"if(a > b) {",
+		"return a;",
+		"} else {",
+		"return b;",
+		"}",
+		"}",
+		"print max(2, 4);",
+		"print max(3, 7);")
+
+	assert.Nil(t, err)
+	assert.Equal(t, len(interpreter.Log), 2)
+	assert.Equal(t, interpreter.Log[0], "4")
+	assert.Equal(t, interpreter.Log[1], "7")
+}
+
 func TestInterpreter_Interpret_VoidFunction(t *testing.T) {
 	interpreter, err := interpret("fun sumar(a, b) {",
 		"var resultado = a + b;",

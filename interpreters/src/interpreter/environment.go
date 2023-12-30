@@ -26,7 +26,7 @@ func (e *Environment) CopyInto(otherEnvironment *Environment) *Environment {
 				e.variables[k] = v
 			}
 		}
-		
+
 		actual = actual.parent
 	}
 
