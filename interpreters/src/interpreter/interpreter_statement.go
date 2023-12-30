@@ -77,14 +77,17 @@ func (i *Interpreter) interpretBlockStmt(blockStatements []syntax.Stmt, environm
 	newEnvironment := createChildEnvironment(environmentParent)
 	prevEnvironment := i.environment
 	i.environment = newEnvironment
+	var errorToReturn error
 	for _, statement := range blockStatements {
 		if err := i.interpretStatement(statement); err != nil {
-			return err
+			errorToReturn = err
+			break
 		}
 	}
 
 	i.environment = prevEnvironment
-	return nil
+
+	return errorToReturn
 }
 
 func (i *Interpreter) interpretExprStmt(statement syntax.ExpressionStatement) error {

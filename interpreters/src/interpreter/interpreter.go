@@ -6,7 +6,7 @@ type Interpreter struct {
 	statements []syntax.Stmt
 
 	environment *Environment
-	global      *Environment
+	global      *Environment //Used for functions,
 
 	Log []string
 }

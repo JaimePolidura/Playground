@@ -33,6 +33,15 @@ func (e *Environment) CopyInto(otherEnvironment *Environment) *Environment {
 	return e
 }
 
+func (e *Environment) getMostParent() *Environment {
+	last := e
+	for last.parent != nil {
+		last = last.parent
+	}
+
+	return last
+}
+
 func (e *Environment) Assign(name lex.Token, value any) error {
 	if _, contained := e.variables[name.Lexeme]; contained {
 		e.variables[name.Lexeme] = value

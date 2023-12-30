@@ -25,13 +25,17 @@ type LoxFunction struct {
 }
 
 func (l LoxFunction) Call(interpreter *Interpreter, args []any) (syntax.Expr, error) {
-	environmentForFunction := createGlobalEnvironment().CopyInto(interpreter.environment)
+	mostParentEnvironment := interpreter.environment.getMostParent()
+	functionEnvironment := createChildEnvironment(mostParentEnvironment)
+	prevEnv := interpreter.environment
 
 	for i := 0; i < len(l.FunctionStmt.Params); i++ {
-		environmentForFunction.Define(l.FunctionStmt.Params[i].Lexeme, args[i])
+		functionEnvironment.Define(l.FunctionStmt.Params[i].Lexeme, args[i])
 	}
 
-	err := interpreter.interpretBlockStmt(l.FunctionStmt.Body, environmentForFunction)
+	err := interpreter.interpretBlockStmt(l.FunctionStmt.Body, functionEnvironment)
+
+	interpreter.environment = prevEnv
 
 	if isLoxReturn, loxReturn := isErrTypeOfLoxReturn(err); isLoxReturn {
 		return loxReturn.Value, nil
