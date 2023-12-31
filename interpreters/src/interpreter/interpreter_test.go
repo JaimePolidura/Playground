@@ -12,11 +12,22 @@ func TestInterpreter_Interpret_SimpleClasses(t *testing.T) {
 	interpreter, err := interpret(
 		"class Car {",
 		"}",
+		"class Shock{",
+		"}",
 		"var car = Car();",
-		"print car;")
+		"car.numero = \"Motor\";",
+		"car.shock = Shock();",
+		"car.shock.price = 10;",
+		"print car.numero;",
+		"car.numero = 12;",
+		"print car.numero;",
+		"print car.shock.price;")
 
 	assert.Nil(t, err)
-	assert.Equal(t, len(interpreter.Log), 1)
+	assert.Equal(t, len(interpreter.Log), 3)
+	assert.Equal(t, interpreter.Log[0], "Motor")
+	assert.Equal(t, interpreter.Log[1], "12")
+	assert.Equal(t, interpreter.Log[2], "10")
 }
 
 func TestInterpreter_Interpret_RecursiveReturnFunction(t *testing.T) {
