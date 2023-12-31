@@ -8,6 +8,23 @@ import (
 	"testing"
 )
 
+func TestInterpreter_Interpret_Class_Constructor(t *testing.T) {
+	interpreter, err := interpret("class Point {",
+		"fun init(xCons, yCons) {",
+		"this.x = xCons;",
+		"this.y = yCons;",
+		"}",
+		"}",
+		"var punto = Point(10, 10);",
+		"print punto.x;",
+		"print punto.y;")
+
+	assert.Nil(t, err)
+	assert.Equal(t, len(interpreter.Log), 2)
+	assert.Equal(t, interpreter.Log[0], "10")
+	assert.Equal(t, interpreter.Log[1], "10")
+}
+
 func TestInterpreter_Interpret_Class_Methods_WithThis(t *testing.T) {
 	interpreter, err := interpret("class Person {",
 		"fun printName() {",

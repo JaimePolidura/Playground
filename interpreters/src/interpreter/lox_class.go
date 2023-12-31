@@ -35,9 +35,27 @@ func (l LoxClass) Call(interpreter *Interpreter, args []any) (syntax.Expr, error
 
 	instance.KClass.Methods = newMethods
 
+	for name, method := range newMethods {
+		if name == "init" {
+			if method.Arity() != len(args) {
+				return nil, errors.New("invalid constructor args")
+			}
+
+			method.Call(interpreter, args)
+			break
+		}
+	}
+	
 	return syntax.CreateLiteralExpression(instance), nil
 }
 
 func (l LoxClass) Arity() int {
+	for name, method := range l.Methods {
+		if name == "init" {
+			//Constructor
+			return len(method.FunctionStmt.Params)
+		}
+	}
+
 	return 0
 }
