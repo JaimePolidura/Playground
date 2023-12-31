@@ -49,11 +49,12 @@ func (p *Parser) declaration() (Stmt, error) {
 func (p *Parser) class() (Stmt, error) {
 	name := p.consume(lex.IDENTIFIER, "Class name expected")
 	p.consume(lex.OPEN_BRACE, "Expected '{' after class name")
-	methods := make([]Stmt, 0)
+	methods := make([]FunctionStatement, 0)
 
 	for p.check(lex.FUN) && !p.atTheEnd() {
+		p.advance() //Consume fun
 		if method, err := p.function(); err == nil {
-			methods = append(methods, method)
+			methods = append(methods, method.(FunctionStatement))
 		} else {
 			return nil, err
 		}
@@ -78,8 +79,8 @@ func (p *Parser) function() (Stmt, error) {
 				break
 			}
 		}
+		p.consume(lex.CLOSE_PAREN, "Expect ')' after function parameters")
 	}
-	p.consume(lex.CLOSE_PAREN, "Expect ')' after function parameters")
 	p.consume(lex.OPEN_BRACE, "Expect '{' after function declaration")
 	body, err := p.blockStatement()
 	if err != nil {
@@ -338,12 +339,7 @@ func (p *Parser) call() Expr {
 
 	for {
 		if p.match(lex.OPEN_PAREN) {
-			if expr.Type() != VARIABLE_EXPR {
-				panic("Invalid function name")
-			}
-
-			functionName := expr.(VariableExpression).Name.Lexeme
-			expr = p.finishCall(functionName)
+			expr = p.finishCall(expr)
 		} else if p.match(lex.DOT) { //Accessing object property
 			name := p.consume(lex.IDENTIFIER, "Expect property name after .")
 			expr = CreateGetExpression(expr, name)
@@ -355,7 +351,7 @@ func (p *Parser) call() Expr {
 	return expr
 }
 
-func (p *Parser) finishCall(functionName string) Expr {
+func (p *Parser) finishCall(callee Expr) Expr {
 	args := make([]Expr, 0)
 
 	if !p.check(lex.CLOSE_PAREN) {
@@ -372,7 +368,7 @@ func (p *Parser) finishCall(functionName string) Expr {
 
 	parent := p.consume(lex.CLOSE_PAREN, "Expect ')' after arguments.")
 
-	return CreateCallExpression(functionName, parent, args)
+	return CreateCallExpression(callee, parent, args)
 }
 
 // primary → NUMBER | STRING | "true" | "false" | "nil" | "(" expression ")"

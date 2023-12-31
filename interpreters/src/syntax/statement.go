@@ -61,7 +61,7 @@ type ReturnStatement struct {
 
 type ClassStatement struct {
 	Name    lex.Token
-	Methods []Stmt
+	Methods []FunctionStatement
 }
 
 func CreateIfStatement(condition Expr, thenBranch Stmt, elseBranch Stmt) IfStatement {
@@ -111,7 +111,7 @@ func CreateReturnStatement(keyword lex.Token, value Expr) ReturnStatement {
 	}
 }
 
-func CreateClassStatement(name lex.Token, methods []Stmt) ClassStatement {
+func CreateClassStatement(name lex.Token, methods []FunctionStatement) ClassStatement {
 	return ClassStatement{
 		Name:    name,
 		Methods: methods,

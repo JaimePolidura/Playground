@@ -8,7 +8,28 @@ import (
 	"testing"
 )
 
-func TestInterpreter_Interpret_SimpleClasses(t *testing.T) {
+func TestInterpreter_Interpret_Class_Methods(t *testing.T) {
+	interpreter, err := interpret(
+		"class Car {",
+		"fun start() {",
+		"print 1;",
+		"}",
+		"fun get() {",
+		"return 10;",
+		"}",
+		"}",
+		"var car = Car();",
+		"car.start();",
+		"print car.get();",
+	)
+
+	assert.Nil(t, err)
+	assert.Equal(t, len(interpreter.Log), 2)
+	assert.Equal(t, interpreter.Log[0], "1")
+	assert.Equal(t, interpreter.Log[1], "10")
+}
+
+func TestInterpreter_Interpret_Class_Properties(t *testing.T) {
 	interpreter, err := interpret(
 		"class Car {",
 		"}",

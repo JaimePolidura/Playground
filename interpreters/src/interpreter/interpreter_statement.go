@@ -32,7 +32,14 @@ func (i *Interpreter) interpretStatement(statement syntax.Stmt) error {
 }
 
 func (i *Interpreter) interpretClassStmt(statement syntax.ClassStatement) error {
-	i.environment.Define(statement.Name.Lexeme, LoxClass{Name: statement.Name.Lexeme})
+	className := statement.Name.Lexeme
+	class := LoxClass{Name: className, Methods: make(map[string]LoxFunction)}
+
+	for _, method := range statement.Methods {
+		class.Methods[method.Name.Lexeme] = LoxFunction{FunctionStmt: method}
+	}
+	i.environment.Define(className, class)
+
 	return nil
 }
 

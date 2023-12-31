@@ -6,7 +6,8 @@ import (
 )
 
 type LoxClass struct {
-	Name string
+	Name    string
+	Methods map[string]LoxFunction
 }
 
 type LoxInstance struct {
@@ -15,8 +16,10 @@ type LoxInstance struct {
 }
 
 func (l LoxInstance) GetProperty(name string) (any, error) {
-	if value, contained := l.Properties[name]; contained {
-		return value, nil
+	if propertyValue, propertyExists := l.Properties[name]; propertyExists {
+		return propertyValue, nil
+	} else if methodValue, methodExists := l.KClass.Methods[name]; methodExists {
+		return methodValue, nil
 	} else {
 		return nil, errors.New("unknown property " + name + " on class " + l.KClass.Name)
 	}

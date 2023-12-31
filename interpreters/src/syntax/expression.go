@@ -60,7 +60,7 @@ type LogicalExpression struct {
 }
 
 type CallExpression struct {
-	Name   string
+	Callee Expr
 	Parent lex.Token
 	Args   []Expr
 }
@@ -132,11 +132,11 @@ func CreateAssignExpression(name lex.Token, value Expr) Expr {
 	}
 }
 
-func CreateCallExpression(functionName string, parent lex.Token, args []Expr) Expr {
+func CreateCallExpression(callee Expr, parent lex.Token, args []Expr) Expr {
 	return CallExpression{
 		Args:   args,
 		Parent: parent,
-		Name:   functionName,
+		Callee: callee,
 	}
 }
 

@@ -83,9 +83,16 @@ func (i *Interpreter) interpretGetExpression(getExpression syntax.GetExpression)
 }
 
 func (i *Interpreter) interpretCallExpression(callExpression syntax.CallExpression) (syntax.Expr, error) {
-	loxFunctionNotCasted, err := i.environment.Get(callExpression.Name)
+	functionExpr, err := i.interpretExpression(callExpression.Callee)
 	if err != nil {
 		return nil, err
+	}
+	if functionExpr.Type() != syntax.LITERAL_EXPR {
+		return nil, errors.New("not a function")
+	}
+	loxFunctionCallable, isCallable := functionExpr.(syntax.LiteralExpression).Literal.(LoxCallable)
+	if !isCallable {
+		return nil, errors.New("not a function")
 	}
 
 	arguments, err := i.parseCallArgs(callExpression)
@@ -93,15 +100,11 @@ func (i *Interpreter) interpretCallExpression(callExpression syntax.CallExpressi
 		return nil, err
 	}
 
-	callable, isCallable := loxFunctionNotCasted.(LoxCallable)
-	if !isCallable {
-		return nil, errors.New("not a function")
-	}
-	if callable.Arity() != len(arguments) {
+	if loxFunctionCallable.Arity() != len(arguments) {
 		return nil, errors.New("invalid nº of arguments")
 	}
 
-	return callable.Call(i, arguments)
+	return loxFunctionCallable.Call(i, arguments)
 }
 
 func (i *Interpreter) parseCallArgs(callExpression syntax.CallExpression) ([]any, error) {
