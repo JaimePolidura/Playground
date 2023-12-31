@@ -13,7 +13,6 @@ var keywords = map[string]TokenType{
 	"print":  PRINT,
 	"return": RETURN,
 	"super":  SUPER,
-	"this":   THIS,
 	"true":   TRUE,
 	"var":    VAR,
 	"while":  WHILE,

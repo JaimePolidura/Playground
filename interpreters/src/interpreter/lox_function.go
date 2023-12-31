@@ -21,13 +21,25 @@ func isErrTypeOfLoxReturn(err error) (bool, LoxReturn) {
 }
 
 type LoxFunction struct {
-	FunctionStmt syntax.FunctionStatement
+	FunctionStmt      syntax.FunctionStatement
+	BindedLoxInstance *LoxInstance
+	ThisBinded        bool
+}
+
+func (l LoxFunction) BindThis(instanceToBind *LoxInstance) LoxFunction {
+	l.BindedLoxInstance = instanceToBind
+	l.ThisBinded = true
+	return l
 }
 
 func (l LoxFunction) Call(interpreter *Interpreter, args []any) (syntax.Expr, error) {
 	mostParentEnvironment := interpreter.environment.getMostParent()
 	functionEnvironment := createChildEnvironment(mostParentEnvironment)
 	prevEnv := interpreter.environment
+
+	if l.ThisBinded {
+		functionEnvironment.Define("this", l.BindedLoxInstance)
+	}
 
 	for i := 0; i < len(l.FunctionStmt.Params); i++ {
 		functionEnvironment.Define(l.FunctionStmt.Params[i].Lexeme, args[i])

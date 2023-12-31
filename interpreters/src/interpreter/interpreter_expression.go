@@ -46,7 +46,7 @@ func (i *Interpreter) interpretSetExpression(setExpression syntax.SetExpression)
 		return nil, errors.New("expected class name")
 	}
 
-	loxInstance := object.(syntax.LiteralExpression).Literal.(LoxInstance)
+	loxInstance := object.(syntax.LiteralExpression).Literal.(*LoxInstance)
 
 	propertyValueToSetExpr, err := i.interpretExpression(setExpression.Value)
 	if err != nil {
@@ -73,7 +73,7 @@ func (i *Interpreter) interpretGetExpression(getExpression syntax.GetExpression)
 		return nil, errors.New("expected class name")
 	}
 
-	loxInstance := object.(syntax.LiteralExpression).Literal.(LoxInstance)
+	loxInstance := object.(syntax.LiteralExpression).Literal.(*LoxInstance)
 
 	if property, err := loxInstance.GetProperty(getExpression.Name.Lexeme); err != nil {
 		return nil, err
@@ -258,7 +258,7 @@ func (i *Interpreter) calculateUnaryExpression(literal any, tokenType lex.TokenT
 func (i *Interpreter) calculateBinaryExpression(left any, right any, operationTokenType lex.TokenType) (any, error) {
 	if lex.IsAnyType(operationTokenType, lex.OPEN_PAREN, lex.CLOSE_PAREN, lex.OPEN_BRACE, lex.CLOSE_BRACE, lex.COMMA, lex.DOT, lex.SEMICOLON,
 		lex.IDENTIFIER, lex.STRING, lex.NUMBER, lex.CLASS, lex.ELSE, lex.FUN, lex.IF, lex.FOR, lex.NIL, lex.PRINT,
-		lex.RETURN, lex.SUPER, lex.THIS, lex.TRUE, lex.VAR, lex.WHILE, lex.EOF, lex.BANG, lex.FALSE, lex.OR, lex.AND) {
+		lex.RETURN, lex.SUPER, lex.TRUE, lex.VAR, lex.WHILE, lex.EOF, lex.BANG, lex.FALSE, lex.OR, lex.AND) {
 		return nil, errors.New(string(operationTokenType) + " cannot be used as an operation")
 	}
 

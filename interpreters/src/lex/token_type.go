@@ -43,7 +43,6 @@ const (
 	PRINT  TokenType = "PRINT"
 	RETURN TokenType = "RETURN"
 	SUPER  TokenType = "SUPER"
-	THIS   TokenType = "THIS"
 	TRUE   TokenType = "TRUE"
 	VAR    TokenType = "VAR"
 	WHILE  TokenType = "WHILE"

@@ -8,6 +8,21 @@ import (
 	"testing"
 )
 
+func TestInterpreter_Interpret_Class_Methods_WithThis(t *testing.T) {
+	interpreter, err := interpret("class Person {",
+		"fun printName() {",
+		"print this.name;",
+		"}",
+		"}",
+		"var person = Person();",
+		"person.name = \"pedro\";",
+		"person.printName();")
+
+	assert.Nil(t, err)
+	assert.Equal(t, len(interpreter.Log), 1)
+	assert.Equal(t, interpreter.Log[0], "pedro")
+}
+
 func TestInterpreter_Interpret_Class_Methods(t *testing.T) {
 	interpreter, err := interpret(
 		"class Car {",

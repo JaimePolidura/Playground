@@ -26,7 +26,15 @@ func (l LoxInstance) GetProperty(name string) (any, error) {
 }
 
 func (l LoxClass) Call(interpreter *Interpreter, args []any) (syntax.Expr, error) {
-	instance := LoxInstance{KClass: l, Properties: make(map[string]any)}
+	instance := &LoxInstance{KClass: l, Properties: make(map[string]any)}
+
+	newMethods := make(map[string]LoxFunction)
+	for name, method := range instance.KClass.Methods {
+		newMethods[name] = method.BindThis(instance)
+	}
+
+	instance.KClass.Methods = newMethods
+
 	return syntax.CreateLiteralExpression(instance), nil
 }
 
