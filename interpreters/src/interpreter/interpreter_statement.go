@@ -33,7 +33,21 @@ func (i *Interpreter) interpretStatement(statement syntax.Stmt) error {
 
 func (i *Interpreter) interpretClassStmt(statement syntax.ClassStatement) error {
 	className := statement.Name.Lexeme
-	class := LoxClass{Name: className, Methods: make(map[string]LoxFunction)}
+	superClassName := statement.Superclass
+	class := &LoxClass{Name: className, Methods: make(map[string]LoxFunction)}
+
+	if superClassName != "" { //Has superclass
+		superClassAny, err := i.environment.Get(superClassName)
+		if err != nil {
+			return errors.New("class " + superClassName + " not found")
+		}
+		superClass, isSuperClassType := superClassAny.(*LoxClass)
+		if !isSuperClassType {
+			return errors.New("variable names/methods cannot have the same name as classes")
+		}
+
+		class.SuperClass = superClass
+	}
 
 	for _, method := range statement.Methods {
 		class.Methods[method.Name.Lexeme] = LoxFunction{FunctionStmt: method}

@@ -48,6 +48,13 @@ func (p *Parser) declaration() (Stmt, error) {
 
 func (p *Parser) class() (Stmt, error) {
 	name := p.consume(lex.IDENTIFIER, "Class name expected")
+
+	superClassName := ""
+	if p.check(lex.LESS) { //Extends another class
+		p.advance() //Consume <
+		superClassName = p.consume(lex.IDENTIFIER, "Expected class name after <").Lexeme
+	}
+
 	p.consume(lex.OPEN_BRACE, "Expected '{' after class name")
 	methods := make([]FunctionStatement, 0)
 
@@ -62,7 +69,7 @@ func (p *Parser) class() (Stmt, error) {
 
 	p.consume(lex.CLOSE_BRACE, "Expected '}' after class declaration")
 
-	return CreateClassStatement(name, methods), nil
+	return CreateClassStatement(name, methods, superClassName), nil
 }
 
 func (p *Parser) function() (Stmt, error) {

@@ -8,6 +8,22 @@ import (
 	"testing"
 )
 
+func TestInterpreter_Interpret_Class_Superclass(t *testing.T) {
+	interpreter, err := interpret("class Base {",
+		"fun hello() {",
+		"print \"Base\";",
+		"}",
+		"}",
+		"class Derived < Base {",
+		"}",
+		"var derived = Derived();",
+		"derived.hello();")
+
+	assert.Nil(t, err)
+	assert.Equal(t, len(interpreter.Log), 1)
+	assert.Equal(t, interpreter.Log[0], "Base")
+}
+
 func TestInterpreter_Interpret_Class_Constructor(t *testing.T) {
 	interpreter, err := interpret("class Point {",
 		"fun init(xCons, yCons) {",
