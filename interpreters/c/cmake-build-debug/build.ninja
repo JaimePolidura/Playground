@@ -55,17 +55,29 @@ build CMakeFiles/c.dir/main.c.obj: C_COMPILER__c_unscanned_Debug C$:/programacio
   OBJECT_DIR = CMakeFiles\c.dir
   OBJECT_FILE_DIR = CMakeFiles\c.dir
 
-build CMakeFiles/c.dir/chunk.c.obj: C_COMPILER__c_unscanned_Debug C$:/programacion/Playground/interpreters/c/chunk.c || cmake_object_order_depends_target_c
-  DEP_FILE = CMakeFiles\c.dir\chunk.c.obj.d
+build CMakeFiles/c.dir/chunk/chunk.c.obj: C_COMPILER__c_unscanned_Debug C$:/programacion/Playground/interpreters/c/chunk/chunk.c || cmake_object_order_depends_target_c
+  DEP_FILE = CMakeFiles\c.dir\chunk\chunk.c.obj.d
   FLAGS = -g -std=gnu2x -fdiagnostics-color=always
   OBJECT_DIR = CMakeFiles\c.dir
-  OBJECT_FILE_DIR = CMakeFiles\c.dir
+  OBJECT_FILE_DIR = CMakeFiles\c.dir\chunk
 
-build CMakeFiles/c.dir/memory.c.obj: C_COMPILER__c_unscanned_Debug C$:/programacion/Playground/interpreters/c/memory.c || cmake_object_order_depends_target_c
-  DEP_FILE = CMakeFiles\c.dir\memory.c.obj.d
+build CMakeFiles/c.dir/memory/memory.c.obj: C_COMPILER__c_unscanned_Debug C$:/programacion/Playground/interpreters/c/memory/memory.c || cmake_object_order_depends_target_c
+  DEP_FILE = CMakeFiles\c.dir\memory\memory.c.obj.d
   FLAGS = -g -std=gnu2x -fdiagnostics-color=always
   OBJECT_DIR = CMakeFiles\c.dir
-  OBJECT_FILE_DIR = CMakeFiles\c.dir
+  OBJECT_FILE_DIR = CMakeFiles\c.dir\memory
+
+build CMakeFiles/c.dir/chunk/chunk_disassembler.c.obj: C_COMPILER__c_unscanned_Debug C$:/programacion/Playground/interpreters/c/chunk/chunk_disassembler.c || cmake_object_order_depends_target_c
+  DEP_FILE = CMakeFiles\c.dir\chunk\chunk_disassembler.c.obj.d
+  FLAGS = -g -std=gnu2x -fdiagnostics-color=always
+  OBJECT_DIR = CMakeFiles\c.dir
+  OBJECT_FILE_DIR = CMakeFiles\c.dir\chunk
+
+build CMakeFiles/c.dir/types/types.c.obj: C_COMPILER__c_unscanned_Debug C$:/programacion/Playground/interpreters/c/types/types.c || cmake_object_order_depends_target_c
+  DEP_FILE = CMakeFiles\c.dir\types\types.c.obj.d
+  FLAGS = -g -std=gnu2x -fdiagnostics-color=always
+  OBJECT_DIR = CMakeFiles\c.dir
+  OBJECT_FILE_DIR = CMakeFiles\c.dir\types
 
 
 # =============================================================================
@@ -75,7 +87,7 @@ build CMakeFiles/c.dir/memory.c.obj: C_COMPILER__c_unscanned_Debug C$:/programac
 #############################################
 # Link the executable c.exe
 
-build c.exe: C_EXECUTABLE_LINKER__c_Debug CMakeFiles/c.dir/main.c.obj CMakeFiles/c.dir/chunk.c.obj CMakeFiles/c.dir/memory.c.obj
+build c.exe: C_EXECUTABLE_LINKER__c_Debug CMakeFiles/c.dir/main.c.obj CMakeFiles/c.dir/chunk/chunk.c.obj CMakeFiles/c.dir/memory/memory.c.obj CMakeFiles/c.dir/chunk/chunk_disassembler.c.obj CMakeFiles/c.dir/types/types.c.obj
   FLAGS = -g
   LINK_LIBRARIES = -lkernel32 -luser32 -lgdi32 -lwinspool -lshell32 -lole32 -loleaut32 -luuid -lcomdlg32 -ladvapi32
   OBJECT_DIR = CMakeFiles\c.dir

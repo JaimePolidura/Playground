@@ -1,6 +1,6 @@
 #pragma once
 
-#include "shared.h"
+#include "../shared.h"
 
 #define GROW_ARRAY_CAPACITY(capacity) (capacity < 8 ? 8 : capacity << 2)
 
