@@ -7,3 +7,10 @@
 1	124	7258449234160163	build.ninja	98659ee23a8f879b
 6	60	7258431861826067	CMakeFiles/c.dir/chunk/chunk.c.obj	bbc573023f4a940
 6	65	7258441295579286	CMakeFiles/c.dir/chunk/chunk_disassembler.c.obj	2d3c6997b6b49f3f
+8	249	7258475141562556	CMakeFiles/c.dir/types/types.c.obj	2e56c5da6285d3a
+2	251	7258475141562556	CMakeFiles/c.dir/main.c.obj	4c07ff7bdc2a51ba
+5	251	7258475141562556	CMakeFiles/c.dir/chunk/chunk.c.obj	bbc573023f4a940
+12	251	7258475141574802	CMakeFiles/c.dir/chunk/chunk_disassembler.c.obj	2d3c6997b6b49f3f
+251	2041	7258475144094278	c.exe	4b178aa650ff17c2
+2	65	7258475293072551	CMakeFiles/c.dir/main.c.obj	4c07ff7bdc2a51ba
+65	551	7258475293745150	c.exe	4b178aa650ff17c2

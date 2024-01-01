@@ -8,7 +8,7 @@ void alloc_lox_array(struct lox_array * array) {
     array->in_use = 0;
 }
 
-void write_lox_array(struct lox_array * array, lox_number_t value) {
+void write_lox_array(struct lox_array * array, lox_value_t value) {
     if(array->in_use + 1 > array->capacity) {
         const int old_capacity = array->capacity;
         const int new_capacity = GROW_ARRAY_CAPACITY(array->capacity);

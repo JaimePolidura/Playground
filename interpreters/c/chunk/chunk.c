@@ -14,7 +14,7 @@ struct chunk * alloc_chunk() {
     return allocated_chunk;
 }
 
-int add_constant_to_chunk(struct chunk * chunk_to_write, lox_number_t constant) {
+int add_constant_to_chunk(struct chunk * chunk_to_write, lox_value_t constant) {
     write_lox_array(&chunk_to_write->constants, constant);
     return chunk_to_write->constants.in_use - 1;
 }

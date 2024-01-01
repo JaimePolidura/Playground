@@ -2,7 +2,9 @@
 
 #include <stdio.h>
 
+static int constant_instruction(const char * name, const struct chunk * chunk, int offset);
 static int simple_instruction(const char * name, int offset);
+static void print_value(lox_value_t value);
 
 void disassemble_chunk(const struct chunk * chunk, char * name) {
     printf("== %s ==\n", name);
@@ -17,6 +19,8 @@ int disassemble_chunk_instruction(const struct chunk * chunk, const int offset) 
     switch (instruction) {
         case OP_RETURN:
             return simple_instruction("RETURN", offset);
+        case OP_CONSTANT:
+            return constant_instruction("CONSTANT", chunk, offset);
         default:
             printf("Unknown opcode %d\n", instruction);
             return offset + 1;
@@ -26,4 +30,17 @@ int disassemble_chunk_instruction(const struct chunk * chunk, const int offset) 
 static int simple_instruction(const char * name, const int offset) {
     printf("%s\n", name);
     return offset + 1;
+}
+
+static int constant_instruction(const char * name, const struct chunk * chunk, int offset) {
+    const uint8_t constant = chunk->code[offset + 1];
+    printf("%-16s %4d '", name, constant);
+    print_value(constant);
+    printf("'\n");
+
+    return offset + 2;
+}
+
+static void print_value(lox_value_t value) {
+    printf("%g", value);
 }
