@@ -2,7 +2,11 @@
 
 #include <stdlib.h>
 
-void * reallocate_array(void * ptr, int old_size, int new_size) {
+void * grow_array(void* ptr, int old_size, int new_size) {
+
+}
+
+void * reallocate_array(void* ptr, int new_size) {
     if(new_size == 0) {
         free(ptr);
         return NULL;

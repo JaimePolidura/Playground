@@ -9,9 +9,10 @@ struct chunk {
     uint8_t * code;
     int capacity; //nº of code allocated
     int in_use; //nº of code used
+    int * lines;
 };
 
-void write_chunk(struct chunk * chunk_to_write, uint8_t byte);
+void write_chunk(struct chunk * chunk_to_write, uint8_t byte, int line);
 int add_constant_to_chunk(struct chunk * chunk_to_write, lox_value_t constant);
 struct chunk * alloc_chunk();
 void free_chunk(struct chunk * chunk_to_free);

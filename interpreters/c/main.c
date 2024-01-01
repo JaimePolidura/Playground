@@ -7,9 +7,9 @@
 
 int main(int argc, char* args[]) {
     struct chunk * chunk = alloc_chunk();
-    write_chunk(chunk, OP_RETURN);
-    write_chunk(chunk, OP_CONSTANT);
-    write_chunk(chunk, 10);
+    write_chunk(chunk, OP_RETURN, 1);
+    write_chunk(chunk, OP_CONSTANT, 2);
+    write_chunk(chunk, 10, 2);
     disassemble_chunk(chunk, "Chunk #1");
     free_chunk(chunk);
 
