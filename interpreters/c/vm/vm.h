@@ -18,7 +18,7 @@ typedef enum {
     INTERPRET_RUNTIME_ERROR,
 } interpret_result;
 
-interpret_result interpret(struct chunk* chunk);
+interpret_result interpret_vm(struct chunk* chunk);
 
 void push_stack_vm(lox_value_t value);
 lox_value_t pop_stack_vm();

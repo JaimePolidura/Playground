@@ -15,4 +15,6 @@ add_executable(c main.c
         types/types.h
         types/types.c
         vm/vm.h
-        vm/vm.c)
+        vm/vm.c
+        scanner/scanner.c
+        scanner/scanner.h)

@@ -7,7 +7,7 @@ struct vm current_vm;
 static interpret_result run();
 static void print_stack();
 
-interpret_result interpret(struct chunk * chunk) {
+interpret_result interpret_vm(struct chunk * chunk) {
     current_vm.chunk = chunk;
     current_vm.pc = chunk->code;
 

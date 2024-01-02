@@ -65,7 +65,8 @@
 				6,
 				8,
 				10,
-				12
+				12,
+				13
 			]
 		}
 	],
@@ -107,7 +108,8 @@
 				6,
 				8,
 				10,
-				12
+				12,
+				13
 			]
 		},
 		{
@@ -120,7 +122,8 @@
 				5,
 				7,
 				9,
-				11
+				11,
+				14
 			]
 		}
 	],
@@ -196,6 +199,17 @@
 			"compileGroupIndex" : 0,
 			"path" : "vm/vm.c",
 			"sourceGroupIndex" : 0
+		},
+		{
+			"backtrace" : 2,
+			"compileGroupIndex" : 0,
+			"path" : "scanner/scanner.c",
+			"sourceGroupIndex" : 0
+		},
+		{
+			"backtrace" : 2,
+			"path" : "scanner/scanner.h",
+			"sourceGroupIndex" : 1
 		}
 	],
 	"type" : "EXECUTABLE"
