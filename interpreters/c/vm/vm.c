@@ -17,20 +17,28 @@ interpret_result interpret(struct chunk * chunk) {
 static interpret_result run() {
 #define READ_BYTE() (*current_vm.pc++)
 #define READ_CONSTANT() (current_vm.chunk->constants.values[READ_BYTE()])
+#define BINARY_OP(op) \
+    do { \
+        double b = pop_stack_vm(); \
+        double a = pop_stack_vm(); \
+        push_stack_vm(a op b); \
+    }while(false); \
 
     for(;;) {
 #ifdef  DEBUG_TRACE_EXECUTION
-        disassemble_chunk_instruction(current_vm.chunk, current_vm.chunk->in_use + 1);
+        disassemble_chunk_instruction(current_vm.chunk, current_vm.stack - current_vm.esp);
         print_stack();
 #endif
         uint8_t instruction;
         switch (instruction = READ_BYTE()) {
-            case OP_RETURN:
-                print_value(pop_stack_vm());
-                return INTERPRET_OK;
-            case OP_CONSTANT:
-                push_stack_vm(READ_CONSTANT());
-                return INTERPRET_OK;
+            case OP_RETURN: print_value(pop_stack_vm()); break;
+            case OP_CONSTANT: push_stack_vm(READ_CONSTANT()); break;
+            case OP_NEGATE: push_stack_vm(-pop_stack_vm()); break;
+            case OP_ADD: BINARY_OP(+); break;
+            case OP_SUB: BINARY_OP(-); break;
+            case OP_MUL: BINARY_OP(*); break;
+            case OP_DIV: BINARY_OP(/); break;
+            case OP_EOF: return INTERPRET_OK;
             default:
                 perror("Unhandled bytecode op\n");
                 return INTERPRET_RUNTIME_ERROR;
@@ -38,6 +46,7 @@ static interpret_result run() {
     }
 
 #undef READ_CONSTANT
+#undef BINARY_OP
 #undef READ_BYTE
 }
 
@@ -49,7 +58,8 @@ void push_stack_vm(lox_value_t value) {
 
 //TODO Check underflow
 lox_value_t pop_stack_vm() {
-    return *--current_vm.esp;
+    auto val = *--current_vm.esp;
+    return val;
 }
 
 void start_vm() {

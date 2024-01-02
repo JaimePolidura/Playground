@@ -6,20 +6,30 @@
 #include "chunk/chunk_disassembler.h"
 #include "vm/vm.h"
 
-void debug();
+void debug_simple_calculation();
 void prod();
 
 int main(int argc, char* args[]) {
-    debug();
+    debug_simple_calculation();
     return 0;
 }
 
-void debug() {
+void debug_simple_calculation() {
     start_vm();
     struct chunk * chunk = alloc_chunk();
+
+    // -((1.2 + 3.4) / 5.6)
     write_chunk(chunk, OP_CONSTANT, 1);
-    write_chunk(chunk, add_constant_to_chunk(chunk, 10), 1); //add_constant_to_chunk returns offset
+    write_chunk(chunk, add_constant_to_chunk(chunk, 1.2), 1);
+    write_chunk(chunk, OP_CONSTANT, 1);
+    write_chunk(chunk, add_constant_to_chunk(chunk, 3.4), 1);
+    write_chunk(chunk, OP_ADD, 1);
+    write_chunk(chunk, OP_CONSTANT, 1);
+    write_chunk(chunk, add_constant_to_chunk(chunk, 5.6), 1);
+    write_chunk(chunk, OP_DIV, 1);
+    write_chunk(chunk, OP_NEGATE, 1);
     write_chunk(chunk, OP_RETURN, 1);
+    write_chunk(chunk, OP_EOF, 1); //Expect -0.81
 
     interpret(chunk);
 

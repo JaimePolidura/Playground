@@ -14,19 +14,15 @@ void disassemble_chunk(const struct chunk * chunk, char * name) {
 }
 
 int disassemble_chunk_instruction(const struct chunk * chunk, const int offset) {
-    printf("%04d ", offset);
-    if (offset > 0 && chunk->lines[offset] == chunk->lines[offset - 1]) {
-        printf("   | ");
-    } else {
-        printf("%4d ", chunk->lines[offset]);
-    }
-
     const uint8_t instruction = chunk->code[offset];
     switch (instruction) {
-        case OP_RETURN:
-            return simple_instruction("RETURN", offset);
-        case OP_CONSTANT:
-            return constant_instruction("CONSTANT", chunk, offset);
+        case OP_RETURN: return simple_instruction("RETURN", offset);
+        case OP_NEGATE: return simple_instruction("NEGATE", offset);
+        case OP_CONSTANT: return constant_instruction("CONSTANT", chunk, offset);
+        case OP_ADD: return simple_instruction("ADD", offset);
+        case OP_SUB: return simple_instruction("SUB", offset);
+        case OP_MUL: return simple_instruction("MUL", offset);
+        case OP_DIV: return simple_instruction("DIV", offset);
         default:
             printf("Unknown opcode %d\n", instruction);
             return offset + 1;
@@ -40,7 +36,7 @@ static int simple_instruction(const char * name, const int offset) {
 
 static int constant_instruction(const char * name, const struct chunk * chunk, int offset) {
     const uint8_t constant = chunk->code[offset + 1];
-    printf("%-16s %4d '", name, constant);
+    printf("%s '", name);
     print_value(chunk->constants.values[constant]);
     printf("'\n");
 
