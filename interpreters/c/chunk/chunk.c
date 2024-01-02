@@ -2,7 +2,6 @@
 
 #include <stdlib.h>
 
-
 struct chunk * alloc_chunk() {
     struct chunk * allocated_chunk = malloc(sizeof(struct chunk));
     allocated_chunk->capacity = 0;

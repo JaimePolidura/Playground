@@ -13,4 +13,6 @@ add_executable(c main.c
         chunk/chunk_disassembler.h
         chunk/chunk_disassembler.c
         types/types.h
-        types/types.c)
+        types/types.c
+        vm/vm.h
+        vm/vm.c)
