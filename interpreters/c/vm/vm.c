@@ -5,9 +5,11 @@
 struct vm current_vm;
 
 static double check_number();
+static bool check_boolean();
 static interpret_result run();
 static void print_stack();
 static void runtime_errpr(char * format, ...);
+static lox_value_t values_equal(lox_value_t a, lox_value_t b);
 
 interpret_result interpret_vm(struct chunk * chunk) {
     current_vm.chunk = chunk;
@@ -24,7 +26,14 @@ static interpret_result run() {
         double b = check_number(pop_stack_vm()); \
         double a = check_number(pop_stack_vm()); \
         push_stack_vm(FROM_NUMBER(a op b)); \
-    }while(false); \
+    }while(false);
+
+#define COMPARATION_OP(op) \
+    do { \
+        double b = check_number(pop_stack_vm()); \
+        double a = check_number(pop_stack_vm()); \
+        push_stack_vm(FROM_BOOL(a op b)); \
+    }while(false);
 
     for(;;) {
 #ifdef  DEBUG_TRACE_EXECUTION
@@ -34,14 +43,18 @@ static interpret_result run() {
         switch (READ_BYTE()) {
             case OP_RETURN: print_value(pop_stack_vm()); break;
             case OP_CONSTANT: push_stack_vm(READ_CONSTANT()); break;
-            case OP_NEGATE:push_stack_vm(FROM_NUMBER(-check_number(pop_stack_vm()))); break;
+            case OP_NEGATE: push_stack_vm(FROM_NUMBER(-check_number(pop_stack_vm()))); break;
             case OP_ADD: BINARY_OP(+); break;
             case OP_SUB: BINARY_OP(-); break;
             case OP_MUL: BINARY_OP(*); break;
             case OP_DIV: BINARY_OP(/); break;
+            case OP_GREATER: COMPARATION_OP(>); break;
+            case OP_LESS: COMPARATION_OP(<); break;
             case OP_FALSE: push_stack_vm(FROM_BOOL(false)); break;
             case OP_TRUE: push_stack_vm(FROM_BOOL(true)); break;
             case OP_NIL: push_stack_vm(FROM_NIL); break;
+            case OP_NOT: push_stack_vm(FROM_BOOL(!check_boolean())); break;
+            case OP_EQUAL: push_stack_vm(values_equal(pop_stack_vm(), pop_stack_vm())); break;
             case OP_EOF: return INTERPRET_OK;
             default:
                 perror("Unhandled bytecode op\n");
@@ -61,6 +74,31 @@ static double check_number() {
     } else {
         runtime_errpr("Operand must be a number.");
         exit(1);
+    }
+}
+
+static bool check_boolean() {
+    lox_value_t value = pop_stack_vm();
+    if(IS_BOOL(value)) {
+        return TO_BOOL(value);
+    } else {
+        runtime_errpr("Operand must be a boolean.");
+        exit(1);
+    }
+}
+
+static lox_value_t values_equal(lox_value_t a, lox_value_t b) {
+    if(a.type != b.type) {
+        return FROM_BOOL(false);
+    }
+
+    switch (a.type) {
+        case VAL_NIL: return FROM_BOOL(true);
+        case VAL_NUMBER: return FROM_BOOL(a.as.number == b.as.number);
+        case VAL_BOOL: return FROM_BOOL(a.as.boolean == b.as.boolean);
+        default:
+            runtime_errpr("Operator '==' not supported for that type");
+            return FROM_BOOL(false); //Unreachable, runtime_error executes exit()
     }
 }
 
