@@ -43,13 +43,13 @@ static interpret_result run() {
         switch (READ_BYTE()) {
             case OP_RETURN: print_value(pop_stack_vm()); break;
             case OP_CONSTANT: push_stack_vm(READ_CONSTANT()); break;
-            case OP_NEGATE: push_stack_vm(FROM_NUMBER(-check_number(pop_stack_vm()))); break;
-            case OP_ADD: BINARY_OP(+); break;
-            case OP_SUB: BINARY_OP(-); break;
-            case OP_MUL: BINARY_OP(*); break;
-            case OP_DIV: BINARY_OP(/); break;
-            case OP_GREATER: COMPARATION_OP(>); break;
-            case OP_LESS: COMPARATION_OP(<); break;
+            case OP_NEGATE: push_stack_vm(FROM_NUMBER(-check_number())); break;
+            case OP_ADD: BINARY_OP(+) break;
+            case OP_SUB: BINARY_OP(-) break;
+            case OP_MUL: BINARY_OP(*) break;
+            case OP_DIV: BINARY_OP(/) break;
+            case OP_GREATER: COMPARATION_OP(>) break;
+            case OP_LESS: COMPARATION_OP(<) break;
             case OP_FALSE: push_stack_vm(FROM_BOOL(false)); break;
             case OP_TRUE: push_stack_vm(FROM_BOOL(true)); break;
             case OP_NIL: push_stack_vm(FROM_NIL); break;
@@ -96,6 +96,7 @@ static lox_value_t values_equal(lox_value_t a, lox_value_t b) {
         case VAL_NIL: return FROM_BOOL(true);
         case VAL_NUMBER: return FROM_BOOL(a.as.number == b.as.number);
         case VAL_BOOL: return FROM_BOOL(a.as.boolean == b.as.boolean);
+        case VAL_OBJ: return FROM_BOOL(strcmp(TO_STRING_CHARS(a), TO_STRING_CHARS(b)) == 0);
         default:
             runtime_errpr("Operator '==' not supported for that type");
             return FROM_BOOL(false); //Unreachable, runtime_error executes exit()

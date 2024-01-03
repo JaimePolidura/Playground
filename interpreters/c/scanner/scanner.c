@@ -79,11 +79,9 @@ static void skip_white_space(struct scanner * scanner) {
         }
 
         switch (peek(scanner)) {
-            case " ":
-                break;
-            case "\t":
-                break;
-            case "\r":
+            case ' ':
+            case '\t':
+            case '\r':
                 break;
             case '\n':
                 scanner->line++;

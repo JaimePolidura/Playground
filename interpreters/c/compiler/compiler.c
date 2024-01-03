@@ -27,7 +27,7 @@ typedef enum {
     PREC_PRIMARY
 } precedence_t;
 
-typedef void(parse_fn_t *)(struct compiler *);
+typedef void(* parse_fn_t)(struct compiler *);
 
 struct parse_rule {
     parse_fn_t prefix;
@@ -48,8 +48,10 @@ static void number(struct compiler * compiler);
 static void grouping(struct compiler * compiler);
 static void unary(struct compiler * compiler);
 static void parse_precedence(struct compiler * compiler, precedence_t precedence);
+static struct parse_rule* get_rule(tokenType_t type);
 static void binary(struct compiler * compiler);
 static void literal(struct compiler * compiler);
+static void string(struct compiler * compiler);
 
 struct parse_rule rules[] = {
     [TOKEN_LEFT_PAREN] = {grouping, NULL, PREC_NONE},
@@ -92,11 +94,8 @@ struct parse_rule rules[] = {
     [TOKEN_WHILE] = {NULL, NULL, PREC_NONE},
     [TOKEN_ERROR] = {NULL, NULL, PREC_NONE},
     [TOKEN_EOF] = {NULL, NULL, PREC_NONE},
+    [TOKEN_STRING] = {string, NULL, PREC_NONE}
     };
-
-static struct parse_rule* get_rule(tokenType_t type) {
-    return &rules[type];
-}
 
 bool compile(char * source_code, struct chunk * output_chunk) {
     struct compiler * compiler = alloc_compiler();
@@ -109,6 +108,7 @@ bool compile(char * source_code, struct chunk * output_chunk) {
 
     bool is_success = !compiler->parser.has_error;
     free(compiler);
+
     return is_success;
 }
 
@@ -126,10 +126,19 @@ static void binary(struct compiler * compiler) {
         case TOKEN_BANG_EQUAL: emit_bytecodes(compiler, OP_EQUAL, OP_NOT); break;
         case TOKEN_EQUAL_EQUAL: emit_bytecode(compiler, OP_EQUAL); break;
         case TOKEN_GREATER: emit_bytecode(compiler, OP_GREATER); break;
-        case TOKEN_GREATER_EQUAL: emit_bytecode(OP_LESS, OP_NOT); break;
+        case TOKEN_GREATER_EQUAL: emit_bytecodes(compiler, OP_LESS, OP_NOT); break;
         case TOKEN_LESS: emit_bytecode(compiler, OP_LESS); break;
         case TOKEN_LESS_EQUAL: emit_bytecodes(compiler, OP_GREATER, OP_NOT); break;
     }
+}
+
+static struct parse_rule* get_rule(tokenType_t type) {
+    return &rules[type];
+}
+
+static void string(struct compiler * compiler) {
+    struct string_object * string = chars_to_string_object(compiler->parser.previous.start + 1, compiler->parser.previous.length - 2);
+    emit_constant(compiler, FROM_OBJECT(string));
 }
 
 static void grouping(struct compiler * compiler) {

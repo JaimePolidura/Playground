@@ -55,5 +55,9 @@ void print_value(lox_value_t value) {
         case VAL_NIL: printf("nil"); break;
         case VAL_NUMBER: printf("%g", value.as.number); break;
         case VAL_BOOL: printf(value.as.boolean ? "true" : "false"); break;
+        case VAL_OBJ:
+            switch (value.as.object->type) {
+                case OBJ_STRING: printf("%s", TO_STRING_CHARS(value));
+            }
     }
 }

@@ -1,11 +1,9 @@
 # ninja log v5
+2	63	7259009791356307	CMakeFiles/c.dir/types/types.c.obj	2e56c5da6285d3a
 3	76	7259012450398074	CMakeFiles/c.dir/main.c.obj	4c07ff7bdc2a51ba
 7	75	7259006923301430	CMakeFiles/c.dir/memory/memory.c.obj	fd9dda8d0b25f760
-2	54	7258427756674517	CMakeFiles/c.dir/memory.c.obj	dc069e84896296a2
-6	59	7258430732385825	CMakeFiles/c.dir/chunk.c.obj	ea0fc939c08bc13a
 90	691	7259012451236945	c.exe	b1db2959be160ae0
-1	124	7259198991692308	build.ninja	98659ee23a8f879b
+1	124	7260211015643316	build.ninja	98659ee23a8f879b
 10	86	7259006923411409	CMakeFiles/c.dir/chunk/chunk.c.obj	bbc573023f4a940
 9	80	7259012450438073	CMakeFiles/c.dir/chunk/chunk_disassembler.c.obj	2d3c6997b6b49f3f
-2	63	7259009791356307	CMakeFiles/c.dir/types/types.c.obj	2e56c5da6285d3a
 12	90	7259012450536902	CMakeFiles/c.dir/vm/vm.c.obj	4e34677f97aad241

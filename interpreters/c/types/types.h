@@ -3,12 +3,13 @@
 #include "../shared.h"
 #include "../memory/memory.h"
 
-// typedef double lox_value_t;
+struct object;
 
 typedef enum {
   VAL_BOOL,
   VAL_NIL,
   VAL_NUMBER,
+  VAL_OBJ,
 } lox_value_type;
 
 typedef struct {
@@ -16,6 +17,7 @@ typedef struct {
   union {
     bool boolean;
     double number;
+    struct object * object;
   } as;
 } lox_value_t;
 

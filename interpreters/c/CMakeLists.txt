@@ -19,4 +19,6 @@ add_executable(c main.c
         scanner/scanner.c
         scanner/scanner.h
         compiler/compiler.h
-        compiler/compiler.c)
+        compiler/compiler.c
+        types/object.h
+        types/object.c)
