@@ -229,13 +229,17 @@ static bool at_the_end(struct scanner * scanner) {
 
 struct scanner * alloc_scanner() {
     struct scanner * scanner = malloc(sizeof(struct scanner));
-    scanner->current = NULL;
-    scanner->start = NULL;
-    scanner->line = 0;
+    init_scanner(scanner);
 
     return scanner;
 }
 
 static bool is_digit(char character) {
     return character >= '0' && character <= '9';
+}
+
+void init_scanner(struct scanner * scanner) {
+    scanner->current = NULL;
+    scanner->start = NULL;
+    scanner->line = 0;
 }

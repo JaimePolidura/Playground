@@ -32,6 +32,7 @@ void run_file(char * path) {
 }
 
 interpret_result interpret_source_code(char * source_code) {
+    struct chunk * chunk = alloc_chunk();
 
 }
 
@@ -82,7 +83,7 @@ void debug_simple_calculation() {
     write_chunk(chunk, OP_RETURN, 1);
     write_chunk(chunk, OP_EOF, 1); //Expect -0.81
 
-    interpret(chunk);
+    interpret_vm(chunk);
 
     stop_vm();
     free_chunk(chunk);

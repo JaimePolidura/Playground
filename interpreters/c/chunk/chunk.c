@@ -4,12 +4,7 @@
 
 struct chunk * alloc_chunk() {
     struct chunk * allocated_chunk = malloc(sizeof(struct chunk));
-    allocated_chunk->capacity = 0;
-    allocated_chunk->in_use = 0;
-    allocated_chunk->code = NULL;
-    allocated_chunk->lines = NULL;
-    alloc_lox_array(&allocated_chunk->constants);
-
+    init_chunk(allocated_chunk);
     return allocated_chunk;
 }
 
@@ -35,4 +30,12 @@ void free_chunk(struct chunk * chunk_to_free) {
     free(chunk_to_free->code);
     free(chunk_to_free->lines);
     free(&chunk_to_free->constants);
+}
+
+void init_chunk(struct chunk * chunk) {
+    chunk->capacity = 0;
+    chunk->in_use = 0;
+    chunk->code = NULL;
+    chunk->lines = NULL;
+    alloc_lox_array(&chunk->constants);
 }

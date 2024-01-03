@@ -35,5 +35,6 @@ struct scanner {
     int line;
 };
 
+void init_scanner(struct scanner * scanner);
 struct scanner * alloc_scanner();
 struct token next_token_scanner(struct scanner * scanner);
