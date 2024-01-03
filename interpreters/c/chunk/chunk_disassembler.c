@@ -23,6 +23,9 @@ int disassemble_chunk_instruction(const struct chunk * chunk, const int offset) 
         case OP_SUB: return simple_instruction("SUB", offset);
         case OP_MUL: return simple_instruction("MUL", offset);
         case OP_DIV: return simple_instruction("DIV", offset);
+        case OP_FALSE: return simple_instruction("false", offset);
+        case OP_TRUE: return simple_instruction("TRUE", offset);
+        case OP_NIL: return simple_instruction("NIL", offset);
         default:
             printf("Unknown opcode %d\n", instruction);
             return offset + 1;
@@ -44,5 +47,9 @@ static int constant_instruction(const char * name, const struct chunk * chunk, i
 }
 
 void print_value(lox_value_t value) {
-    printf("%g", value);
+    switch (value.type) {
+        case VAL_NIL: printf("nil"); break;
+        case VAL_NUMBER: printf("%g", value.as.number); break;
+        case VAL_BOOL: printf(value.as.boolean ? "true" : "false"); break;
+    }
 }

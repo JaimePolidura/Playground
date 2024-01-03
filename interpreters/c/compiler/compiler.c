@@ -48,6 +48,7 @@ static void grouping(struct compiler * compiler);
 static void unary(struct compiler * compiler);
 static void parse_precedence(struct compiler * compiler, precedence_t precedence);
 static void binary(struct compiler * compiler);
+static void literal(struct compiler * compiler);
 
 struct parse_rule rules[] = {
     [TOKEN_LEFT_PAREN] = {grouping, NULL, PREC_NONE},
@@ -75,17 +76,17 @@ struct parse_rule rules[] = {
     [TOKEN_AND] = {NULL, NULL, PREC_NONE},
     [TOKEN_CLASS] = {NULL, NULL, PREC_NONE},
     [TOKEN_ELSE] = {NULL, NULL, PREC_NONE},
-    [TOKEN_FALSE] = {NULL, NULL, PREC_NONE},
+    [TOKEN_FALSE] = {literal, NULL, PREC_NONE},
     [TOKEN_FOR] = {NULL, NULL, PREC_NONE},
     [TOKEN_FUN] = {NULL, NULL, PREC_NONE},
     [TOKEN_IF] = {NULL, NULL, PREC_NONE},
-    [TOKEN_NIL] = {NULL, NULL, PREC_NONE},
+    [TOKEN_NIL] = {literal, NULL, PREC_NONE},
     [TOKEN_OR] = {NULL, NULL, PREC_NONE},
     [TOKEN_PRINT] = {NULL, NULL, PREC_NONE},
     [TOKEN_RETURN] = {NULL, NULL, PREC_NONE},
     [TOKEN_SUPER] = {NULL, NULL, PREC_NONE},
     [TOKEN_THIS] = {NULL, NULL, PREC_NONE},
-    [TOKEN_TRUE] = {NULL, NULL, PREC_NONE},
+    [TOKEN_TRUE] = {literal, NULL, PREC_NONE},
     [TOKEN_VAR] = {NULL, NULL, PREC_NONE},
     [TOKEN_WHILE] = {NULL, NULL, PREC_NONE},
     [TOKEN_ERROR] = {NULL, NULL, PREC_NONE},
@@ -129,6 +130,14 @@ static void grouping(struct compiler * compiler) {
     consume(compiler, TOKEN_RIGHT_PAREN, "Expected ')'");
 }
 
+static void literal(struct compiler * compiler) {
+    switch (compiler->parser.previous.type) {
+        case TOKEN_FALSE: emit_bytecode(compiler, OP_FALSE); break;
+        case TOKEN_TRUE: emit_bytecode(compiler, OP_TRUE); break;
+        case TOKEN_NIL: emit_bytecode(compiler, OP_NIL); break;;
+    }
+}
+
 static void unary(struct compiler * compiler) {
     tokenType_t token_type = compiler->parser.previous.type;
     parse_precedence(compiler, PREC_UNARY);
@@ -159,7 +168,7 @@ static void parse_precedence(struct compiler * compiler, precedence_t precedence
 
 static void number(struct compiler * compiler) {
     double value = strtod(compiler->parser.previous.start, NULL);
-    emit_constant(compiler, value);
+    emit_constant(compiler, FROM_NUMBER(value));
 }
 
 static void emit_constant(struct compiler * compiler, lox_value_t value) {
