@@ -23,7 +23,7 @@ typedef struct {
 
 #define FROM_NUMBER(value) ((lox_value_t){VAL_NUMBER, {.number = value}})
 #define FROM_BOOL(value) ((lox_value_t){VAL_BOOL, {.boolean = value}})
-#define FROM_NIL ((lox_value_t){VAL_NIL, {.number = 0}})
+#define FROM_NIL() ((lox_value_t){VAL_NIL})
 
 #define TO_NUMBER(value) ((value).as.number)
 #define TO_BOOL(value) ((value).as.boolean)

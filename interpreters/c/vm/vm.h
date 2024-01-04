@@ -3,6 +3,7 @@
 #include "../chunk/chunk.h"
 #include "../shared.h"
 #include "../types/cast.h"
+#include "../table/table.h"
 
 #define STACK_MAX 256
 
@@ -12,6 +13,7 @@ struct vm {
     lox_value_t stack[STACK_MAX];
     lox_value_t * esp; // Top of the stack
     struct object * heap; // Linkedlist of heap allocated objects
+    struct hash_table strings;
 };
 
 typedef enum {

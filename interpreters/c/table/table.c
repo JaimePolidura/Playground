@@ -3,6 +3,7 @@
 #define TABLE_MAX_LOAD 0.75
 
 static struct hash_table_entry * find_entry(struct hash_table_entry * entries, int capacity, struct string_object * key);
+static struct hash_table_entry * find_entry_by_hash(struct hash_table_entry * entries, int capacity, uint32_t key_hash);
 static void adjust_hash_table_capacity(struct hash_table * table, int new_capcity);
 
 void init_hash_table(struct hash_table * table) {
@@ -20,6 +21,24 @@ void add_all_hash_table(struct hash_table * from, struct hash_table * to) {
     }
 }
 
+struct string_object * get_key_by_hash(struct hash_table * table, uint32_t keyHash) {
+    if (table->size == 0) {
+        return NULL;
+    }
+
+    struct hash_table_entry * entry = find_entry_by_hash(table->entries, table->capacity, keyHash);
+
+    if(entry->key != NULL){
+        return entry->key;
+    } else {
+        return NULL;
+    }
+}
+
+bool contains_hash_table(struct hash_table * table, struct string_object * key){
+    return get_hash_table(table, key, NULL);
+}
+
 bool get_hash_table(struct hash_table * table, struct string_object * key, lox_value_t *value){
     if (table->size == 0) {
         return false;
@@ -30,7 +49,9 @@ bool get_hash_table(struct hash_table * table, struct string_object * key, lox_v
         return false;
     }
 
-    *value = entry->value;
+    if(value != NULL){
+        *value = entry->value;
+    }
 
     return true;
 }
@@ -95,8 +116,12 @@ static void adjust_hash_table_capacity(struct hash_table * table, int new_capcit
 }
 
 static struct hash_table_entry * find_entry(struct hash_table_entry * entries, int capacity, struct string_object * key) {
+    return find_entry_by_hash(entries, capacity, key->hash);
+}
+
+static struct hash_table_entry * find_entry_by_hash(struct hash_table_entry * entries, int capacity, uint32_t key_hash) {
     struct hash_table_entry * first_tombstone_found = NULL;
-    uint32_t index = key->hash & (capacity - 1); //Optimized %
+    uint32_t index = key_hash & (capacity - 1); //Optimized %
     for (;;) {
         struct hash_table_entry * entry = &entries[index];
         bool is_tombstone = entry->key == NULL && IS_BOOL(entry->value) && entry->value.as.boolean;
@@ -105,7 +130,7 @@ static struct hash_table_entry * find_entry(struct hash_table_entry * entries, i
             first_tombstone_found = entry;
             continue;
         }
-        if (entry->key == key) {
+        if (entry->key->hash == key_hash) {
             return entry;
         }
         if(entry->key == NULL && first_tombstone_found != NULL){

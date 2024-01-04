@@ -136,7 +136,7 @@ static lox_value_t values_equal(lox_value_t a, lox_value_t b) {
         case VAL_NIL: return FROM_BOOL(true);
         case VAL_NUMBER: return FROM_BOOL(a.as.number == b.as.number);
         case VAL_BOOL: return FROM_BOOL(a.as.boolean == b.as.boolean);
-        case VAL_OBJ: return FROM_BOOL(strcmp(TO_STRING_CHARS(a), TO_STRING_CHARS(b)) == 0);
+        case VAL_OBJ: return FROM_BOOL(TO_STRING(a)->chars == TO_STRING(b)->chars);
         default:
             runtime_errpr("Operator '==' not supported for that type");
             return FROM_BOOL(false); //Unreachable, runtime_error executes exit()
@@ -158,6 +158,7 @@ lox_value_t pop_stack_vm() {
 void start_vm() {
     current_vm.esp = current_vm.stack; //Reset stack
     current_vm.heap = NULL;
+    init_hash_table(&current_vm.strings);
 }
 
 void stop_vm() {
