@@ -72,12 +72,12 @@ void debug_simple_calculation() {
 
     // -((1.2 + 3.4) / 5.6)
     write_chunk(chunk, OP_CONSTANT, 1);
-    write_chunk(chunk, add_constant_to_chunk(chunk, 1.2), 1);
+    write_chunk(chunk, add_constant_to_chunk(chunk, FROM_NUMBER(1.2)), 1);
     write_chunk(chunk, OP_CONSTANT, 1);
-    write_chunk(chunk, add_constant_to_chunk(chunk, 3.4), 1);
+    write_chunk(chunk, add_constant_to_chunk(chunk, FROM_NUMBER(3.4)), 1);
     write_chunk(chunk, OP_ADD, 1);
     write_chunk(chunk, OP_CONSTANT, 1);
-    write_chunk(chunk, add_constant_to_chunk(chunk, 5.6), 1);
+    write_chunk(chunk, add_constant_to_chunk(chunk, FROM_NUMBER(5.6)), 1);
     write_chunk(chunk, OP_DIV, 1);
     write_chunk(chunk, OP_NEGATE, 1);
     write_chunk(chunk, OP_RETURN, 1);

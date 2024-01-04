@@ -21,4 +21,6 @@ add_executable(c main.c
         compiler/compiler.h
         compiler/compiler.c
         types/object.h
-        types/object.c)
+        types/object.c
+        types/cast.h
+        types/cast.c)

@@ -4,12 +4,14 @@
 
 struct vm current_vm;
 
-static double check_number();
+static double pop_and_check_number();
 static bool check_boolean();
 static interpret_result run();
 static void print_stack();
 static void runtime_errpr(char * format, ...);
 static lox_value_t values_equal(lox_value_t a, lox_value_t b);
+static inline lox_value_t peek(int index_from_top);
+static inline void adition();
 
 interpret_result interpret_vm(struct chunk * chunk) {
     current_vm.chunk = chunk;
@@ -23,15 +25,15 @@ static interpret_result run() {
 #define READ_CONSTANT() (current_vm.chunk->constants.values[READ_BYTE()])
 #define BINARY_OP(op) \
     do { \
-        double b = check_number(pop_stack_vm()); \
-        double a = check_number(pop_stack_vm()); \
+        double b = pop_and_check_number(); \
+        double a = pop_and_check_number(); \
         push_stack_vm(FROM_NUMBER(a op b)); \
     }while(false);
 
 #define COMPARATION_OP(op) \
     do { \
-        double b = check_number(pop_stack_vm()); \
-        double a = check_number(pop_stack_vm()); \
+        double b = pop_and_check_number(); \
+        double a = pop_and_check_number(); \
         push_stack_vm(FROM_BOOL(a op b)); \
     }while(false);
 
@@ -43,13 +45,18 @@ static interpret_result run() {
         switch (READ_BYTE()) {
             case OP_RETURN: print_value(pop_stack_vm()); break;
             case OP_CONSTANT: push_stack_vm(READ_CONSTANT()); break;
-            case OP_NEGATE: push_stack_vm(FROM_NUMBER(-check_number())); break;
-            case OP_ADD: BINARY_OP(+) break;
-            case OP_SUB: BINARY_OP(-) break;
-            case OP_MUL: BINARY_OP(*) break;
-            case OP_DIV: BINARY_OP(/) break;
-            case OP_GREATER: COMPARATION_OP(>) break;
-            case OP_LESS: COMPARATION_OP(<) break;
+            case OP_NEGATE: push_stack_vm(FROM_NUMBER(-pop_and_check_number())); break;
+            case OP_ADD: adition(); break;
+            case OP_SUB:
+                BINARY_OP(-) break;
+            case OP_MUL:
+                BINARY_OP(*) break;
+            case OP_DIV:
+                BINARY_OP(/) break;
+            case OP_GREATER:
+                COMPARATION_OP(>) break;
+            case OP_LESS:
+                COMPARATION_OP(<) break;
             case OP_FALSE: push_stack_vm(FROM_BOOL(false)); break;
             case OP_TRUE: push_stack_vm(FROM_BOOL(true)); break;
             case OP_NIL: push_stack_vm(FROM_NIL); break;
@@ -67,7 +74,40 @@ static interpret_result run() {
 #undef READ_BYTE
 }
 
-static double check_number() {
+static inline void adition() {
+    if(IS_NUMBER(peek(0)) + IS_NUMBER(peek(1))) {
+        push_stack_vm(FROM_NUMBER(TO_NUMBER(pop_stack_vm()) + TO_NUMBER(pop_stack_vm())));
+        return;
+    }
+
+    lox_value_t b_value = pop_stack_vm();
+    lox_value_t a_value = pop_stack_vm();
+    char * a_chars = cast_to_string(a_value);
+    char * b_chars = cast_to_string(b_value);
+    int a_length = strlen(a_chars);
+    int b_length = strlen(b_chars);
+
+    int new_length = a_length + b_length; //Include \0
+    char * concatenated = malloc(new_length);
+    memcpy(concatenated, a_chars, a_length);
+    memcpy(concatenated + a_length, b_chars, b_length);
+    concatenated[new_length] = '\0';
+
+    if(a_value.type == VAL_NUMBER){
+        free(a_chars);
+    }
+    if(b_value.type == VAL_NUMBER){
+        free(b_chars);
+    }
+
+    push_stack_vm(FROM_OBJECT(from_chars_to_string_object(concatenated, new_length - 1)));
+}
+
+static inline lox_value_t peek(int index_from_top) {
+    return *(current_vm.esp - index_from_top);
+}
+
+static double pop_and_check_number() {
     lox_value_t value = pop_stack_vm();
     if(IS_NUMBER(value)) {
         return TO_NUMBER(value);

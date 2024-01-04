@@ -204,7 +204,7 @@ static char advance(struct scanner * scanner) {
 }
 
 static struct token create_error_token(struct scanner * scanner, const char * message) {
-    return {
+    return (struct token) {
         .type = TOKEN_ERROR,
         .start = message,
         .length = strlen(message),
@@ -213,7 +213,7 @@ static struct token create_error_token(struct scanner * scanner, const char * me
 }
 
 static struct token create_token(struct scanner * scanner, tokenType_t type) {
-    return {
+    return (struct token) {
         .type = type,
         .start = scanner->start,
         .line = scanner->line,

@@ -137,7 +137,8 @@ static struct parse_rule* get_rule(tokenType_t type) {
 }
 
 static void string(struct compiler * compiler) {
-    struct string_object * string = chars_to_string_object(compiler->parser.previous.start + 1, compiler->parser.previous.length - 2);
+    struct string_object * string = copy_chars_to_string_object(compiler->parser.previous.start + 1,
+                                                                compiler->parser.previous.length - 2);
     emit_constant(compiler, FROM_OBJECT(string));
 }
 

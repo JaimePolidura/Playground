@@ -2,6 +2,7 @@
 
 #include "../chunk/chunk.h"
 #include "../shared.h"
+#include "../types/cast.h"
 
 #define STACK_MAX 256
 

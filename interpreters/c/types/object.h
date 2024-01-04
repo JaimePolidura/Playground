@@ -18,7 +18,8 @@ struct string_object {
     char * chars;
 };
 
-struct string_object * chars_to_string_object(const char * chars, int length);
+struct string_object * copy_chars_to_string_object(const char * chars, int length);
+struct string_object * from_chars_to_string_object(char * chars, int length);
 
 #define FROM_OBJECT(value) ((lox_value_t){VAL_OBJ, {.object = (struct object*) value}})
 
