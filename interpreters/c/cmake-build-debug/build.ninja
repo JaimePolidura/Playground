@@ -55,65 +55,71 @@ build CMakeFiles/c.dir/main.c.obj: C_COMPILER__c_unscanned_Debug C$:/programacio
   OBJECT_DIR = CMakeFiles\c.dir
   OBJECT_FILE_DIR = CMakeFiles\c.dir
 
-build CMakeFiles/c.dir/chunk/chunk.c.obj: C_COMPILER__c_unscanned_Debug C$:/programacion/Playground/interpreters/c/chunk/chunk.c || cmake_object_order_depends_target_c
-  DEP_FILE = CMakeFiles\c.dir\chunk\chunk.c.obj.d
+build CMakeFiles/c.dir/src/chunk/chunk.c.obj: C_COMPILER__c_unscanned_Debug C$:/programacion/Playground/interpreters/c/src/chunk/chunk.c || cmake_object_order_depends_target_c
+  DEP_FILE = CMakeFiles\c.dir\src\chunk\chunk.c.obj.d
   FLAGS = -g -std=gnu2x -fdiagnostics-color=always
   OBJECT_DIR = CMakeFiles\c.dir
-  OBJECT_FILE_DIR = CMakeFiles\c.dir\chunk
+  OBJECT_FILE_DIR = CMakeFiles\c.dir\src\chunk
 
-build CMakeFiles/c.dir/memory/memory.c.obj: C_COMPILER__c_unscanned_Debug C$:/programacion/Playground/interpreters/c/memory/memory.c || cmake_object_order_depends_target_c
-  DEP_FILE = CMakeFiles\c.dir\memory\memory.c.obj.d
+build CMakeFiles/c.dir/src/memory/memory.c.obj: C_COMPILER__c_unscanned_Debug C$:/programacion/Playground/interpreters/c/src/memory/memory.c || cmake_object_order_depends_target_c
+  DEP_FILE = CMakeFiles\c.dir\src\memory\memory.c.obj.d
   FLAGS = -g -std=gnu2x -fdiagnostics-color=always
   OBJECT_DIR = CMakeFiles\c.dir
-  OBJECT_FILE_DIR = CMakeFiles\c.dir\memory
+  OBJECT_FILE_DIR = CMakeFiles\c.dir\src\memory
 
-build CMakeFiles/c.dir/chunk/chunk_disassembler.c.obj: C_COMPILER__c_unscanned_Debug C$:/programacion/Playground/interpreters/c/chunk/chunk_disassembler.c || cmake_object_order_depends_target_c
-  DEP_FILE = CMakeFiles\c.dir\chunk\chunk_disassembler.c.obj.d
+build CMakeFiles/c.dir/src/chunk/chunk_disassembler.c.obj: C_COMPILER__c_unscanned_Debug C$:/programacion/Playground/interpreters/c/src/chunk/chunk_disassembler.c || cmake_object_order_depends_target_c
+  DEP_FILE = CMakeFiles\c.dir\src\chunk\chunk_disassembler.c.obj.d
   FLAGS = -g -std=gnu2x -fdiagnostics-color=always
   OBJECT_DIR = CMakeFiles\c.dir
-  OBJECT_FILE_DIR = CMakeFiles\c.dir\chunk
+  OBJECT_FILE_DIR = CMakeFiles\c.dir\src\chunk
 
-build CMakeFiles/c.dir/types/types.c.obj: C_COMPILER__c_unscanned_Debug C$:/programacion/Playground/interpreters/c/types/types.c || cmake_object_order_depends_target_c
-  DEP_FILE = CMakeFiles\c.dir\types\types.c.obj.d
+build CMakeFiles/c.dir/src/vm/vm.c.obj: C_COMPILER__c_unscanned_Debug C$:/programacion/Playground/interpreters/c/src/vm/vm.c || cmake_object_order_depends_target_c
+  DEP_FILE = CMakeFiles\c.dir\src\vm\vm.c.obj.d
   FLAGS = -g -std=gnu2x -fdiagnostics-color=always
   OBJECT_DIR = CMakeFiles\c.dir
-  OBJECT_FILE_DIR = CMakeFiles\c.dir\types
+  OBJECT_FILE_DIR = CMakeFiles\c.dir\src\vm
 
-build CMakeFiles/c.dir/vm/vm.c.obj: C_COMPILER__c_unscanned_Debug C$:/programacion/Playground/interpreters/c/vm/vm.c || cmake_object_order_depends_target_c
-  DEP_FILE = CMakeFiles\c.dir\vm\vm.c.obj.d
+build CMakeFiles/c.dir/src/compiler/scanner.c.obj: C_COMPILER__c_unscanned_Debug C$:/programacion/Playground/interpreters/c/src/compiler/scanner.c || cmake_object_order_depends_target_c
+  DEP_FILE = CMakeFiles\c.dir\src\compiler\scanner.c.obj.d
   FLAGS = -g -std=gnu2x -fdiagnostics-color=always
   OBJECT_DIR = CMakeFiles\c.dir
-  OBJECT_FILE_DIR = CMakeFiles\c.dir\vm
+  OBJECT_FILE_DIR = CMakeFiles\c.dir\src\compiler
 
-build CMakeFiles/c.dir/scanner/scanner.c.obj: C_COMPILER__c_unscanned_Debug C$:/programacion/Playground/interpreters/c/scanner/scanner.c || cmake_object_order_depends_target_c
-  DEP_FILE = CMakeFiles\c.dir\scanner\scanner.c.obj.d
+build CMakeFiles/c.dir/src/compiler/compiler.c.obj: C_COMPILER__c_unscanned_Debug C$:/programacion/Playground/interpreters/c/src/compiler/compiler.c || cmake_object_order_depends_target_c
+  DEP_FILE = CMakeFiles\c.dir\src\compiler\compiler.c.obj.d
   FLAGS = -g -std=gnu2x -fdiagnostics-color=always
   OBJECT_DIR = CMakeFiles\c.dir
-  OBJECT_FILE_DIR = CMakeFiles\c.dir\scanner
+  OBJECT_FILE_DIR = CMakeFiles\c.dir\src\compiler
 
-build CMakeFiles/c.dir/compiler/compiler.c.obj: C_COMPILER__c_unscanned_Debug C$:/programacion/Playground/interpreters/c/compiler/compiler.c || cmake_object_order_depends_target_c
-  DEP_FILE = CMakeFiles\c.dir\compiler\compiler.c.obj.d
+build CMakeFiles/c.dir/src/types/strings/string_object.c.obj: C_COMPILER__c_unscanned_Debug C$:/programacion/Playground/interpreters/c/src/types/strings/string_object.c || cmake_object_order_depends_target_c
+  DEP_FILE = CMakeFiles\c.dir\src\types\strings\string_object.c.obj.d
   FLAGS = -g -std=gnu2x -fdiagnostics-color=always
   OBJECT_DIR = CMakeFiles\c.dir
-  OBJECT_FILE_DIR = CMakeFiles\c.dir\compiler
+  OBJECT_FILE_DIR = CMakeFiles\c.dir\src\types\strings
 
-build CMakeFiles/c.dir/types/object.c.obj: C_COMPILER__c_unscanned_Debug C$:/programacion/Playground/interpreters/c/types/object.c || cmake_object_order_depends_target_c
-  DEP_FILE = CMakeFiles\c.dir\types\object.c.obj.d
+build CMakeFiles/c.dir/src/table/table.c.obj: C_COMPILER__c_unscanned_Debug C$:/programacion/Playground/interpreters/c/src/table/table.c || cmake_object_order_depends_target_c
+  DEP_FILE = CMakeFiles\c.dir\src\table\table.c.obj.d
   FLAGS = -g -std=gnu2x -fdiagnostics-color=always
   OBJECT_DIR = CMakeFiles\c.dir
-  OBJECT_FILE_DIR = CMakeFiles\c.dir\types
+  OBJECT_FILE_DIR = CMakeFiles\c.dir\src\table
 
-build CMakeFiles/c.dir/types/cast.c.obj: C_COMPILER__c_unscanned_Debug C$:/programacion/Playground/interpreters/c/types/cast.c || cmake_object_order_depends_target_c
-  DEP_FILE = CMakeFiles\c.dir\types\cast.c.obj.d
+build CMakeFiles/c.dir/src/types/array.c.obj: C_COMPILER__c_unscanned_Debug C$:/programacion/Playground/interpreters/c/src/types/array.c || cmake_object_order_depends_target_c
+  DEP_FILE = CMakeFiles\c.dir\src\types\array.c.obj.d
   FLAGS = -g -std=gnu2x -fdiagnostics-color=always
   OBJECT_DIR = CMakeFiles\c.dir
-  OBJECT_FILE_DIR = CMakeFiles\c.dir\types
+  OBJECT_FILE_DIR = CMakeFiles\c.dir\src\types
 
-build CMakeFiles/c.dir/table/table.c.obj: C_COMPILER__c_unscanned_Debug C$:/programacion/Playground/interpreters/c/table/table.c || cmake_object_order_depends_target_c
-  DEP_FILE = CMakeFiles\c.dir\table\table.c.obj.d
+build CMakeFiles/c.dir/src/types/strings/string_pool.c.obj: C_COMPILER__c_unscanned_Debug C$:/programacion/Playground/interpreters/c/src/types/strings/string_pool.c || cmake_object_order_depends_target_c
+  DEP_FILE = CMakeFiles\c.dir\src\types\strings\string_pool.c.obj.d
   FLAGS = -g -std=gnu2x -fdiagnostics-color=always
   OBJECT_DIR = CMakeFiles\c.dir
-  OBJECT_FILE_DIR = CMakeFiles\c.dir\table
+  OBJECT_FILE_DIR = CMakeFiles\c.dir\src\types\strings
+
+build CMakeFiles/c.dir/src/shared.c.obj: C_COMPILER__c_unscanned_Debug C$:/programacion/Playground/interpreters/c/src/shared.c || cmake_object_order_depends_target_c
+  DEP_FILE = CMakeFiles\c.dir\src\shared.c.obj.d
+  FLAGS = -g -std=gnu2x -fdiagnostics-color=always
+  OBJECT_DIR = CMakeFiles\c.dir
+  OBJECT_FILE_DIR = CMakeFiles\c.dir\src
 
 
 # =============================================================================
@@ -123,7 +129,7 @@ build CMakeFiles/c.dir/table/table.c.obj: C_COMPILER__c_unscanned_Debug C$:/prog
 #############################################
 # Link the executable c.exe
 
-build c.exe: C_EXECUTABLE_LINKER__c_Debug CMakeFiles/c.dir/main.c.obj CMakeFiles/c.dir/chunk/chunk.c.obj CMakeFiles/c.dir/memory/memory.c.obj CMakeFiles/c.dir/chunk/chunk_disassembler.c.obj CMakeFiles/c.dir/types/types.c.obj CMakeFiles/c.dir/vm/vm.c.obj CMakeFiles/c.dir/scanner/scanner.c.obj CMakeFiles/c.dir/compiler/compiler.c.obj CMakeFiles/c.dir/types/object.c.obj CMakeFiles/c.dir/types/cast.c.obj CMakeFiles/c.dir/table/table.c.obj
+build c.exe: C_EXECUTABLE_LINKER__c_Debug CMakeFiles/c.dir/main.c.obj CMakeFiles/c.dir/src/chunk/chunk.c.obj CMakeFiles/c.dir/src/memory/memory.c.obj CMakeFiles/c.dir/src/chunk/chunk_disassembler.c.obj CMakeFiles/c.dir/src/vm/vm.c.obj CMakeFiles/c.dir/src/compiler/scanner.c.obj CMakeFiles/c.dir/src/compiler/compiler.c.obj CMakeFiles/c.dir/src/types/strings/string_object.c.obj CMakeFiles/c.dir/src/table/table.c.obj CMakeFiles/c.dir/src/types/array.c.obj CMakeFiles/c.dir/src/types/strings/string_pool.c.obj CMakeFiles/c.dir/src/shared.c.obj
   FLAGS = -g
   LINK_LIBRARIES = -lkernel32 -luser32 -lgdi32 -lwinspool -lshell32 -lole32 -loleaut32 -luuid -lcomdlg32 -ladvapi32
   OBJECT_DIR = CMakeFiles\c.dir

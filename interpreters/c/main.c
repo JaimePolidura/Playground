@@ -1,10 +1,11 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-#include "shared.h"
-#include "chunk/chunk.h"
-#include "chunk/chunk_disassembler.h"
-#include "vm/vm.h"
+#include "src/shared.h"
+#include "src/chunk/chunk.h"
+#include "src/chunk/chunk_disassembler.h"
+#include "src/vm/vm.h"
+#include "src/compiler/compiler.h"
 
 void debug_simple_calculation();
 void prod();
@@ -33,7 +34,13 @@ void run_file(char * path) {
 
 interpret_result interpret_source_code(char * source_code) {
     struct chunk * chunk = alloc_chunk();
+    bool compilation_success = compile(source_code, chunk);
 
+    if(!compilation_success){
+        return INTERPRET_COMPILE_ERROR;
+    }
+
+    return interpret_vm(chunk);
 }
 
 char * read_file_source_code(char * path) {
