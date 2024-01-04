@@ -23,4 +23,6 @@ add_executable(c main.c
         types/object.h
         types/object.c
         types/cast.h
-        types/cast.c)
+        types/cast.c
+        table/table.h
+        table/table.c)

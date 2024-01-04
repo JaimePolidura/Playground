@@ -10,7 +10,7 @@ void alloc_lox_array(struct lox_array * array) {
 
 void write_lox_array(struct lox_array * array, lox_value_t value) {
     if(array->in_use + 1 > array->capacity) {
-        const int new_capacity = GROW_ARRAY_CAPACITY(array->capacity);
+        const int new_capacity = GROW_CAPACITY(array->capacity);
         array->capacity = new_capacity;
         array->values = reallocate_array(array->values, new_capacity);
     }

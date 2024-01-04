@@ -1,6 +1,7 @@
 #pragma once
 
 #include "../shared.h"
+#include "../vm/vm.h"
 
 #include "types.h"
 
@@ -10,11 +11,13 @@ typedef enum {
 
 struct object {
     object_type_t type;
+    struct object * next; //Next object heap allocated
 };
 
 struct string_object {
     struct object object;
     int length;
+    uint32_t hash;
     char * chars;
 };
 

@@ -1,0 +1,22 @@
+#pragma once
+
+#include "../shared.h"
+#include "../types/object.h"
+
+struct hash_table_entry {
+    struct string_object * key;
+    lox_value_t value;
+};
+
+struct hash_table {
+    int size;
+    int capacity;
+    struct hash_table_entry * entries;
+};
+
+bool get_hash_table(struct hash_table * table, struct string_object * key, lox_value_t * value);
+bool remove_hash_table(struct hash_table * table, struct string_object * key);
+bool put_hash_table(struct hash_table * table, struct string_object * key, lox_value_t value);
+void add_all_hash_table(struct hash_table * table, struct hash_table * to_add);
+
+void init_hash_table(struct hash_table * table);

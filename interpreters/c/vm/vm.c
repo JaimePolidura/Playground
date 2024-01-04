@@ -88,7 +88,7 @@ static inline void adition() {
     int b_length = strlen(b_chars);
 
     int new_length = a_length + b_length; //Include \0
-    char * concatenated = malloc(new_length);
+    char * concatenated = ALLOCATE(char, new_length + 1);
     memcpy(concatenated, a_chars, a_length);
     memcpy(concatenated + a_length, b_chars, b_length);
     concatenated[new_length] = '\0';
@@ -100,7 +100,7 @@ static inline void adition() {
         free(b_chars);
     }
 
-    push_stack_vm(FROM_OBJECT(from_chars_to_string_object(concatenated, new_length - 1)));
+    push_stack_vm(FROM_OBJECT(from_chars_to_string_object(concatenated, new_length)));
 }
 
 static inline lox_value_t peek(int index_from_top) {
@@ -157,6 +157,7 @@ lox_value_t pop_stack_vm() {
 
 void start_vm() {
     current_vm.esp = current_vm.stack; //Reset stack
+    current_vm.heap = NULL;
 }
 
 void stop_vm() {

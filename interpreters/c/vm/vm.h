@@ -8,9 +8,10 @@
 
 struct vm {
     struct chunk * chunk;
-    uint8_t * pc; //Actual instruction
+    uint8_t * pc; // Actual instruction
     lox_value_t stack[STACK_MAX];
-    lox_value_t * esp; //top of the stack
+    lox_value_t * esp; // Top of the stack
+    struct object * heap; // Linkedlist of heap allocated objects
 };
 
 typedef enum {

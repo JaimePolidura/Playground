@@ -15,7 +15,7 @@ int add_constant_to_chunk(struct chunk * chunk_to_write, lox_value_t constant) {
 
 void write_chunk(struct chunk * chunk_to_write, uint8_t byte, int line) {
     if(chunk_to_write->in_use + 1 > chunk_to_write->capacity) {
-        const int new_code_capacity = GROW_ARRAY_CAPACITY(chunk_to_write->capacity);
+        const int new_code_capacity = GROW_CAPACITY(chunk_to_write->capacity);
         chunk_to_write->capacity = new_code_capacity;
         chunk_to_write->code = reallocate_array(chunk_to_write->code, sizeof(uint8_t) * new_code_capacity);
         chunk_to_write->lines = reallocate_array(chunk_to_write->lines, sizeof(int) * new_code_capacity);
