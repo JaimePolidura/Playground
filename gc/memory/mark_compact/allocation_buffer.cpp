@@ -8,10 +8,14 @@ void * Memory::MarkCompact::AllocationBuffer::allocateSize(size_t size) {
         return nullptr;
     }
 
-    void * ptr = reinterpret_cast<void *>(this->buffer[this->nextFree]);
+    void * ptr = &this->buffer[this->nextFree];
     this->nextFree += size;
 
     return ptr;
+}
+
+void Memory::MarkCompact::AllocationBuffer::resetMarkBit() {
+    memset(this->markBitMap, 0, sizeof(this->markBitMap));
 }
 
 void Memory::MarkCompact::AllocationBuffer::setPrev(Memory::MarkCompact::AllocationBuffer * other) {
@@ -21,6 +25,11 @@ void Memory::MarkCompact::AllocationBuffer::setPrev(Memory::MarkCompact::Allocat
 void Memory::MarkCompact::AllocationBuffer::mark(Types::Object * object) {
     const auto [markBitMapIndex, offsetInByteBitMap] = this->getBitMapIndex(object);
     this->markBitMap[markBitMapIndex] |= static_cast<std::byte>(1 << offsetInByteBitMap);
+}
+
+void Memory::MarkCompact::AllocationBuffer::unmark(Types::Object * object) {
+    const auto [markBitMapIndex, offsetInByteBitMap] = this->getBitMapIndex(object);
+    this->markBitMap[markBitMapIndex] ^= static_cast<std::byte>(1 << offsetInByteBitMap);
 }
 
 bool Memory::MarkCompact::AllocationBuffer::isMarked(Types::Object * object) {

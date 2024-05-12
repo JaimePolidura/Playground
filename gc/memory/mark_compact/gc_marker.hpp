@@ -5,6 +5,7 @@
 #include "types/array.hpp"
 #include "types/struct.hpp"
 #include "types/string.hpp"
+#include "types/utils.hpp"
 #include "memory/mark_compact/gc_thread_info.hpp"
 
 namespace Memory::MarkCompact {
@@ -20,8 +21,6 @@ namespace Memory::MarkCompact {
         void markThreadsStack();
         void markPackages();
         void traverseObject(Types::Object * object);
-        void traverseStruct(Types::StructObject * structObject, std::queue<Types::Object *>& pending);
-        void traverseArray(Types::ArrayObject * arrayObject, std::queue<Types::Object *>& pending);
         void markObject(Types::Object * object);
         bool isMarked(Types::Object * object);
 

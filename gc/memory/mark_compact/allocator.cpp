@@ -15,7 +15,7 @@ void * Memory::MarkCompact::MarkCompactAllocator::allocateSize(size_t size) {
     auto gcThreadInfo = reinterpret_cast<Memory::MarkCompact::ThreadInfo *>(self_thread->gc);
     auto currentAllocationBuffer = gcThreadInfo->allocationBuffer;
 
-    void * ptr = (void *) currentAllocationBuffer->allocateSize(size);
+    void * ptr = currentAllocationBuffer->allocateSize(size);
     if(ptr != nullptr){
         return ptr;
     }
@@ -39,5 +39,6 @@ void Memory::MarkCompact::MarkCompactAllocator::startGC() {
     Memory::MarkCompact::Marker marker{};
     marker.mark();
 
-    Memory::MarkCompact::compact();
+    Memory::MarkCompact::Compacter compacter{};
+    compacter.compact();
 }

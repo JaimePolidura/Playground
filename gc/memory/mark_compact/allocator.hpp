@@ -6,8 +6,9 @@
 #include "vm/thread.hpp"
 #include "memory/mark_compact/allocation_buffer.hpp"
 #include "memory/mark_compact/gc_thread_info.hpp"
-#include "memory/mark_compact/gc_compact.hpp"
-#include "memory/mark_compact/gc_mark.hpp"
+#include "memory/mark_compact/gc_compacter.hpp"
+#include "memory/mark_compact/gc_marker.hpp"
+
 
 namespace Memory::MarkCompact {
     class MarkCompactAllocator : public Memory::Allocator{

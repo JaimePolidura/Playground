@@ -22,6 +22,10 @@ add_executable(untitled7 main.cpp
         memory/mark_compact/allocator.hpp
         memory/mark_compact/allocator.cpp
         memory/mark_compact/gc_thread_info.hpp
-        memory/mark_compact/gc_mark.hpp
-        memory/mark_compact/gc_compact.hpp
-        memory/mark_compact/gc_mark.cpp)
+        memory/mark_compact/gc_marker.hpp
+        memory/mark_compact/gc_marker.cpp
+        memory/mark_compact/gc_compacter.hpp
+        memory/mark_compact/gc_compacter.cpp
+        types/utils.hpp
+        types/utils.cpp
+)

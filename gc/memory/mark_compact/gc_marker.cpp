@@ -1,4 +1,4 @@
-#include "gc_mark.hpp"
+#include "gc_marker.hpp"
 
 extern struct VM::VM current_vm;
 
@@ -33,46 +33,14 @@ void Memory::MarkCompact::Marker::markPackage(std::shared_ptr<VM::Package> packa
 }
 
 void Memory::MarkCompact::Marker::traverseObject(Types::Object * object) {
-    std::queue<Types::Object *> pending;
-    pending.push(object);
-
-    while(!pending.empty()){
-        Types::Object * currentObject = pending.front();
-        pending.pop();
-
-        if(currentObject != nullptr && !isMarked(currentObject)){
-            markObject(currentObject);
-
-            switch (currentObject->type) {
-                case Types::ObjectType::ARRAY: {
-                    traverseArray(reinterpret_cast<Types::ArrayObject *>(currentObject), pending);
-                }
-                case Types::ObjectType::STRUCT: {
-                    traverseStruct(reinterpret_cast<Types::StructObject *>(currentObject), pending);
-                }
-                default:
-                    break;
-            }
+    Types::traverseObjectDeep(object, [this](Types::Object * currentObject) -> bool {
+        if(currentObject != nullptr && !this->isMarked(currentObject)){
+            this->markObject(currentObject);
+            return true;
+        } else {
+            return false;
         }
-    }
-}
-
-void Memory::MarkCompact::Marker::traverseStruct(Types::StructObject * structObject, std::queue<Types::Object *>& pending) {
-    for(auto currentField = structObject->fields;
-        currentField < (structObject->fields + structObject->n_fields);
-        currentField++) {
-
-        pending.push(currentField);
-    }
-}
-
-void Memory::MarkCompact::Marker::traverseArray(Types::ArrayObject * arrayObject, std::queue<Types::Object *>& pending) {
-    for(auto currentElement = arrayObject->content;
-        currentElement < (arrayObject->content + arrayObject->size);
-        currentElement++) {
-
-        pending.push(currentElement);
-    }
+    });
 }
 
 void Memory::MarkCompact::Marker::markObject(Types::Object * object) {

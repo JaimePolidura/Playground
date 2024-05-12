@@ -12,6 +12,7 @@
 #include <functional>
 #include <set>
 #include <cmath>
+#include <cstring>
 
 #include "params.hpp"
 

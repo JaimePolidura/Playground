@@ -5,7 +5,7 @@
 
 // 2 MB
 #define BUFFER_ADDRESS_BIT_OFFSET 24
-#define MARK_COMPACT_ALLOCATION_BUFFER_SIZE 1 << BUFFER_ADDRESS_BIT_OFFSET
+#define MARK_COMPACT_ALLOCATION_BUFFER_SIZE (1 << BUFFER_ADDRESS_BIT_OFFSET)
 
 #define TO_ABSOLUTE_ALLOCATION_BUFFER_ADDR(relative) (absoluteAllocBufAddress_t) (relative >> BUFFER_ADDRESS_BIT_OFFSET)
 
@@ -21,7 +21,11 @@ namespace Memory::MarkCompact {
 
         void mark(Types::Object * object);
 
+        void unmark(Types::Object * object);
+
         bool isMarked(Types::Object * object);
+
+        void resetMarkBit();
 
         void setPrev(AllocationBuffer * other);
 
@@ -33,5 +37,7 @@ namespace Memory::MarkCompact {
         AllocationBuffer * prev{nullptr};
         uint64_t nextFree{0};
         std::byte markBitMap[MARK_COMPACT_ALLOCATION_BUFFER_SIZE / (sizeof(Types::Object) * 8)];
+
+        friend class Compacter;
     };
 }
