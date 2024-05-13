@@ -3,12 +3,25 @@
 extern thread_local VM::Thread * self_thread;
 
 Types::StringObject * Memory::MarkCompact::MarkCompactAllocator::allocString(char * data) {
+    auto stringObject = reinterpret_cast<Types::StringObject *>(this->allocateSize(Types::StringObject::size(data)));
+    stringObject->object.type = Types::ObjectType::STRING;
+    stringObject->nChars = strlen(data);
+    std::memcpy(stringObject->contents, data, strlen(data));
+    return stringObject;
 }
 
-Types::StructObject * Memory::MarkCompact::MarkCompactAllocator::allocStruct(int nFields, Types::Object * fields) {
+Types::StructObject * Memory::MarkCompact::MarkCompactAllocator::allocStruct(int nFields) {
+    auto structObject = reinterpret_cast<Types::StructObject *>(this->allocateSize(Types::StructObject::size(nFields)));
+    structObject->object.type = Types::ObjectType::STRUCT;
+    structObject->nFields = nFields;
+    return structObject;
 }
 
-Types::ArrayObject * Memory::MarkCompact::MarkCompactAllocator::allocArray(Types::ObjectType contentType, int nElements) {
+Types::ArrayObject * Memory::MarkCompact::MarkCompactAllocator::allocArray(int nElements) {
+    auto arrayObject = reinterpret_cast<Types::ArrayObject *>(this->allocateSize(Types::ArrayObject::size(nElements)));
+    arrayObject->nElements = nElements;
+    arrayObject->object.type = Types::ARRAY;
+    return arrayObject;
 }
 
 void * Memory::MarkCompact::MarkCompactAllocator::allocateSize(size_t size) {

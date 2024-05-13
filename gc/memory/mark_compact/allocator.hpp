@@ -15,9 +15,9 @@ namespace Memory::MarkCompact {
     public:
         Types::StringObject * allocString(char * data) override;
 
-        Types::StructObject * allocStruct(int nFields, Types::Object * fields) override;
+        Types::StructObject * allocStruct(int nFields) override;
 
-        Types::ArrayObject * allocArray(Types::ObjectType contentType, int nElements) override;
+        Types::ArrayObject * allocArray(int nElements) override;
 
     private:
         void * allocateSize(size_t size);

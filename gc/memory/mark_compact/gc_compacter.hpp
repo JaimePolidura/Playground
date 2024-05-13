@@ -13,15 +13,16 @@ namespace Memory::MarkCompact {
     public:
         void compact();
     private:
+        void compactThreads();
         void compactThread(const VM::Thread& thread);
         inline Types::Object * nextLive(Types::Object * prevPtr, AllocationBuffer * currentAllocBuffer);
         inline Types::Object * nextFree(Types::Object * prevPtr, AllocationBuffer * currentAllocBuffer);
         inline std::size_t sizeFree(Types::Object * freePtr, AllocationBuffer * currentAllocBuffer);
         void moveObjects(Types::Object * dst, Types::Object * src, AllocationBuffer * currentAllocBuffer);
 
-        void compactThreads();
         void updateReferences();
-
+        void updateStackReferences();
         void updateGlobalReferences();
+        void updateObjectReferencesDeep(Types::Object * object);
     };
 }

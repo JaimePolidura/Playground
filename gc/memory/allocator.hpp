@@ -8,8 +8,8 @@ namespace Memory {
     class Allocator {
         virtual Types::StringObject * allocString(char * data) = 0;
 
-        virtual Types::StructObject * allocStruct(int nFields, Types::Object * fields) = 0;
+        virtual Types::StructObject * allocStruct(int nFields) = 0;
 
-        virtual Types::ArrayObject * allocArray(Types::ObjectType contentType, int nElements) = 0;
+        virtual Types::ArrayObject * allocArray(int nElements) = 0;
     };
 }
