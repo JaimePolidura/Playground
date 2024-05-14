@@ -8,6 +8,5 @@ namespace Memory::MarkCompact {
         AllocationBuffer * allocationBuffer{nullptr};
         int nAllocatedBuffersWithoutGC{0};
         int nextGcAllocatedBuffer{0};
-        std::map<absoluteAllocBufAddress_t, Memory::MarkCompact::AllocationBuffer *> allocationBuffers{};
     };
 }

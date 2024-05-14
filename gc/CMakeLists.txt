@@ -28,4 +28,6 @@ add_executable(untitled7 main.cpp
         memory/mark_compact/gc_compacter.cpp
         types/utils.hpp
         types/utils.cpp
+        memory/mark_compact/gc_vm_info.h
+        memory/mark_compact/gc_vm_info.cpp
 )

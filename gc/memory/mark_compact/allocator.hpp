@@ -9,7 +9,6 @@
 #include "memory/mark_compact/gc_compacter.hpp"
 #include "memory/mark_compact/gc_marker.hpp"
 
-
 namespace Memory::MarkCompact {
     class MarkCompactAllocator : public Memory::Allocator{
     public:
@@ -23,5 +22,9 @@ namespace Memory::MarkCompact {
         void * allocateSize(size_t size);
 
         void startGC();
+
+        AllocationBuffer * nextAllocBuffer(size_t size);
+
+        void updateThreadAllocationBuffers();
     };
 }

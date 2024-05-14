@@ -7,6 +7,7 @@
 #include "types/string.hpp"
 #include "types/utils.hpp"
 #include "memory/mark_compact/gc_thread_info.hpp"
+#include "memory/mark_compact/gc_vm_info.h"
 
 namespace Memory::MarkCompact {
     class Marker {
@@ -14,16 +15,12 @@ namespace Memory::MarkCompact {
         void mark();
 
     private:
-        std::map<absoluteAllocBufAddress_t , AllocationBuffer *> allocationsBufferByAddress{};
-
         void markPackage(std::shared_ptr<VM::Package> package);
         void markStack(VM::Thread& thread);
         void markThreadsStack();
         void markPackages();
-        void traverseObject(Types::Object * object);
+        void traverseObject(Types::Object * rootObject);
         void markObject(Types::Object * object);
         bool isMarked(Types::Object * object);
-
-        AllocationBuffer * getAllocationBuffer(absoluteAllocBufAddress_t addressToLookup);
     };
 }

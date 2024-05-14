@@ -14,12 +14,41 @@ void * Memory::MarkCompact::AllocationBuffer::allocateSize(size_t size) {
     return ptr;
 }
 
-void Memory::MarkCompact::AllocationBuffer::resetMarkBit() {
-    memset(this->markBitMap, 0, sizeof(this->markBitMap));
+bool Memory::MarkCompact::AllocationBuffer::hasRoom(std::size_t size) {
+
 }
 
-void Memory::MarkCompact::AllocationBuffer::setPrev(Memory::MarkCompact::AllocationBuffer * other) {
-    this->prev = other;
+bool Memory::MarkCompact::AllocationBuffer::belongs(Types::Object * object) {
+    std::uintptr_t endAllocBuf = (uint64_t) &this->buffer[MARK_COMPACT_ALLOCATION_BUFFER_SIZE - sizeof(Types::ObjectType)];
+    std::uintptr_t startAllocBuf = (uint64_t) &this->buffer;
+    std::uintptr_t objectPtr = (uint64_t) object;
+
+    return startAllocBuf <= objectPtr && objectPtr <= endAllocBuf;
+}
+
+Memory::MarkCompact::AllocationBuffer * Memory::MarkCompact::AllocationBuffer::getLast() {
+    auto currentAllocBuffer = this;
+    while(currentAllocBuffer->prev != nullptr){
+        currentAllocBuffer = currentAllocBuffer->prev;
+    }
+
+    return currentAllocBuffer;
+}
+
+int Memory::MarkCompact::AllocationBuffer::getNAllocationBuffersFromLast() {
+    auto currentAllocBuffer = this;
+    int count = 1;
+
+    while(currentAllocBuffer->next != nullptr){
+        currentAllocBuffer = currentAllocBuffer->next;
+        count++;
+    }
+
+    return count;
+}
+
+void Memory::MarkCompact::AllocationBuffer::resetMarkBit() {
+    memset(this->markBitMap, 0, sizeof(this->markBitMap));
 }
 
 void Memory::MarkCompact::AllocationBuffer::mark(Types::Object * object) {

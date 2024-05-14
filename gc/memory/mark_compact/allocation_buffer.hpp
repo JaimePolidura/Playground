@@ -27,7 +27,13 @@ namespace Memory::MarkCompact {
 
         void resetMarkBit();
 
-        void setPrev(AllocationBuffer * other);
+        bool belongs(Types::Object * object);
+
+        bool hasRoom(std::size_t size);
+
+        AllocationBuffer * getLast();
+
+        int getNAllocationBuffersFromLast();
 
     private:
         //Returns {index on markBitMap, offset in the byte}
@@ -35,9 +41,11 @@ namespace Memory::MarkCompact {
 
         std::byte buffer[MARK_COMPACT_ALLOCATION_BUFFER_SIZE];
         AllocationBuffer * prev{nullptr};
+        AllocationBuffer * next{nullptr};
         uint64_t nextFree{0};
         std::byte markBitMap[MARK_COMPACT_ALLOCATION_BUFFER_SIZE / (sizeof(Types::Object) * 8)];
 
+        friend class MarkCompactAllocator;
         friend class Compacter;
     };
 }

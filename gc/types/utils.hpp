@@ -10,5 +10,5 @@ namespace Types {
 
     void traverseObjectDeep(Types::Object * object, std::function<bool(Types::Object *)> callback);
 
-    int copy(Types::Object * dst, Types::Object * src);
+    void copy(Types::Object * dst, Types::Object * src);
 }

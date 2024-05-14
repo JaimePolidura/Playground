@@ -6,6 +6,7 @@ void Memory::MarkCompact::Marker::mark() {
     current_vm.stopThreadsGC();
     markThreadsStack();
     markPackages();
+    GET_VM_GC_INFO(current_vm)->resetAllMarkBits();
 }
 
 void Memory::MarkCompact::Marker::markThreadsStack() {
@@ -28,46 +29,27 @@ void Memory::MarkCompact::Marker::markStack(VM::Thread& thread) {
 
 void Memory::MarkCompact::Marker::markPackage(std::shared_ptr<VM::Package> package) {
     for (const auto& [globalName, global]: package->globals) {
-        traverseObject(global);
+        traverseObject(global.value);
     }
 }
 
-void Memory::MarkCompact::Marker::traverseObject(Types::Object * object) {
-    Types::traverseObjectDeep(object, [this](Types::Object * currentObject) -> bool {
+void Memory::MarkCompact::Marker::traverseObject(Types::Object * rootObject) {
+    Types::traverseObjectDeep(rootObject, [this](Types::Object * currentObject) -> bool {
         if(currentObject != nullptr && !this->isMarked(currentObject)){
             this->markObject(currentObject);
-            return true;
+            return true; ////Keep going
         } else {
-            return false;
+            return false; //Stop
         }
     });
 }
 
 void Memory::MarkCompact::Marker::markObject(Types::Object * object) {
-    auto allocationBuffer = this->getAllocationBuffer(TO_ABSOLUTE_ALLOCATION_BUFFER_ADDR((uint64_t) object));
+    auto allocationBuffer = GET_ALLOCATION_BUFFER(current_vm, object);
     allocationBuffer->mark(object);
 }
 
 bool Memory::MarkCompact::Marker::isMarked(Types::Object * object) {
-    auto allocationBuffer = this->getAllocationBuffer(TO_ABSOLUTE_ALLOCATION_BUFFER_ADDR((uint64_t) object));
+    auto allocationBuffer = GET_ALLOCATION_BUFFER(current_vm, object);
     return allocationBuffer->isMarked(object);
-}
-
-Memory::MarkCompact::AllocationBuffer * Memory::MarkCompact::Marker::getAllocationBuffer(absoluteAllocBufAddress_t addressToLookup) {
-    auto allocationBufferAtAddress = this->allocationsBufferByAddress.find(addressToLookup);
-    if(allocationBufferAtAddress != this->allocationsBufferByAddress.end()){
-        return allocationBufferAtAddress->second;
-    }
-
-    for (const VM::Thread& currentThread: current_vm.threads) {
-        auto gcThreadInfo = reinterpret_cast<Memory::MarkCompact::ThreadInfo *>(currentThread.gc);
-
-        if(gcThreadInfo->allocationBuffers.contains(addressToLookup)){
-            auto allocationBufferResult = gcThreadInfo->allocationBuffers[addressToLookup];
-            this->allocationsBufferByAddress.insert({addressToLookup, allocationBufferResult});
-            return allocationBufferResult;
-        }
-    }
-
-    return nullptr;
 }

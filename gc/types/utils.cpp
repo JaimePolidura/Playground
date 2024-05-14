@@ -3,8 +3,8 @@
 static void traverseStruct(Types::StructObject * structObject, std::queue<Types::Object *>& pending);
 static void traverseArray(Types::ArrayObject * arrayObject, std::queue<Types::Object *>& pending);
 
-int Types::copy(Types::Object * dst, Types::Object * src) {
-    *dst = *dst;
+void Types::copy(Types::Object * dst, Types::Object * src) {
+    *dst = *src;
 
     switch (src->type) {
         case ARRAY: {
@@ -20,8 +20,6 @@ int Types::copy(Types::Object * dst, Types::Object * src) {
         default:
             break;
     }
-
-
 }
 
 std::size_t Types::sizeofObject(Types::Object * object) {
@@ -67,7 +65,6 @@ void traverseStruct(Types::StructObject * structObject, std::queue<Types::Object
     for(int i = 0; i < structObject->nFields; i++){
         pending.push(structObject->fields[i]);
     }
-
 }
 
 void traverseArray(Types::ArrayObject * arrayObject, std::queue<Types::Object *>& pending) {

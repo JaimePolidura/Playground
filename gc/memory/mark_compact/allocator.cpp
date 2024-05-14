@@ -1,6 +1,7 @@
 #include "allocator.hpp"
 
 extern thread_local VM::Thread * self_thread;
+extern struct VM::VM current_vm;
 
 Types::StringObject * Memory::MarkCompact::MarkCompactAllocator::allocString(char * data) {
     auto stringObject = reinterpret_cast<Types::StringObject *>(this->allocateSize(Types::StringObject::size(data)));
@@ -33,19 +34,36 @@ void * Memory::MarkCompact::MarkCompactAllocator::allocateSize(size_t size) {
         return ptr;
     }
 
+    auto newAllocBuf = nextAllocBuffer(size);
+
+    return newAllocBuf->allocateSize(size);
+}
+
+Memory::MarkCompact::AllocationBuffer * Memory::MarkCompact::MarkCompactAllocator::nextAllocBuffer(size_t size) {
+    auto gcThreadInfo = reinterpret_cast<Memory::MarkCompact::ThreadInfo *>(self_thread->gc);
+    auto currentAllocationBuffer = gcThreadInfo->allocationBuffer;
+
+    while(currentAllocationBuffer->next != nullptr && !currentAllocationBuffer->hasRoom(size)){
+        currentAllocationBuffer = currentAllocationBuffer->next;
+    }
+
+    if(currentAllocationBuffer->hasRoom(size)) {
+        gcThreadInfo->allocationBuffer = currentAllocationBuffer;
+        return currentAllocationBuffer;
+    }
+
     if(gcThreadInfo->nAllocatedBuffersWithoutGC + 1 < gcThreadInfo->nextGcAllocatedBuffer) {
-        auto newAllocationBuffer = new Memory::MarkCompact::AllocationBuffer();
-        gcThreadInfo->allocationBuffers[TO_ABSOLUTE_ALLOCATION_BUFFER_ADDR((uint64_t) newAllocationBuffer)] = newAllocationBuffer;
-        newAllocationBuffer->setPrev(currentAllocationBuffer);
+        auto gcVmInfo = GET_VM_GC_INFO(current_vm);
+        auto newAllocationBuffer = gcVmInfo->submitAllocationBuffer();;
+        gcVmInfo->allocationBuffers[TO_ABSOLUTE_ALLOCATION_BUFFER_ADDR((uint64_t) newAllocationBuffer->buffer[0])] = newAllocationBuffer;
+        newAllocationBuffer->prev = currentAllocationBuffer;
+        currentAllocationBuffer->next = newAllocationBuffer;
         gcThreadInfo->allocationBuffer = newAllocationBuffer;
         gcThreadInfo->nAllocatedBuffersWithoutGC++;
-
-        return (void *) currentAllocationBuffer->allocateSize(size);
+        return newAllocationBuffer;
     }
 
     startGC();
-
-    return nullptr;
 }
 
 void Memory::MarkCompact::MarkCompactAllocator::startGC() {
@@ -54,4 +72,20 @@ void Memory::MarkCompact::MarkCompactAllocator::startGC() {
 
     Memory::MarkCompact::Compacter compacter{};
     compacter.compact();
+
+    updateThreadAllocationBuffers();
+}
+
+void Memory::MarkCompact::MarkCompactAllocator::updateThreadAllocationBuffers() {
+    for (const auto &thread: current_vm.threads) {
+        auto gcThreadInfo = reinterpret_cast<Memory::MarkCompact::ThreadInfo *>(thread.gc);
+        if(gcThreadInfo->allocationBuffer != nullptr) {
+            auto newPointingAllocationBuffer = gcThreadInfo->allocationBuffer->getLast();
+            gcThreadInfo->nAllocatedBuffersWithoutGC =  newPointingAllocationBuffer->getNAllocationBuffersFromLast();
+            gcThreadInfo->allocationBuffer = newPointingAllocationBuffer;
+        }
+    }
+
+    auto selfThreadGcInfo = reinterpret_cast<Memory::MarkCompact::ThreadInfo *>(self_thread->gc);
+    selfThreadGcInfo->nextGcAllocatedBuffer = selfThreadGcInfo->nAllocatedBuffersWithoutGC * 2;
 }

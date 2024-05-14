@@ -105,12 +105,12 @@ build CMakeFiles/untitled7.dir/types/utils.cpp.obj: CXX_COMPILER__untitled7_unsc
   OBJECT_DIR = CMakeFiles\untitled7.dir
   OBJECT_FILE_DIR = CMakeFiles\untitled7.dir\types
 
-build CMakeFiles/untitled7.dir/types/array.cpp.obj: CXX_COMPILER__untitled7_unscanned_Debug C$:/programacion/Playground/gc/types/array.cpp || cmake_object_order_depends_target_untitled7
-  DEP_FILE = CMakeFiles\untitled7.dir\types\array.cpp.obj.d
+build CMakeFiles/untitled7.dir/memory/mark_compact/gc_vm_info.cpp.obj: CXX_COMPILER__untitled7_unscanned_Debug C$:/programacion/Playground/gc/memory/mark_compact/gc_vm_info.cpp || cmake_object_order_depends_target_untitled7
+  DEP_FILE = CMakeFiles\untitled7.dir\memory\mark_compact\gc_vm_info.cpp.obj.d
   FLAGS = -g -std=gnu++23 -fdiagnostics-color=always
   INCLUDES = -IC:/programacion/Playground/gc
   OBJECT_DIR = CMakeFiles\untitled7.dir
-  OBJECT_FILE_DIR = CMakeFiles\untitled7.dir\types
+  OBJECT_FILE_DIR = CMakeFiles\untitled7.dir\memory\mark_compact
 
 
 # =============================================================================
@@ -120,7 +120,7 @@ build CMakeFiles/untitled7.dir/types/array.cpp.obj: CXX_COMPILER__untitled7_unsc
 #############################################
 # Link the executable untitled7.exe
 
-build untitled7.exe: CXX_EXECUTABLE_LINKER__untitled7_Debug CMakeFiles/untitled7.dir/main.cpp.obj CMakeFiles/untitled7.dir/vm/vm.cpp.obj CMakeFiles/untitled7.dir/vm/thread.cpp.obj CMakeFiles/untitled7.dir/memory/mark_compact/allocation_buffer.cpp.obj CMakeFiles/untitled7.dir/memory/mark_compact/allocator.cpp.obj CMakeFiles/untitled7.dir/memory/mark_compact/gc_marker.cpp.obj CMakeFiles/untitled7.dir/memory/mark_compact/gc_compacter.cpp.obj CMakeFiles/untitled7.dir/types/utils.cpp.obj CMakeFiles/untitled7.dir/types/array.cpp.obj
+build untitled7.exe: CXX_EXECUTABLE_LINKER__untitled7_Debug CMakeFiles/untitled7.dir/main.cpp.obj CMakeFiles/untitled7.dir/vm/vm.cpp.obj CMakeFiles/untitled7.dir/vm/thread.cpp.obj CMakeFiles/untitled7.dir/memory/mark_compact/allocation_buffer.cpp.obj CMakeFiles/untitled7.dir/memory/mark_compact/allocator.cpp.obj CMakeFiles/untitled7.dir/memory/mark_compact/gc_marker.cpp.obj CMakeFiles/untitled7.dir/memory/mark_compact/gc_compacter.cpp.obj CMakeFiles/untitled7.dir/types/utils.cpp.obj CMakeFiles/untitled7.dir/memory/mark_compact/gc_vm_info.cpp.obj
   FLAGS = -g
   LINK_LIBRARIES = -lkernel32 -luser32 -lgdi32 -lwinspool -lshell32 -lole32 -loleaut32 -luuid -lcomdlg32 -ladvapi32
   OBJECT_DIR = CMakeFiles\untitled7.dir
