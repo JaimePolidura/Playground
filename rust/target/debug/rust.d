@@ -1,1 +1,0 @@
-C:\programacion\Playground\rust\target\debug\rust.exe: C:\programacion\Playground\rust\src\functions\mod.rs C:\programacion\Playground\rust\src\game\mod.rs C:\programacion\Playground\rust\src\main.rs C:\programacion\Playground\rust\src\ownership\mod.rs
