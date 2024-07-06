@@ -18,15 +18,15 @@ impl Connection {
 impl Server {
     pub fn read_request(&self) -> ServerRequestContext {
         ServerRequestContext {
-         request: Request {
-             timestamp: messages::LamportTimestamp{
-                 counter: 100,
-                 node_id: 1
-             },
-             auth_key: 9178629871261,
-             opcode: messages::Opcode::CAS(String::from("Ejemplo"), String::from("A"), String::from("B"))
-         },
-            connection: Connection
+            connection: Connection,
+            request: Request {
+                timestamp: messages::LamportTimestamp{
+                    counter: 100,
+                    node_id: 1,
+                },
+                auth_key: 9178629871261,
+                opcode: messages::Opcode::CAS(String::from("Ejemplo"), String::from("A"), String::from("B"))
+            }
         }
     }
 }

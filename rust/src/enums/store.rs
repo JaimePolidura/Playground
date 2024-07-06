@@ -1,4 +1,5 @@
 use std::collections::HashMap;
+use crate::enums::store::Result::SuccessWithBoolean;
 
 pub struct Store<T: PartialEq> {
     data: HashMap<String, T>
@@ -7,14 +8,22 @@ pub struct Store<T: PartialEq> {
 pub enum Result<T> {
     Failed,
     Success,
-    SuccessWithValue(T)
+    SuccessWithValue(T),
+    SuccessWithBoolean(bool)
 }
 
 impl<T: PartialEq> Store<T> {
     pub fn get(&self, key: &str) -> Result<T> {
         return match self.data.get(key) {
-            Some(value) => Result::SuccessWithValue(value),
+            Some(value) => Result::Success,
             None => Result::Failed
+        }
+    }
+
+    pub fn contains(&self, key: &str) -> Result<T> {
+        match self.get(key) {
+            Result::Failed => SuccessWithBoolean(true),
+            _ => SuccessWithBoolean(false),
         }
     }
 
