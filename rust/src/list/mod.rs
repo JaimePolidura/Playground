@@ -1,4 +1,4 @@
-use std::mem;
+mod tests;
 
 struct Node<T> {
     data: T,
@@ -52,16 +52,16 @@ impl<T> LinkedList<T> {
             return Option::None;
         }
 
-        let last: Option<&Box<Node<T>>> = None;
+        let mut last: Option<&Box<Node<T>>> = None;
 
         for current_index in 0..(index_lookup + 1) {
-            let last = match last {
-                Some(prev) => prev.next.as_ref().unwrap(),
-                None => self.head.as_ref().unwrap(),
+            last = match last {
+                Some(prev) => prev.next.as_ref(),
+                None => self.head.as_ref(),
             };
 
             if current_index == index_lookup {
-                Some(&last.data);
+                return Some(&last.unwrap().data);
             }
         }
 

@@ -20,4 +20,8 @@ pub fn vectors() {
     for (key, value) in &scores {
         println!("{key}: {value}");
     }
+
+    let ll: LinkedList<u32> = LinkedList::new();
+    ll.back();
+
 }
