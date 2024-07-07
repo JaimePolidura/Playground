@@ -1,4 +1,4 @@
-use std::collections::HashMap;
+use std::collections::{HashMap, LinkedList};
 
 pub fn vectors() {
     let mut vector: Vec<i32> = Vec::new();

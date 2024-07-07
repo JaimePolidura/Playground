@@ -6,6 +6,7 @@ mod enums;
 mod collections;
 mod generics;
 mod traits;
+mod list;
 
 fn main() {
     structs::structs();
