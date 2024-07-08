@@ -1,14 +1,12 @@
+use std::{env, process};
+use std::error::Error;
+use std::io::Write;
+
 mod params;
 mod minigrep;
 
-use std::{env, fs, process};
-use std::error::Error;
-use std::io::{stderr, Write};
-
 pub fn minigrep () {
-    let args: Vec<String> = env::args().collect();
-
-    let params = params::read_from_args(&args)
+    let params = params::read_from_args(&env::args())
         .unwrap_or_else(|err| {
             eprintln!("Problem parsing arguments: {}", err);
             process::exit(1);

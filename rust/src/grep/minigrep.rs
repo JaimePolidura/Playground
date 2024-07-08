@@ -22,28 +22,16 @@ fn search_case_sensitive<'a>(
     content: &'a str,
     query: &'a str
 ) -> Vec<&'a str> {
-    let mut matches: Vec<&'a str> = Vec::new();
-
-    for line in content.lines() {
-        if line.contains(query) {
-            matches.push(line);
-        }
-    }
-
-    return matches;
+    content.lines()
+        .filter(|line| line.contains(query))
+        .collect()
 }
 
 fn search_ignore_case<'a>(
     content: &'a str,
     query: &'a str
 ) -> Vec<&'a str> {
-    let mut matches: Vec<&'a str> = Vec::new();
-
-    for line in content.lines() {
-        if line.to_lowercase().contains(&query.to_lowercase()) {
-            matches.push(line);
-        }
-    }
-
-    return matches;
+    content.lines()
+        .filter(|line| line.to_lowercase().contains(&query.to_lowercase()))
+        .collect()
 }

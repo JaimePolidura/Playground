@@ -8,6 +8,7 @@ mod generics;
 mod traits;
 mod list;
 mod grep;
+mod closures;
 
 fn main() {
     structs::structs();

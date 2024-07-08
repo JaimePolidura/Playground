@@ -4,14 +4,20 @@ pub struct Params {
     pub query: String,
 }
 
-pub fn read_from_args(args: &Vec<String>) -> Result<Params, &str> {
-    if args.len() != 3 {
-        return Err("Invalid arguments");
-    }
+pub fn read_from_args(
+    mut args: impl Iterator<Item = String>
+) -> Result<Params, &'static str> {
+    args.next(); //Ignore program name
 
-    let query = args[1].clone();
-    let file_path = args[2].clone();
     let ignore_case = true;
+    let query = match args.next() {
+        Some(arg) => arg,
+        None => return Err("Didn't get a query string"),
+    };
+    let file_path = match args.next() {
+        Some(arg) => arg,
+        None => return Err("Didn't get a file path"),
+    };
 
     Ok(Params { query, file_path, ignore_case })
 }
