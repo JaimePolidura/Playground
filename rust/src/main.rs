@@ -9,6 +9,8 @@ mod traits;
 mod list;
 mod grep;
 mod closures;
+mod pointers;
+mod threads;
 
 fn main() {
     structs::structs();

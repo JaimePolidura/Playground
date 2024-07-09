@@ -1,29 +1,28 @@
 #[cfg(test)]
 mod tests {
     use crate::list;
-    use crate::list::LinkedList;
 
     #[test]
     fn initialization() {
-        let ll: LinkedList<u32> =  list::LinkedList::new();
+        let ll: list::linkedlist::LinkedList<u32> =  list::linkedlist::LinkedList::new();
         assert!(ll.is_empty());
         assert_eq!(ll.len(), 0);
     }
 
     #[test]
     fn add() {
-        let mut ll: LinkedList<u32> =  list::LinkedList::new();
+        let mut ll: list::linkedlist::LinkedList<u32> =  list::linkedlist::LinkedList::new();
         ll.add_first(1);
         ll.add_first(2);
 
         assert!(!ll.is_empty());
         assert_eq!(ll.len(), 2);
     }
-    
+
     #[test]
     // #[should_panic]
     fn get() {
-        let mut ll: LinkedList<u32> =  list::LinkedList::new();
+        let mut ll: list::linkedlist::LinkedList<u32> =  list::linkedlist::LinkedList::new();
         ll.add_first(1);
         ll.add_first(2);
         ll.add_first(3);

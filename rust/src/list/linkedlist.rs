@@ -16,12 +16,12 @@ impl<T> LinkedList<T> {
         }
     }
 
-    pub fn remove_first(&mut self) {
-        self.remove(0);
+    pub fn remove_first(&mut self) -> Option<T> {
+        self.remove(0)
     }
 
-    pub fn remove_last(&mut self) {
-        self.remove(self.count - 1);
+    pub fn remove_last(&mut self) -> Option<T>{
+        self.remove(self.count - 1)
     }
 
     //TODO
@@ -103,5 +103,11 @@ impl<T> LinkedList<T> {
 
     fn is_out_of_bounds(&self, index: u32) -> bool {
         return self.count == 0 || index < 0 || index + 1 > self.count;
+    }
+}
+
+impl<T> Drop for LinkedList<T> {
+    fn drop(&mut self) {
+        while self.remove(0).is_some() {}
     }
 }

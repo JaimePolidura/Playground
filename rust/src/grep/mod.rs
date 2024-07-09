@@ -6,7 +6,7 @@ mod params;
 mod minigrep;
 
 pub fn minigrep () {
-    let params = params::read_from_args(&env::args())
+    let params = params::read_from_args(env::args())
         .unwrap_or_else(|err| {
             eprintln!("Problem parsing arguments: {}", err);
             process::exit(1);
