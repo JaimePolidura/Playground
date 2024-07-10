@@ -12,6 +12,7 @@ mod closures;
 mod pointers;
 mod threads;
 mod oop;
+mod r#match;
 
 fn main() {
     structs::structs();

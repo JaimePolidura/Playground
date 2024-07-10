@@ -10,7 +10,7 @@ pub struct Screen {
 
 impl Screen {
     pub fn run(&self) {
-        for component in self.components {
+        for component in self.components.iter() {
             component.draw();
         }
     }
@@ -25,7 +25,7 @@ where
     T: Draw
 {
     pub fn draw(&self) {
-        for component in self.components {
+        for component in self.components.iter() {
             component.draw();
         }
     }
