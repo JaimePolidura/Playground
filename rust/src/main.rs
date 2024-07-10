@@ -11,6 +11,7 @@ mod grep;
 mod closures;
 mod pointers;
 mod threads;
+mod oop;
 
 fn main() {
     structs::structs();

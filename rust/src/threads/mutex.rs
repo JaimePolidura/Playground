@@ -5,7 +5,7 @@ use std::thread::JoinHandle;
 fn mutex() {
     let mutex = Arc::new(Mutex::new(0));
     let mut handles: Vec<JoinHandle<()>> = vec![];
-    
+
     for _ in 0..10 {
         let counter = Arc::clone(&mutex);
 
