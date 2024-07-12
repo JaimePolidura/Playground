@@ -14,7 +14,8 @@ mod threads;
 mod oop;
 mod r#match;
 mod advanced;
+mod web;
 
 fn main() {
-    structs::structs();
+    web::main();
 }

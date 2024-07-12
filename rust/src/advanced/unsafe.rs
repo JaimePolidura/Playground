@@ -1,4 +1,3 @@
-use std::num::Add;
 use std::ops::Add;
 
 fn unsafe_call() {
