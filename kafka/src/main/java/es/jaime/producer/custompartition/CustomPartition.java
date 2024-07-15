@@ -2,9 +2,7 @@ package es.jaime.producer.custompartition;
 
 import org.apache.kafka.clients.producer.Partitioner;
 import org.apache.kafka.common.Cluster;
-import org.apache.kafka.common.PartitionInfo;
 
-import java.util.List;
 import java.util.Map;
 
 public final class CustomPartition implements Partitioner {
@@ -18,7 +16,7 @@ public final class CustomPartition implements Partitioner {
             Cluster cluster
     ) {
         int numPartitions = cluster.partitionsForTopic(topic).size();
-        
+
         return (int) (Math.random() * numPartitions);
     }
 
